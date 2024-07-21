@@ -20,9 +20,9 @@
     </header>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg" style="background-color: #312baa;">
    <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url('/') }}"> <img src="{{asset('logos/icono.png')}}" width="50" > Pamedic</a>
+      <a class="navbar-brand" href="{{ url('/') }}"> <img src="{{asset('logos/mini.jpg')}}" width="50" > <span style="color: #f8f9fa">Pamedic</span></a>
       @auth
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -30,13 +30,13 @@
     <div class="collapse navbar-collapse" id="menu">
         <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-                <a class="nav-link active" href="#">Asistencia<span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="#"><span style="color: #f8f9fa">Asistencia</span></a>
             </li>
+            <!-- <li class="nav-item">
+                <a class="nav-link" href="#">Ventas<span class="sr-only">(current)</span></a>
+            </li> -->
             <li class="nav-item">
-                <a class="nav-link active" href="#">Ventas<span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="#">Pacientes</a>
+                <a class="nav-link" href="{{ url('/patients') }}" ><span style="color: #f8f9fa">Pacientes</span></a>
             </li>
         </ul>
         <li class="nav-item dropdown">

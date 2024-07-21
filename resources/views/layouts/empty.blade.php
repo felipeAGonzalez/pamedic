@@ -22,7 +22,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
    <div class="container-fluid">
-      <a class="navbar-brand" href="#"> <img src="{{asset('logos/icono.png')}}" width="50" > Pamedic</a>
+    <a class="navbar-brand" href="#"><img src="{{asset('logos/icono.png')}}" width="50" style="color: white;"> Pamedic</a>
       <li class="nav-item">
                    <a class="nav-link" href="{{ url('/logout') }}">Cerrar Sesión</a>
                 </li>
