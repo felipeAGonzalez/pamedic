@@ -15,9 +15,8 @@ class Patient extends Model
     protected $fillable = ['expedient_number','name','last_name','contact_phone_number','last_name_two','gender','birth_date','date_entry','photo',];
 
 
-    // public function patientDate()
-    // {
-    //     return $this->hasOne('App\Models\PatientDate', 'patient_id');
-    // }
-
+    public function activePatient()
+    {
+        return $this->hasOne(ActivePatient::class, 'patient_id');
+    }
 }

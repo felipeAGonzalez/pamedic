@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Patient;
-use App\Models\PatientDate;
 use App\Utils;
 use Throwable;
 
@@ -13,7 +12,6 @@ class PatientController extends Controller
     public function index()
     {
         $patients = Patient::paginate(10);
-        \Log::info($patients);
         return view('patients.index', compact('patients'));
     }
 
@@ -59,7 +57,7 @@ class PatientController extends Controller
         $patients = Patient::query();
 
         if ($search ?? false) {
-            $patients = Patient::where('id',$search)->orWhere('name','LIKE','%'.$search.'%')->orWhere('last_name','LIKE','%'.$search.'%')->orWhere('last_name_two','LIKE','%'.$search.'%');
+            $patients = Patient::where('expedient_number','LIKE','%'.$search.'%')->orWhere('name','LIKE','%'.$search.'%')->orWhere('last_name','LIKE','%'.$search.'%')->orWhere('last_name_two','LIKE','%'.$search.'%');
         }
         $patients = $patients->paginate(10);
         if (! $patients) {

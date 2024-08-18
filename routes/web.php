@@ -6,6 +6,8 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\ResetOtherController as Reset;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\AttendanceController;
+
 
 
 /*
@@ -65,4 +67,10 @@ Route::group(['middleware'=>['auth']],function () {
     Route::get('/patients/{id}', [PatientController::class, 'show'])->name('patients.show');
     Route::patch('/patients/{id}/photo', [PatientController::class, 'photo'])->name('patients.photo');
     Route::get('/patients/photo/{id}', [PatientController::class, 'showPhoto'])->name('patients.show.photo');
+
+    Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+    Route::get('/attendance/search', [AttendanceController::class, 'search'])->name('attendance.search');
+    Route::patch('/attendance/register/{id}', [AttendanceController::class, 'register'])->name('attendance.register');
+    Route::get('/attendance/list', [AttendanceController::class, 'list'])->name('attendance.list');
+    Route::get('/attendance/nurseAsigne/{id}', [AttendanceController::class, 'asigne'])->name('attendance.asigne');
 });

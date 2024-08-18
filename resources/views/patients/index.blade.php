@@ -31,7 +31,11 @@
                 @foreach($patients as $patient)
                     <tr>
                         <td>{{ $patient->expedient_number}}</td>
-                        <td><img src="{{$patient->photo ? asset($patient->photo):asset('default/no-photo-m.png')}}" alt="Foto Paciente"></td>
+                        <td>
+                            <div style="width: 200px; height: 200px; overflow: hidden;">
+                                <img src="{{$patient->photo ? asset($patient->photo) : asset('default/no-photo-m.png')}}" alt="Foto Paciente" style="width: auto; height: auto; object-fit: contain;">
+                            </div>
+                        </td>
                         <td>{{ $patient->name . ' ' . $patient->last_name . ' ' . $patient->last_name_two }}</td>
                         <td>{{ $patient->gender}}</td>
                         <td>{{ $patient->birth_date->format('d-m-Y')}}</td>
