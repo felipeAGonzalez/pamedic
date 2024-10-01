@@ -12,12 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('dialysis_monitoring', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('patient_id')->comment('El ID del paciente asociado con el monitoreo de diálisis');
             $table->foreign('patient_id')->references('id')->on('patient');
             $table->timestamp('date_hour')->comment('La fecha y hora del monitoreo de diálisis');
+            $table->enum('vascular_access', ['fistula', 'catheter'])->comment('Acceso vascular');
+            $table->enum('catheter_type', ['tunneling', 'no_tunneling'])->nullable()->comment('El tipo de catéter utilizado en la diálisis');
+            $table->integer('needle_mesure')->nullable()->comment('La medida de la aguja utilizada en la diálisis');
             $table->enum('implantation', ['femoral', 'yugular', 'subclavia', 'brazo', 'antebrazo'])->comment('El tipo de implantación utilizada para la diálisis');
-            $table->enum('fistula', ['femoral', 'yugular', 'subclavia', 'brazo', 'antebrazo'])->comment('Acceso vascular');
-            $table->integer('needle_mesure')->comment('La medida de la aguja utilizada en la diálisis');
+            $table->enum('side', ['right', 'left'])->comment('El lado del cuerpo en el que se realizó la diálisis');
             $table->date('collocation_date')->comment('La fecha en que se instaló el monitoreo de diálisis');
             $table->enum('serology', ['positivo', 'negativo'])->comment('El estado de serología del paciente');
             $table->date('serology_date')->comment('La fecha del ultimo análisis de serología');

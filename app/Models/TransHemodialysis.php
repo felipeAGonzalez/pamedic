@@ -3,9 +3,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TransHemodyaisis extends Model
+class TransHemodialysis extends Model
 {
-    protected $table = 'trans_hemodyaisis';
+    protected $table = 'trans_hemodialysis';
 
     protected $fillable = [
         'patient_id',

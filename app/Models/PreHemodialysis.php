@@ -30,7 +30,6 @@ class PreHemodialysis extends Model
         'vascular_access_conditions',
         'fall_risk',
         'observations',
-        'history',
     ];
 
     public function patient()

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('patient_id')->comment('El ID del paciente asociado con el monitoreo de diálisis');
             $table->foreign('patient_id')->references('id')->on('patient');
             $table->enum('type_dialyzer', ['HF80S', 'F6ELISIO21H', 'F6ELISIO19H'])->comment('Tipo de dializador');
-            $table->time('time')->comment('Hora');
+            $table->string('time')->comment('Hora');
             $table->string('blood_flux')->comment('Flujo de sangre');
             $table->string('flux_dialyzer')->comment('Flujo del dializador');
             $table->string('heparin')->comment('Heparina');

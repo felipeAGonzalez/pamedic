@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DialysisPrescription extends Model
 {
+    protected $table = 'dialysis_prescription';
+
     protected $fillable = [
         'patient_id',
         'type_dialyzer',

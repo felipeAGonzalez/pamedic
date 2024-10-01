@@ -28,7 +28,7 @@ services:
     ports:
       - 8080:80
   laravel:
-    image: pamedic-php8.1:latest
+    image: felipe89/pamedic-php8.1:latest
     networks:
       net_pamedic:
     depends_on:

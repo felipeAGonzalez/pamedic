@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DialysisMonitoring extends Model
 {
+    protected $table = 'dialysis_monitoring';
 
     protected $fillable = [
         'patient_id',

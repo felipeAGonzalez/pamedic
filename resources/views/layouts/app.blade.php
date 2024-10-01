@@ -36,7 +36,7 @@
                 <a class="nav-link" href="{{ url('/attendance/list') }}"><span style="color: #f8f9fa">Asignación</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url('/treatment/list') }}"><span style="color: #f8f9fa">Tratamiento</span></a>
+                <a class="nav-link" href="{{ url('/treatment') }}"><span style="color: #f8f9fa">Tratamiento</span></a>
             </li>
             <!-- <li class="nav-item">
                 <a class="nav-link" href="{{ url('/patients') }}" ><span style="color: #f8f9fa">Pacientes</span></a>
@@ -48,9 +48,7 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{{ url('/users') }}">Usuarios</a>
-                    </div>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <a class="nav-link" href="{{ url('/patients') }}" ><span style="color: #f8f9fa">Pacientes</span></a>
+                        <a class="dropdown-item" href="{{ url('/patients') }}">Pacientes</a>
                     </div>
 
                 </li>
@@ -60,10 +58,10 @@
                     <a class="dropdown-item" href="#">Reporte de Ventas</a>
                     <a class="dropdown-item" href="#">Reporte por Sucursal</a>
                     <a class="dropdown-item" href="#">Reporte por Turno</a>
-                </div>
+                </div> -->
                 <li class="nav-item">
                    <a class="nav-link" href="{{ url('/logout') }}">Cerrar Sesión</a>
-                </li> -->
+                </li>
     </div>
     @endauth
 </div>

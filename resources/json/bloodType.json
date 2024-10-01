@@ -1,0 +1,36 @@
+{
+    "blood_types": [
+      {
+        "group": "A",
+        "rh_factor": "Positivo"
+      },
+      {
+        "group": "A",
+        "rh_factor": "Negativo"
+      },
+      {
+        "group": "B",
+        "rh_factor": "Positivo"
+      },
+      {
+        "group": "B",
+        "rh_factor": "Negativo"
+      },
+      {
+        "group": "AB",
+        "rh_factor": "Positivo"
+      },
+      {
+        "group": "AB",
+        "rh_factor": "Negativo"
+      },
+      {
+        "group": "O",
+        "rh_factor": "Positivo"
+      },
+      {
+        "group": "O",
+        "rh_factor": "Negativo"
+      }
+    ]
+  }

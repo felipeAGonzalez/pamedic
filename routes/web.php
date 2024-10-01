@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\ResetOtherController as Reset;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TreatmentController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\AttendanceController;
 
@@ -36,9 +37,9 @@ Route::group(['middleware' => 'web', 'token.expired'], function () {
 });
 Route::group(['middleware'=>['auth']],function () {
 
-    Route::get('/welcome', function () {
-                return view('welcome');
-            })->name('welcome');
+                Route::get('/welcome', function () {
+                            return view('welcome');
+                        })->name('welcome');
 
 
     Route::group(['middleware' => 'position:ROOT,DIRECTIVE'], function () {
@@ -73,4 +74,19 @@ Route::group(['middleware'=>['auth']],function () {
     Route::patch('/attendance/register/{id}', [AttendanceController::class, 'register'])->name('attendance.register');
     Route::get('/attendance/list', [AttendanceController::class, 'list'])->name('attendance.list');
     Route::get('/attendance/nurseAsigne/{id}', [AttendanceController::class, 'asigne'])->name('attendance.asigne');
+
+    Route::get('/treatment', [TreatmentController::class, 'index'])->name('treatment.index');
+    Route::get('/treatment/create/{id}', [TreatmentController::class, 'create'])->name('treatment.create');
+    Route::get('/treatment/createPres/{id}', [TreatmentController::class, 'createPres'])->name('treatment.createPres');
+    Route::get('/treatment/create/pre-hemo/{id}', [TreatmentController::class, 'createPreHemo'])->name('treatment.createPreHemo');
+    Route::get('/treatment/create/trans-hemo/{id}', [TreatmentController::class, 'createTransHemo'])->name('treatment.createTransHemo');
+    Route::get('/treatment/create/post-hemo/{id}', [TreatmentController::class, 'createPostHemo'])->name('treatment.createPostHemo');
+    Route::get('/treatment/create/evaluation/{id}', [TreatmentController::class, 'createEvaluation'])->name('treatment.createEvaluation');
+
+    Route::post('/treatment/fill', [TreatmentController::class, 'fill'])->name('treatment.fill');
+    Route::post('/treatment/fillPres', [TreatmentController::class, 'fillPres'])->name('treatment.fillPres');
+    Route::post('/treatment/fill/pre-hemo', [TreatmentController::class, 'fillPreHemo'])->name('treatment.fillPreHemo');
+    Route::post('/treatment/fill/trans-hemo', [TreatmentController::class, 'fillTransHemo'])->name('treatment.fillTransHemo');
+    Route::post('/treatment/fill/post-hemo', [TreatmentController::class, 'fillPostHemo'])->name('treatment.fillPostHemo');
+    Route::post('/treatment/fill/evaluation', [TreatmentController::class, 'fillEvaluation'])->name('treatment.fillEvaluation');
 });
