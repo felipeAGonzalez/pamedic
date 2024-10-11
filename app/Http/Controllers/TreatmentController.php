@@ -64,21 +64,22 @@ class TreatmentController extends Controller
                 return view('treatment.formTransH', compact('transHemodialysis'));
             }
         for ($i=0; $i <13 ; $i++) {
-            TransHemodialysis::create([
-                'patient_id' => $id,
-                'time' => date('H:i', strtotime($hour) + ($i * 15 * 60)),
-                'arterial_pressure' => 0,
-                'mean_pressure' => 0,
-                'heart_rate' => 0,
-                'respiratory_rate' => 0,
-                'temperature' => 0,
-                'arterial_pressure_monitor' => 0,
-                'venous_pressure_monitor' => 0,
-                'transmembrane_pressure_monitor' => 0,
-                'blood_flow' => 0,
-                'ultrafiltration' => 0,
-                'heparin' => 0,
-                'observations' => 0,            ]);
+                TransHemodialysis::create([
+                    'patient_id' => $id,
+                    'time' => date('H:i', strtotime($hour) + ($i * 15 * 60)),
+                    'arterial_pressure' => 0,
+                    'mean_pressure' => 0,
+                    'heart_rate' => 0,
+                    'respiratory_rate' => 0,
+                    'temperature' => 0,
+                    'arterial_pressure_monitor' => 0,
+                    'venous_pressure_monitor' => 0,
+                    'transmembrane_pressure_monitor' => 0,
+                    'blood_flow' => 0,
+                    'ultrafiltration' => 0,
+                    'heparin' => 0,
+                    'observations' => 0
+                ]);
             }
             $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('time','ASC')->get();
             return view('treatment.formTransH', compact('transHemodialysis'));
@@ -116,9 +117,7 @@ class TreatmentController extends Controller
             'allergy' => 'required|string',
             'diagnostic' => 'required|string',
         ]);
-        // if ($request->input('date_hour') == today()->format('Y-m-d')) {
-        //     \Log::info('Today');
-        // }
+
         $dialysisMonitoring = new DialysisMonitoring();
         $dialysisMonitoring->patient_id  = $request->input('patient_id');
         $dialysisMonitoring->date_hour = $request->input('date_hour');
@@ -219,7 +218,6 @@ class TreatmentController extends Controller
 
     }
     public function fillTransHemo(Request $request){
-        // \Log::info($request->all());
 
         $validator = $request->validate([
             'time.*' => 'required|date_format:H:i',
@@ -288,5 +286,25 @@ class TreatmentController extends Controller
         $postHemoDialysis->fall_risk = $request->input('fall_risk');
         $postHemoDialysis->save();
         return redirect()->route('treatment.index')->with('success', 'Datos de guardados exitosamente');
+    }
+    public function fillEvaluation(Request $request){
+        $validator = $request->validate([
+            'fall_risk' => 'required|numeric',
+            'fall_risk_date' => 'required|date',
+            'fall_risk_time' => 'required|date_format:H:i',
+            'fall_risk_nurse' => 'required|string',
+            'fall_risk_nurse_time' => 'required|date_format:H:i',
+            'fall_risk_nurse_date' => 'required|date',
+            'fall_risk_nurse_observations' => 'required|string',
+            'fall_risk_nurse_intervention' => 'required|string',
+            'fall_risk_nurse_intervention_time' => 'required|date_format:H:i',
+            'fall_risk_nurse_intervention_date' => 'required|date',
+            'fall_risk_nurse_intervention_observations' => 'required|string',
+            'fall_risk_nurse_intervention_result' => 'required|string',
+            'fall_risk_nurse_intervention_result_time' => 'required|date_format:H:i',
+            'fall_risk_nurse_intervention_result_date' => 'required|date',
+            'fall_risk_nurse_intervention_result_observations' => 'required|string',
+            'fall_risk_nurse_intervention_result_intervention' => 'required|string',
+        ]);
     }
 }

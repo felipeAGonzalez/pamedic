@@ -10,6 +10,7 @@ class EvaluationRisk extends Model
 
     protected $fillable = [
         'patient_id',
+        'fase',
         'hour',
         'result',
         'fall_risk_trans',

@@ -55,7 +55,7 @@
 <div class="row">
         <div class="col-md-12">
             <button type="submit" class="btn btn-primary">Continuar</button>
-        <a href="{{ route('patients.index') }}" class="btn btn-info">Volver</a>
+            <a href="{{ route('treatment.index') }}" class="btn btn-info">Volver</a>
 
         </div>
     </div>
