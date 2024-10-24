@@ -219,8 +219,9 @@ class TreatmentController extends Controller
     }
     public function fillTransHemo(Request $request){
 
+        \Log::info($request->all());
         $validator = $request->validate([
-            'time.*' => 'required|date_format:H:i',
+            'time.*' => 'required|date_format:H:i:s',
             'arterial_pressure.*' => 'required|string',
             'mean_pressure.*' => 'required|numeric',
             'heart_rate.*' => 'required|numeric',
@@ -234,10 +235,10 @@ class TreatmentController extends Controller
             'heparin.*' => 'required|numeric',
             'observations.*' => 'required|string',
         ]);
-
         foreach ($request->input('time') as $key => $value) {
             TransHemodialysis::updateOrCreate(
-            ['patient_id' => $request->input('patient_id'), 'time' => $value],
+            ['patient_id' => $request->input('patient_id'),
+             'time' => $value],
             [
                 'arterial_pressure' => floatval($request->input('arterial_pressure')[$key]),
                 'mean_pressure' => $request->input('mean_pressure')[$key],

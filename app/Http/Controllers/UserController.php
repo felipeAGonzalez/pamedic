@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
     private $position = [
-        "DIRECTIVE" => "Directivo",
-        "MANAGER" => "Encargado",
-        "RECEPTIONIST" => "Recepcionista",
+        "DIRECTIVE" => "Medico",
+        "MANAGER" => "Jefe de Enfermería",
+        "RECEPTIONIST" => "Enfermero",
     ];
 
     public function index()
@@ -42,7 +42,7 @@ class UserController extends Controller
             'shift' => 'required',
             'email' => 'required|email|unique:users,email',
         ]);
-        $user = User::create(array_merge($request->all(),['password'=>'befit','need_change' => true]));
+        $user = User::create(array_merge($request->all(),['password'=>'pamedic','need_change' => true]));
         if (! $user) {
             return redirect()->back()->withErrors($validator)->withInput();
         }

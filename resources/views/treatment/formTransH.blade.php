@@ -77,17 +77,17 @@
             </div>
             <button type="submit" class="btn btn-primary">Guardar</button>
             <a href="{{ route('treatment.index') }}" class="btn btn-info">Volver</a>
+            @if ($errors->any())
+                <div class="alert2 alert2-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ __($error) }}<br></li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         </form>
         </div>
 
 
-@if ($errors->any())
-    <div class="alert2 alert2-danger">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ __($error) }}<br></li>
-            @endforeach
-        </ul>
-    </div>
-@endif
 @endsection

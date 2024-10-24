@@ -120,7 +120,6 @@
         <button type="submit" class="btn btn-primary">Continuar y Guardar</button>
         <a href="{{ route('treatment.index') }}" class="btn btn-info">Volver</a>
         </div>
-        </form>
         @if ($errors->any())
                 <div class="alert2 alert2-danger">
                     <ul>
@@ -130,4 +129,5 @@
                         </ul>
                     </div>
             @endif
+        </form>
 @endsection

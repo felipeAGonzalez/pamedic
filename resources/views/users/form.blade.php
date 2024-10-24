@@ -14,14 +14,6 @@
             </div>
 
             <div class="form-group">
-                <label for="shift">Seleccione un turno:</label>
-                <select name="shift" class="form-select" id="shift">
-                    <option value="none" {{ $user->shift === 'none' ? 'selected' : '' }}>No aplica</option>
-                    <option value='Morning' {{ $user->shift === 'Morning' ? 'selected' : '' }}>Matutino</option>
-                    <option value='Afternoon' {{ $user->shift === 'Afternoon' ? 'selected' : '' }}>Vespertino</option>
-                </select>
-            </div>
-            <div class="form-group">
                 <label for="position">Seleccione un cargo:</label>
                 <select name="position" class="form-select" id="position">
                     <option value="" disabled>Seleccione una opción</option>

@@ -89,4 +89,6 @@ Route::group(['middleware'=>['auth']],function () {
     Route::post('/treatment/fill/trans-hemo', [TreatmentController::class, 'fillTransHemo'])->name('treatment.fillTransHemo');
     Route::post('/treatment/fill/post-hemo', [TreatmentController::class, 'fillPostHemo'])->name('treatment.fillPostHemo');
     Route::post('/treatment/fill/evaluation', [TreatmentController::class, 'fillEvaluation'])->name('treatment.fillEvaluation');
+
+    Route::get('/treatment/{id}', [TreatmentController::class, 'show'])->name('treatment.show');
 });
