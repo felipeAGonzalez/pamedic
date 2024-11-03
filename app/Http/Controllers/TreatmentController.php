@@ -11,6 +11,7 @@ use App\Models\TransHemodialysis;
 use App\Models\PreHemodialysis;
 use App\Models\PostHemoDialysis;
 use App\Models\EvaluationRisk;
+use App\Models\NurseEvaluation;
 
 class TreatmentController extends Controller
 {
@@ -95,11 +96,53 @@ class TreatmentController extends Controller
     }
     public function createEvaluation(Request $request,$id)
     {
-        $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
-        if ($evaluationRisk) {
+        $fase = [0 => 'Pre-Hemodiálisis',
+                 1 => 'Trans-Hemodiálisis',
+                 2 => 'Post-Hemodiálisis'
+                ];
+
+        $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  0])->orderBy('hour','ASC')->get();
+        if (($evaluationRisk->count() > 0)) {
             return view('treatment.formEvaluation', compact('evaluationRisk'));
+            }
+            $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('date_hour','ASC')->first();
+        if (!$dialysisMonitoring) {
+            return redirect()->route('treatment.index')->with('error', 'Primero debe llenar el monitoreo de diálisis');
         }
-        return view('treatment.formEvaluation', compact('id'));
+        $hour = date('H:i', strtotime($dialysisMonitoring->date_hour));
+        for ($i=0; $i < 3 ; $i++) {
+            EvaluationRisk::create([
+                	'patient_id' => $id,
+                	'fase' => $fase[$i],
+                    'hour' => date('H:i', strtotime($hour) + ($i * 60 * 60)),
+                	'result' => '0',
+                	'fall_risk_trans' => 'low'
+                ]);
+            }
+            $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  0])->orderBy('hour','ASC')->get();
+            return view('treatment.formEvaluation', compact('evaluationRisk'));
+    }
+    public function createEvaluationNurse(Request $request,$id)
+    {
+       $fase = [ 0 => 'Pre-Hemodiálisis',
+                 1 => 'Trans-Hemodiálisis',
+                 2 => 'Post-Hemodiálisis'
+                ];
+
+        $nurseValo = NurseEvaluation::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
+        if (($nurseValo->count() > 0)) {
+            return view('treatment.formNurseValo', compact('nurseValo'));
+            }
+        for ($i=0; $i < 3 ; $i++) {
+            NurseEvaluation::create([
+                	'patient_id' => $id,
+                    'nurse_valuation' => '',
+                	'fase' => $fase[$i],
+                    'nurse_intervention' => '',
+                ]);
+            }
+            $nurseValo = NurseEvaluation::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
+            return view('treatment.formNurseValo', compact('nurseValo'));
     }
     public function fill(Request $request)
     {
@@ -219,7 +262,6 @@ class TreatmentController extends Controller
     }
     public function fillTransHemo(Request $request){
 
-        \Log::info($request->all());
         $validator = $request->validate([
             'time.*' => 'required|date_format:H:i:s',
             'arterial_pressure.*' => 'required|string',
@@ -255,8 +297,6 @@ class TreatmentController extends Controller
             ]
             );
         }
-
-
         return redirect()->route('treatment.index')->with('success', 'Datos de guardados exitosamente');
     }
     public function fillPostHemo(Request $request){
@@ -289,23 +329,46 @@ class TreatmentController extends Controller
         return redirect()->route('treatment.index')->with('success', 'Datos de guardados exitosamente');
     }
     public function fillEvaluation(Request $request){
+
         $validator = $request->validate([
-            'fall_risk' => 'required|numeric',
-            'fall_risk_date' => 'required|date',
-            'fall_risk_time' => 'required|date_format:H:i',
-            'fall_risk_nurse' => 'required|string',
-            'fall_risk_nurse_time' => 'required|date_format:H:i',
-            'fall_risk_nurse_date' => 'required|date',
-            'fall_risk_nurse_observations' => 'required|string',
-            'fall_risk_nurse_intervention' => 'required|string',
-            'fall_risk_nurse_intervention_time' => 'required|date_format:H:i',
-            'fall_risk_nurse_intervention_date' => 'required|date',
-            'fall_risk_nurse_intervention_observations' => 'required|string',
-            'fall_risk_nurse_intervention_result' => 'required|string',
-            'fall_risk_nurse_intervention_result_time' => 'required|date_format:H:i',
-            'fall_risk_nurse_intervention_result_date' => 'required|date',
-            'fall_risk_nurse_intervention_result_observations' => 'required|string',
-            'fall_risk_nurse_intervention_result_intervention' => 'required|string',
+            'fase.*' => 'required|string',
+            'hour.*' => 'required|date_format:H:i:s',
+            'result.*' => 'required|numeric',
+            // 'fall_risk_trans.*' => 'required|string',
         ]);
+
+        foreach ($request->input('hour') as $key => $value) {
+            EvaluationRisk::updateOrCreate(
+            ['patient_id' => $request->input('patient_id')[$key],
+             'hour' => $value],
+            [
+            'fase' => $request->input('fase')[$key],
+            'result' => $request->input('score')[$key],
+            // 'fall_risk_trans' => $request->input('fall_risk_trans')[$key] ?? null,
+            ]
+            );
+        }
+        return redirect()->route('treatment.index')->with('success', 'Datos de guardados exitosamente');
     }
+
+    public function fillNurseEvaluation(Request $request){
+         \Log::info($request->all());
+        $validator = $request->validate([
+            'fase.*' => 'required|string',
+            'nurse_valuation.*' => 'required|string',
+            'nurse_intervention.*' => 'required|string',
+        ]);
+        foreach ($request->input('fase') as $key => $value) {
+            NurseEvaluation::updateOrCreate(
+            ['patient_id' => $request->input('patient_id')[$key],
+             'fase' => $value],
+            [
+            'nurse_valuation' => $request->input('nurse_valuation')[$key],
+            'nurse_intervention' => $request->input('nurse_intervention')[$key],
+            ]
+            );
+        }
+        return redirect()->route('treatment.index')->with('success', 'Datos de guardados exitosamente');
+    }
+
 }

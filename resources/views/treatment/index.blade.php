@@ -3,6 +3,20 @@
 @section('content')
     <div class="container">
         <h2>Pacientes a tratamiento con {{$user->name}} </h2>
+        @if ($errors->any())
+                <div class="alert2 alert2-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ __($error) }}<br></li>
+                        @endforeach
+                        </ul>
+                    </div>
+            @endif
+    @if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
         <div class="table-responsive">
         <table class="table mt-4">
          <thead class="table-dark">
@@ -37,7 +51,7 @@
                                     <a href="{{ route('treatment.createTransHemo', ['id' => $patient->id]) }}" class="btn btn-danger">Trans-Hemodialisis</a>
                                     <a href="{{ route('treatment.createPostHemo', ['id' => $patient->id]) }}" class="btn btn-warning">Post-Hemodialisis</a>
                                     <a href="{{ route('treatment.createEvaluation', ['id' => $patient->id]) }}" class="btn btn-secondary">Evaluación</a>
-                                    <a href="{{ route('treatment.createEvaluation', ['id' => $patient->id]) }}" class="btn btn-secondary">Valoración de enfermería</a>
+                                    <a href="{{ route('treatment.createEvaluationNurse', ['id' => $patient->id]) }}" class="btn btn-secondary">Valoración de enfermería</a>
                                 </div>
                             </div>
                         </td>
@@ -51,18 +65,5 @@
     </div>
         </div>
     </div>
-    @if ($errors->any())
-                <div class="alert2 alert2-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ __($error) }}<br></li>
-                        @endforeach
-                        </ul>
-                    </div>
-            @endif
-    @if(session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-@endif
+
 @endsection

@@ -1,24 +1,27 @@
 @extends('layouts.app')
-
 @section('content')
-<form action="{{ route('treatment.fillEvaluation') }}" method="POST">
-<div class="form-group">
+<form action="{{ route('treatment.fillNurseEvaluation') }}" method="POST" class="row">
+@csrf
+@foreach ($nurseValo as $evaluation)
+<div class="col-md-3  mx-auto">
+        <h3>{{$evaluation['fase']}}</h3>
+        <input type="hidden" name="fase[]" id="fase" class="form-control" value="{{$evaluation['fase']}}">
+
+        <input type="hidden" name="patient_id[]" id="patient_id" class="form-control" value="{{ $evaluation['patient_id'] }}">
+
         <label for="nurse_valuation">Valoración de Enfermería</label>
-        <input type="text" name="nurse_valuation" id="nurse_valuation" class="form-control" required>
-    </div>
+        <textarea name="nurse_valuation[]" id="nurse_valuation" class="form-control" required></textarea>
 
-    <div class="form-group">
-        <label for="fase">Fase</label>
-        <input type="text" name="fase" id="fase" class="form-control" required>
-    </div>
-
-    <div class="form-group">
         <label for="nurse_intervention">Intervención de Enfermería</label>
-        <input type="text" name="nurse_intervention" id="nurse_intervention" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Enviar</button>
+        <textarea name="nurse_intervention[]" id="nurse_intervention" class="form-control" required></textarea>
+        <br>
+</div>
+
+@endforeach
+<div class="col-md-6">
+    <button type="submit" class="btn btn-primary">Guardar</button>
     <a href="{{ route('treatment.index') }}" class="btn btn-info">Volver</a>
-</form>
+</div>
 @if ($errors->any())
     <div class="alert2 alert2-danger">
         <ul>

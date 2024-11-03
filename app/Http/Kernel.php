@@ -67,5 +67,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'position' => \App\Http\Middleware\CheckRole::class,
         'token.expired' => \App\Http\Middleware\RedirectIfTokenExpired::class,
+        'token.valid' => \App\Http\Middleware\EnsureTokenIsValid::class,
     ];
 }

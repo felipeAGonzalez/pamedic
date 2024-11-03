@@ -82,6 +82,7 @@ Route::group(['middleware'=>['auth']],function () {
     Route::get('/treatment/create/trans-hemo/{id}', [TreatmentController::class, 'createTransHemo'])->name('treatment.createTransHemo');
     Route::get('/treatment/create/post-hemo/{id}', [TreatmentController::class, 'createPostHemo'])->name('treatment.createPostHemo');
     Route::get('/treatment/create/evaluation/{id}', [TreatmentController::class, 'createEvaluation'])->name('treatment.createEvaluation');
+    Route::get('/treatment/create/evaluationN/{id}', [TreatmentController::class, 'createEvaluationNurse'])->name('treatment.createEvaluationNurse');
 
     Route::post('/treatment/fill', [TreatmentController::class, 'fill'])->name('treatment.fill');
     Route::post('/treatment/fillPres', [TreatmentController::class, 'fillPres'])->name('treatment.fillPres');
@@ -89,6 +90,7 @@ Route::group(['middleware'=>['auth']],function () {
     Route::post('/treatment/fill/trans-hemo', [TreatmentController::class, 'fillTransHemo'])->name('treatment.fillTransHemo');
     Route::post('/treatment/fill/post-hemo', [TreatmentController::class, 'fillPostHemo'])->name('treatment.fillPostHemo');
     Route::post('/treatment/fill/evaluation', [TreatmentController::class, 'fillEvaluation'])->name('treatment.fillEvaluation');
+    Route::post('/treatment/fill/evaluationN', [TreatmentController::class, 'fillNurseEvaluation'])->name('treatment.fillNurseEvaluation');
 
     Route::get('/treatment/{id}', [TreatmentController::class, 'show'])->name('treatment.show');
 });
