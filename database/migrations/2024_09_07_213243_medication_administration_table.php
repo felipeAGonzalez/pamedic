@@ -15,14 +15,17 @@ return new class extends Migration
         $table->id();
         $table->unsignedBigInteger('patient_id')->comment('El ID del paciente asociado con el monitoreo de diálisis');
         $table->foreign('patient_id')->references('id')->on('patient');
-        $table->string('nurse_prepare')->comment('Nombre del enfermero/a encargado/a de preparar la medicación');
-        $table->string('nurse_admin')->comment('Nombre del enfermero/a encargado/a de administrar la medicación');
-        $table->string('medicine')->comment('Nombre del medicamento');
-        $table->enum('route_administration',['oral','intravenous','intramuscular','subcutaneous','intradermal','inhalation'])->comment('Vía de administración del medicamento');
+        $table->unsignedBigInteger('nurse_prepare_id')->comment('ID del enfermero/a encargado/a de preparar la medicación');
+        $table->foreign('nurse_prepare_id')->references('id')->on('users');
+        $table->unsignedBigInteger('nurse_admin_id')->comment('ID del enfermero/a encargado/a de administrar la medicación');
+        $table->foreign('nurse_admin_id')->references('id')->on('users');
+        $table->unsignedBigInteger('medicine_id')->comment('ID del medicamento a administrar');
+        $table->foreign('medicine_id')->references('id')->on('medicines');
         $table->string('dilution')->comment('Dilución del medicamento');
         $table->string('velocity')->comment('Velocidad de administración del medicamento');
         $table->time('hour')->comment('Hora de administración del medicamento');
         $table->date('due_date')->comment('Fecha de vencimiento del medicamento');
+        $table->boolean('history')->default(0)->comment('Estado de la administración del medicamento');
         $table->timestamps();
     });
     }

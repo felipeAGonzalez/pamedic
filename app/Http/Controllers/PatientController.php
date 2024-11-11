@@ -137,14 +137,4 @@ class PatientController extends Controller
 
         return redirect()->route('patients.show',$patient->id)->with('success', 'Paciente actualizado exitosamente');
     }
-    public function expedientPrint($id)
-    {
-        $patient = Patient::findOrFail($id);
-        $dialysisMonitoring = DialysisMonitoring::where('patient_id', $id)->get();
-        $dialysisPrescription = DialysisPrescription::where('patient_id', $id)->get();
-        $transHemodialysis = TransHemodialysis::where('patient_id', $id)->get();
-        $preHemodialysis = PreHemodialysis::where('patient_id', $id)->get();
-        $postHemoDialysis = PostHemoDialysis::where('patient_id', $id)->get();
-        return view('patients.form', compact('patient', 'dyalisisMonitoring', 'dyalisisPrescription', 'transHemodialysis', 'preHemodialysis', 'postHemoDialysis'));
-    }
 }

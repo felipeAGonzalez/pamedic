@@ -38,9 +38,9 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ url('/treatment') }}"><span style="color: #f8f9fa">Tratamiento</span></a>
             </li>
-            <!-- <li class="nav-item">
-                <a class="nav-link" href="{{ url('/patients') }}" ><span style="color: #f8f9fa">Pacientes</span></a>
-            </li> -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url('/print') }}" ><span style="color: #f8f9fa">Imprimir</span></a>
+            </li>
         </ul>
         <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -49,6 +49,7 @@
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{{ url('/users') }}">Usuarios</a>
                         <a class="dropdown-item" href="{{ url('/patients') }}">Pacientes</a>
+                        <a class="dropdown-item" href="{{ url('/medicines') }}">Medicamentos</a>
                     </div>
 
                 </li>

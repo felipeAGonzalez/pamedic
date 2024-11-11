@@ -31,10 +31,10 @@ return new class extends Migration
             $table->integer('conductivity')->comment('Conductividad');
             $table->integer('destrostix')->comment('Destrostix');
             $table->integer('itchiness')->comment('Picazón');
-            $table->boolean('pallor_skin')->comment('Palidez de la piel');
-            $table->boolean('edema')->comment('Edema');
+            $table->enum('pallor_skin', ['high', 'medium', 'low'])->comment('Palidez de la piel');
+            $table->enum('edema', ['high', 'medium', 'low'])->comment('Edema');
             $table->string('vascular_access_conditions')->comment('Condiciones de acceso vascular');
-            $table->boolean('fall_risk')->comment('Riesgo de caída');
+            $table->enum('fall_risk', ['high', 'medium', 'low'])->comment('Riesgo de caída');
             $table->text('observations')->comment('Observaciones');
             $table->boolean('history')->default(false);
             $table->timestamps();

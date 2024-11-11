@@ -41,7 +41,15 @@
                 <option value="antebrazo" {{ isset($dialysisMonitoring) && $dialysisMonitoring->implantation == 'antebrazo' ? 'selected' : '' }}>Antebrazo</option>
             </select>
         </div>
+        <div class="form-group">
+            <label for="machine_number">Número de Máquina:</label>
+            <input type="text" name="machine_number" id="machine_number" class="form-control" value="{{ $dialysisMonitoring->machine_number ?? '' }}">
+        </div>
 
+        <div class="form-group">
+            <label for="session_number">Número de Sesión:</label>
+            <input type="text" name="session_number" id="session_number" class="form-control" value="{{ $dialysisMonitoring->session_number ?? '' }}">
+        </div>
         <div class="form-group">
             <label for="needle_mesure">Medida de Aguja:</label>
             <input type="text" name="needle_mesure" id="needle_mesure" class="form-control" value="{{ $dialysisMonitoring->needle_mesure ?? '' }}">

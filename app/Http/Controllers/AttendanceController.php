@@ -29,7 +29,7 @@ class AttendanceController extends Controller
         $patients = $patients->get();
 
         if ($patients->isEmpty()) {
-            $error =
+            $error = ValidationException::withMessages(['Error' => 'Paciente no encontrado']);
             throw $error;
         }
         return view('attendance.index', compact('patients'));
@@ -59,7 +59,6 @@ class AttendanceController extends Controller
 
     public function list(Request $request){
         $activePatients = ActivePatient::where('active',1)->get();
-        \Log::info($activePatients);
 
         $patients = $activePatients->map(function ($activePatients) {
             return $activePatients->patient;

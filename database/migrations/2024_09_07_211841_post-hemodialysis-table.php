@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('respiratory_rate')->comment('frecuencia respiratoria');
             $table->string('heart_rate')->comment('frecuencia cardíaca');
             $table->string('weight_out')->comment('peso de salida');
-            $table->boolean('fall_risk')->default(false)->comment('riesgo de caída');
+            $table->enum('fall_risk', ['high', 'medium', 'low'])->comment('Riesgo de caída');
             $table->boolean('history')->default(false);
             $table->timestamps();
         });

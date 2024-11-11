@@ -7,7 +7,9 @@ use App\Http\Controllers\Auth\ResetOtherController as Reset;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TreatmentController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\PrintController;
 
 
 
@@ -59,6 +61,19 @@ Route::group(['middleware'=>['auth']],function () {
         Route::match(['get', 'post'],'password/view', [LoginController::class, 'password'])->name('password.view');
         Route::post('password/reset', [UserController::class, 'changePassword'])->name('password.update');
         Route::post('password/reset/{id}', [UserController::class, 'resetPassword'])->name('password.reset');
+
+        Route::get('/medicines', [MedicineController::class, 'index'])->name('medicines.index');
+        Route::get('/medicines/create', [MedicineController::class, 'create'])->name('medicines.create');
+        Route::post('/medicines', [MedicineController::class, 'store'])->name('medicines.store');
+        Route::get('/medicines/{id}/edit', [MedicineController::class, 'edit'])->name('medicines.edit');
+        Route::put('/medicines/{id}', [MedicineController::class, 'update'])->name('medicines.update');
+        Route::get('/medicines/{id}', [MedicineController::class, 'show'])->name('medicines.show');
+        Route::delete('/medicines/{id}', [MedicineController::class, 'destroy'])->name('medicines.destroy');
+
+        Route::get('/print', [PrintController::class, 'index'])->name('treatment.index');
+        Route::get('/print/search', [PrintController::class,'search'])->name('print.search');
+        Route::get('/print/expedient/{id}', [PrintController::class,'printNurseExpedient'])->name('print.printNurseExpedient');
+
     });
 
     Route::get('/patients/search', [PatientController::class,'search'])->name('patients.search');
@@ -83,6 +98,9 @@ Route::group(['middleware'=>['auth']],function () {
     Route::get('/treatment/create/post-hemo/{id}', [TreatmentController::class, 'createPostHemo'])->name('treatment.createPostHemo');
     Route::get('/treatment/create/evaluation/{id}', [TreatmentController::class, 'createEvaluation'])->name('treatment.createEvaluation');
     Route::get('/treatment/create/evaluationN/{id}', [TreatmentController::class, 'createEvaluationNurse'])->name('treatment.createEvaluationNurse');
+    Route::get('/treatment/create/medicine/{id}', [TreatmentController::class, 'createMedicineAdmin'])->name('treatment.createMedicineAdmin');
+    Route::get('/treatment/finalice/{id}', [TreatmentController::class, 'finaliceTreatment'])->name('treatment.finaliceTreatment');
+    Route::delete('/treatment/fill/{id}', [TreatmentController::class, 'destroy'])->name('treatment.destroy');
 
     Route::post('/treatment/fill', [TreatmentController::class, 'fill'])->name('treatment.fill');
     Route::post('/treatment/fillPres', [TreatmentController::class, 'fillPres'])->name('treatment.fillPres');
@@ -91,6 +109,6 @@ Route::group(['middleware'=>['auth']],function () {
     Route::post('/treatment/fill/post-hemo', [TreatmentController::class, 'fillPostHemo'])->name('treatment.fillPostHemo');
     Route::post('/treatment/fill/evaluation', [TreatmentController::class, 'fillEvaluation'])->name('treatment.fillEvaluation');
     Route::post('/treatment/fill/evaluationN', [TreatmentController::class, 'fillNurseEvaluation'])->name('treatment.fillNurseEvaluation');
+    Route::post('/treatment/fill/medicine', [TreatmentController::class, 'fillMedicineAdmin'])->name('treatment.fillMedicineAdmin');
 
-    Route::get('/treatment/{id}', [TreatmentController::class, 'show'])->name('treatment.show');
 });

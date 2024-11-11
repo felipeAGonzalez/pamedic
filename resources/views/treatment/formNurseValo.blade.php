@@ -10,10 +10,10 @@
         <input type="hidden" name="patient_id[]" id="patient_id" class="form-control" value="{{ $evaluation['patient_id'] }}">
 
         <label for="nurse_valuation">Valoración de Enfermería</label>
-        <textarea name="nurse_valuation[]" id="nurse_valuation" class="form-control" required></textarea>
+        <textarea name="nurse_valuation[]" id="nurse_valuation" class="form-control" required>{{ $evaluation['nurse_valuation'] }}</textarea>
 
         <label for="nurse_intervention">Intervención de Enfermería</label>
-        <textarea name="nurse_intervention[]" id="nurse_intervention" class="form-control" required></textarea>
+        <textarea name="nurse_intervention[]" id="nurse_intervention" class="form-control" required>{{ $evaluation['nurse_intervention'] }}</textarea>
         <br>
 </div>
 
