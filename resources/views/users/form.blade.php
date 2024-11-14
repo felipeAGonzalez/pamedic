@@ -24,7 +24,7 @@
             </div>
 
             <div class="form-group">
-                <label for="profesional_id">ID Profesional:</label>
+                <label for="profesional_id">Cédula Profesional:</label>
                 <input type="text" name="profesional_id" id="profesional_id" class="form-control" value="{{ old('profesional_id', isset($user) ? $user->profesional_id : '') }}">
             </div>
 
