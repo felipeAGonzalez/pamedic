@@ -12,8 +12,8 @@
                         <th>Tiempo</th>
                         <th>Presión Arterial</th>
                         <th>Presión Media</th>
-                        <th>Ritmo Cardíaco</th>
-                        <th>Ritmo Respiratorio</th>
+                        <th>Frecuencia Cardíaco</th>
+                        <th>Frecuencia Respiratorio</th>
                         <th>Temperatura</th>
                         <th>Monitor de Presión Arterial</th>
                         <th>Monitor de Presión Venosa</th>

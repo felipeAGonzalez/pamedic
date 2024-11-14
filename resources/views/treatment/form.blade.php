@@ -11,6 +11,15 @@
             <label for="date_hour">Fecha y Hora:</label>
             <input type="datetime-local" name="date_hour" id="date_hour" class="form-control"  value="{{ $dialysisMonitoring->date_hour ?? '' }}">
         </div>
+        <div class="form-group">
+            <label for="machine_number">Número de Máquina:</label>
+            <input type="text" name="machine_number" id="machine_number" class="form-control" value="{{ $dialysisMonitoring->machine_number ?? '' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="session_number">Número de Sesión:</label>
+            <input type="text" name="session_number" id="session_number" class="form-control" value="{{ $dialysisMonitoring->session_number ?? '' }}">
+        </div>
 
         <div class="form-group">
             <label for="vascular_access">Acceso Vascular:</label>
@@ -41,15 +50,7 @@
                 <option value="antebrazo" {{ isset($dialysisMonitoring) && $dialysisMonitoring->implantation == 'antebrazo' ? 'selected' : '' }}>Antebrazo</option>
             </select>
         </div>
-        <div class="form-group">
-            <label for="machine_number">Número de Máquina:</label>
-            <input type="text" name="machine_number" id="machine_number" class="form-control" value="{{ $dialysisMonitoring->machine_number ?? '' }}">
-        </div>
 
-        <div class="form-group">
-            <label for="session_number">Número de Sesión:</label>
-            <input type="text" name="session_number" id="session_number" class="form-control" value="{{ $dialysisMonitoring->session_number ?? '' }}">
-        </div>
         <div class="form-group">
             <label for="needle_mesure">Medida de Aguja:</label>
             <input type="text" name="needle_mesure" id="needle_mesure" class="form-control" value="{{ $dialysisMonitoring->needle_mesure ?? '' }}">
@@ -120,10 +121,33 @@
             <label for="allergy">Alergia:</label>
             <input type="text" name="allergy" id="allergy" class="form-control" value="{{ $dialysisMonitoring->allergy ?? '' }}">
         </div>
-
         <div class="form-group">
             <label for="diagnostic">Diagnóstico:</label>
-            <input type="text" name="diagnostic" id="diagnostic" class="form-control" value="{{ $dialysisMonitoring->diagnostic ?? '' }}">
+            <select name="diagnostic" id="diagnostic" class="form-control">
+            <option value="">Seleccionar</option>
+            <option value="B15 - Hepatitis aguda tipo A" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'B15 - Hepatitis aguda tipo A' ? 'selected' : '' }}>B15 - Hepatitis aguda tipo A</option>
+            <option value="B16 - Hepatitis aguda tipo B" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'B16 - Hepatitis aguda tipo B' ? 'selected' : '' }}>B16 - Hepatitis aguda tipo B</option>
+            <option value="B18 - Hepatitis viral crónica" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'B18 - Hepatitis viral crónica' ? 'selected' : '' }}>B18 - Hepatitis viral crónica</option>
+            <option value="B24 - Enfermedad por virus de la inmunodeficiencia humana [VIH], sin otra especificación" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'B24 - Enfermedad por virus de la inmunodeficiencia humana [VIH], sin otra especificación' ? 'selected' : '' }}>B24 - Enfermedad por virus de la inmunodeficiencia humana [VIH], sin otra especificación</option>
+            <option value="E10 - Diabetes mellitus insulinodependiente" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'E10 - Diabetes mellitus insulinodependiente' ? 'selected' : '' }}>E10 - Diabetes mellitus insulinodependiente</option>
+            <option value="E11 - Diabetes mellitus no insulinodependiente" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'E11 - Diabetes mellitus no insulinodependiente' ? 'selected' : '' }}>E11 - Diabetes mellitus no insulinodependiente</option>
+            <option value="E12 - Diabetes mellitus asociada con desnutrición" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'E12 - Diabetes mellitus asociada con desnutrición' ? 'selected' : '' }}>E12 - Diabetes mellitus asociada con desnutrición</option>
+            <option value="E13 - Otras diabetes mellitus especificadas" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'E13 - Otras diabetes mellitus especificadas' ? 'selected' : '' }}>E13 - Otras diabetes mellitus especificadas</option>
+            <option value="E14 - Diabetes mellitus, no especificada" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'E14 - Diabetes mellitus, no especificada' ? 'selected' : '' }}>E14 - Diabetes mellitus, no especificada</option>
+            <option value="E66 - Obesidad" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'E66 - Obesidad' ? 'selected' : '' }}>E66 - Obesidad</option>
+            <option value="I10 - Hipertensión esencial (primaria)" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'I10 - Hipertensión esencial (primaria)' ? 'selected' : '' }}>I10 - Hipertensión esencial (primaria)</option>
+            <option value="I11 - Enfermedad cardíaca hipertensiva" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'I11 - Enfermedad cardíaca hipertensiva' ? 'selected' : '' }}>I11 - Enfermedad cardíaca hipertensiva</option>
+            <option value="I12 - Enfermedad renal hipertensiva" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'I12 - Enfermedad renal hipertensiva' ? 'selected' : '' }}>I12 - Enfermedad renal hipertensiva</option>
+            <option value="I13 - Enfermedad cardiorrenal hipertensiva" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'I13 - Enfermedad cardiorrenal hipertensiva' ? 'selected' : '' }}>I13 - Enfermedad cardiorrenal hipertensiva</option>
+            <option value="I15 - Hipertensión secundaria" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'I15 - Hipertensión secundaria' ? 'selected' : '' }}>I15 - Hipertensión secundaria</option>
+            <option value="I95 - Hipotensión" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'I95 - Hipotensión' ? 'selected' : '' }}>I95 - Hipotensión</option>
+            <option value="N17 - Insuficiencia renal aguda" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'N17 - Insuficiencia renal aguda' ? 'selected' : '' }}>N17 - Insuficiencia renal aguda</option>
+            <option value="N18 - Insuficiencia renal crónica" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'N18 - Insuficiencia renal crónica' ? 'selected' : '' }}>N18 - Insuficiencia renal crónica</option>
+            <option value="N19 - Insuficiencia renal no especificada" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'N19 - Insuficiencia renal no especificada' ? 'selected' : '' }}>N19 - Insuficiencia renal no especificada</option>
+            <option value="Q60.3 - Hipoplasia renal, unilateral" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'Q60.3 - Hipoplasia renal, unilateral' ? 'selected' : '' }}>Q60.3 - Hipoplasia renal, unilateral</option>
+            <option value="Q60.4 - Hipoplasia renal, bilateral" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'Q60.4 - Hipoplasia renal, bilateral' ? 'selected' : '' }}>Q60.4 - Hipoplasia renal, bilateral</option>
+            <option value="Q60.5 - Hipoplasia renal, no especificada" {{ isset($dialysisMonitoring) && $dialysisMonitoring->diagnostic == 'Q60.5 - Hipoplasia renal, no especificada' ? 'selected' : '' }}>Q60.5 - Hipoplasia renal, no especificada</option>
+            </select>
         </div>
         <button type="submit" class="btn btn-primary">Continuar y Guardar</button>
         <a href="{{ route('treatment.index') }}" class="btn btn-info">Volver</a>

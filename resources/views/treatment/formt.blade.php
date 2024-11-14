@@ -20,11 +20,11 @@
                 <input type="text" class="form-control" id="mean_pressure" name="mean_pressure">
             </div>
             <div class="form-group">
-                <label for="heart_rate">Ritmo Cardíaco</label>
+                <label for="heart_rate">Frecuencia Cardíaco</label>
                 <input type="text" class="form-control" id="heart_rate" name="heart_rate">
             </div>
             <div class="form-group">
-                <label for="respiratory_rate">Ritmo Respiratorio</label>
+                <label for="respiratory_rate">Frecuencia Respiratorio</label>
                 <input type="text" class="form-control" id="respiratory_rate" name="respiratory_rate">
             </div>
             <div class="form-group">

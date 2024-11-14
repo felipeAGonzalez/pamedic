@@ -23,7 +23,7 @@ class PreHemodialysis extends Model
         'respiratory_rate',
         'oxygen_saturation',
         'conductivity',
-        'destrostix',
+        'dextrostix',
         'itchiness',
         'pallor_skin',
         'edema',

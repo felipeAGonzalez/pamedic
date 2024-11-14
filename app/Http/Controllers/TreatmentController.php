@@ -37,11 +37,22 @@ class TreatmentController extends Controller
     }
     public function create(Request $request,$id)
     {
-        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('date_hour','DESC')->first();
+        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->first();
         if ($dialysisMonitoring) {
             return view('treatment.form', compact('dialysisMonitoring'));
+        }else{
+            $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  1])->orderBy('date_hour','DESC')->first();
+            if ($dialysisMonitoring) {
+                $dialysisMonitoring = $dialysisMonitoring->replicate();
+                $dialysisMonitoring->date_hour = date('Y-m-d H:i');
+                $dialysisMonitoring->machine_number = "";
+                $dialysisMonitoring->session_number = $dialysisMonitoring->session_number + 1;
+                $dialysisMonitoring->history = 0;
+                $dialysisMonitoring->save();
+                return view('treatment.form', compact('dialysisMonitoring'));
+            }
+            return view('treatment.form', compact('id'));
         }
-        return view('treatment.form', compact('id'));
     }
     public function createPres(Request $request,$id)
     {
@@ -52,12 +63,33 @@ class TreatmentController extends Controller
         return view('treatment.formPres', compact('id'));
     }
     public function createPreHemo(Request $request,$id)
-    {
-        $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
-        if ($preHemodialysis) {
-            return view('treatment.formPreH', compact('preHemodialysis'));
+    {   $noReuse = 0;
+        $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  0])->first();
+        $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  0])->first();
+        if (!$dialysisPrescription) {
+            return redirect()->route('treatment.index')->with('error', 'Primero debe llenar la prescripción de diálisis');
         }
-        return view('treatment.formPreH', compact('id'));
+        if ($dialysisPrescription->type_dialyzer == 'F6ELISIO21H' || $dialysisPrescription->type_dialyzer == 'F6ELISIO19H') {
+            $noReuse = 1;
+        }
+        if ($preHemodialysis) {
+            return view('treatment.formPreH', compact('preHemodialysis','noReuse'));
+        }else{
+            $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
+            $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('created_at','DESC')->first();
+            if ($preHemodialysis) {
+                $newPreHemodialysis = $preHemodialysis->replicate();
+                $newPreHemodialysis->previous_initial_weight = $preHemodialysis->initial_weight;
+                $newPreHemodialysis->previous_final_weight = $postHemoDialysis->weight_out;
+                $newPreHemodialysis->previous_weight_gain = (double) $preHemodialysis->initial_weight - (double) $postHemoDialysis->weight_out;
+                //    $weight_gain = initial_weight - dry_weight
+                $newPreHemodialysis->history = 0;
+                $newPreHemodialysis->save();
+                $preHemodialysis = $newPreHemodialysis;
+                return view('treatment.formPreH', compact('preHemodialysis','noReuse'));
+            }
+        }
+        return view('treatment.formPreH', compact('id','noReuse'));
     }
     public function createTransHemo(Request $request,$id)
     {
@@ -183,24 +215,25 @@ class TreatmentController extends Controller
             'allergy' => 'required|string',
             'diagnostic' => 'required|string',
         ]);
-
-        $dialysisMonitoring = new DialysisMonitoring();
-        $dialysisMonitoring->patient_id  = $request->input('patient_id');
-        $dialysisMonitoring->date_hour = $request->input('date_hour');
-        $dialysisMonitoring->machine_number = $request->input('machine_number');
-        $dialysisMonitoring->session_number = $request->input('session_number');
-        $dialysisMonitoring->vascular_access = $request->input('vascular_access');
-        $dialysisMonitoring->catheter_type = $request->input('catheter_type');
-        $dialysisMonitoring->implantation = $request->input('implantation');
-        $dialysisMonitoring->needle_mesure = $request->input('needle_mesure');
-        $dialysisMonitoring->side = $request->input('side');
-        $dialysisMonitoring->collocation_date = $request->input('collocation_date');
-        $dialysisMonitoring->serology = $request->input('serology');
-        $dialysisMonitoring->serology_date = $request->input('serology_date');
-        $dialysisMonitoring->blood_type = $request->input('blood_type');
-        $dialysisMonitoring->allergy = $request->input('allergy');
-        $dialysisMonitoring->diagnostic = $request->input('diagnostic');
-        $dialysisMonitoring->save();
+        $dialysisMonitoring = DialysisMonitoring::updateOrCreate(
+            ['patient_id' => $request->input('patient_id'), 'history' => 0],
+            [
+                'date_hour' => $request->input('date_hour'),
+                'machine_number' => $request->input('machine_number'),
+                'session_number' => $request->input('session_number'),
+                'vascular_access' => $request->input('vascular_access'),
+                'catheter_type' => $request->input('catheter_type'),
+                'implantation' => $request->input('implantation'),
+                'needle_mesure' => $request->input('needle_mesure'),
+                'side' => $request->input('side'),
+                'collocation_date' => $request->input('collocation_date'),
+                'serology' => $request->input('serology'),
+                'serology_date' => $request->input('serology_date'),
+                'blood_type' => $request->input('blood_type'),
+                'allergy' => $request->input('allergy'),
+                'diagnostic' => $request->input('diagnostic'),
+            ]
+        );
 
         return redirect()->route('treatment.index')->with('success', 'Monitoreo de diálisis guardado exitosamente');
 
@@ -219,29 +252,32 @@ class TreatmentController extends Controller
             'sodium_profile' => 'required|string',
             'machine_temperature' => 'required|string',
         ]);
-        $dialysisPrescription = new DialysisPrescription();
-        $dialysisPrescription->patient_id  = $request->input('patient_id');
-        $dialysisPrescription->type_dialyzer = $request->input('type_dialyzer');
-        $dialysisPrescription->time = $request->input('time');
-        $dialysisPrescription->blood_flux = $request->input('blood_flux');
-        $dialysisPrescription->flux_dialyzer = $request->input('flux_dialyzer');
-        $dialysisPrescription->heparin = $request->input('heparin');
-        $dialysisPrescription->schedule_ultrafilter = $request->input('schedule_ultrafilter');
-        $dialysisPrescription->profile_ultrafilter = $request->input('profile_ultrafilter');
-        $dialysisPrescription->sodium_profile = $request->input('sodium_profile');
-        $dialysisPrescription->machine_temperature = $request->input('machine_temperature');
-        $dialysisPrescription->save();
+        $dialysisPrescription = DialysisPrescription::updateOrCreate(
+            ['patient_id' => $request->input('patient_id'), 'history' => 0],
+            [
+            'type_dialyzer' => $request->input('type_dialyzer'),
+            'time' => $request->input('time'),
+            'blood_flux' => $request->input('blood_flux'),
+            'flux_dialyzer' => $request->input('flux_dialyzer'),
+            'heparin' => $request->input('heparin'),
+            'schedule_ultrafilter' => $request->input('schedule_ultrafilter'),
+            'profile_ultrafilter' => $request->input('profile_ultrafilter'),
+            'sodium_profile' => $request->input('sodium_profile'),
+            'machine_temperature' => $request->input('machine_temperature'),
+            ]
+        );
 
         return redirect()->route('treatment.index')->with('success', 'Prescripción de diálisis guardada exitosamente');
     }
     public function fillPreHemo(Request $request){
+        \Log::info($request->all());
         $validator = $request->validate([
-            'previous_initial_weight' => 'required|numeric',
-            'previous_final_weight' => 'required|numeric',
-            'previous_weight_gain' => 'required|numeric',
+            'previous_initial_weight' => 'numeric',
+            'previous_final_weight' => 'numeric',
+            'previous_weight_gain' => 'numeric',
             'initial_weight' => 'required|numeric',
-            'dry_weight' => 'required|numeric',
-            'weight_gain' => 'required|numeric',
+            'dry_weight' => 'numeric',
+            'weight_gain' => 'numeric',
             'reuse_number' => 'required|numeric',
             'sitting_blood_pressure' => 'required|numeric',
             'standing_blood_pressure' => 'required|numeric',
@@ -250,38 +286,40 @@ class TreatmentController extends Controller
             'respiratory_rate' => 'required|numeric',
             'oxygen_saturation' => 'required|numeric',
             'conductivity' => 'required|numeric',
-            'destrostix' => 'required|numeric',
-            'itchiness' => 'required|numeric',
-            'pallor_skin' => 'required|numeric',
-            'edema' => 'required|numeric',
-            'vascular_access_conditions' => 'required|numeric',
-            'fall_risk' => 'required|numeric',
+            'destrostix' => '|numeric',
+            'pallor_skin' => 'required|in:low,medium,high',
+            'itchiness' => 'required|in:low,medium,high',
+            'edema' => 'required|in:low,medium,high',
+            'vascular_access_conditions' => 'required|string',
+            'fall_risk' => 'required|in:low,medium,high',
             'observations' => 'required|string',
         ]);
-        $preHemodialysis = new PreHemodialysis();
-        $preHemodialysis->patient_id  = $request->input('patient_id');
-        $preHemodialysis->previous_initial_weight = $request->input('previous_initial_weight');
-        $preHemodialysis->previous_final_weight = $request->input('previous_final_weight');
-        $preHemodialysis->previous_weight_gain = $request->input('previous_weight_gain');
-        $preHemodialysis->initial_weight = $request->input('initial_weight');
-        $preHemodialysis->dry_weight = $request->input('dry_weight');
-        $preHemodialysis->weight_gain = $request->input('weight_gain');
-        $preHemodialysis->reuse_number = $request->input('reuse_number');
-        $preHemodialysis->sitting_blood_pressure = $request->input('sitting_blood_pressure');
-        $preHemodialysis->standing_blood_pressure = $request->input('standing_blood_pressure');
-        $preHemodialysis->body_temperature = $request->input('body_temperature');
-        $preHemodialysis->heart_rate = $request->input('heart_rate');
-        $preHemodialysis->respiratory_rate = $request->input('respiratory_rate');
-        $preHemodialysis->oxygen_saturation = $request->input('oxygen_saturation');
-        $preHemodialysis->conductivity = $request->input('conductivity');
-        $preHemodialysis->destrostix = $request->input('destrostix');
-        $preHemodialysis->itchiness = $request->input('itchiness');
-        $preHemodialysis->pallor_skin = $request->input('pallor_skin');
-        $preHemodialysis->edema = $request->input('edema');
-        $preHemodialysis->vascular_access_conditions = $request->input('vascular_access_conditions');
-        $preHemodialysis->fall_risk = $request->input('fall_risk');
-        $preHemodialysis->observations = $request->input('observations');
-        $preHemodialysis->save();
+        $preHemodialysis = PreHemodialysis::updateOrCreate(
+            ['patient_id' => $request->input('patient_id'), 'history' => 0],
+            [
+            'previous_initial_weight' => $request->input('previous_initial_weight', 0),
+            'previous_final_weight' => $request->input('previous_final_weight',0),
+            'previous_weight_gain' => $request->input('previous_weight_gain',0),
+            'initial_weight' => $request->input('initial_weight'),
+            'dry_weight' => $request->input('dry_weight',0),
+            'weight_gain' => $request->input('weight_gain',0),
+            'reuse_number' => $request->input('reuse_number'),
+            'sitting_blood_pressure' => $request->input('sitting_blood_pressure'),
+            'standing_blood_pressure' => $request->input('standing_blood_pressure'),
+            'body_temperature' => $request->input('body_temperature'),
+            'heart_rate' => $request->input('heart_rate'),
+            'respiratory_rate' => $request->input('respiratory_rate'),
+            'oxygen_saturation' => $request->input('oxygen_saturation'),
+            'conductivity' => $request->input('conductivity'),
+            'dextrostix' => $request->input('dextrostix',0),
+            'itchiness' => $request->input('itchiness'),
+            'pallor_skin' => $request->input('pallor_skin'),
+            'edema' => $request->input('edema'),
+            'vascular_access_conditions' => $request->input('vascular_access_conditions'),
+            'fall_risk' => $request->input('fall_risk'),
+            'observations' => $request->input('observations'),
+            ]
+        );
         return redirect()->route('treatment.index')->with('success', 'Datos de la pre-diálisis guardada exitosamente');
 
     }
@@ -335,22 +373,24 @@ class TreatmentController extends Controller
             'respiratory_rate' => 'required|numeric',
             'heart_rate' => 'required|numeric',
             'weight_out' => 'required|numeric',
-            'fall_risk' => 'required|numeric',
+            'fall_risk' => 'required|string',
         ]);
 
-        $postHemoDialysis = new PostHemoDialysis();
-        $postHemoDialysis->patient_id  = $request->input('patient_id');
-        $postHemoDialysis->final_ultrafiltration = $request->input('final_ultrafiltration');
-        $postHemoDialysis->treated_blood = $request->input('treated_blood');
-        $postHemoDialysis->ktv = $request->input('ktv');
-        $postHemoDialysis->patient_temperature = $request->input('patient_temperature');
-        $postHemoDialysis->blood_pressure_stand = $request->input('blood_pressure_stand');
-        $postHemoDialysis->blood_pressure_sit = $request->input('blood_pressure_sit');
-        $postHemoDialysis->respiratory_rate = $request->input('respiratory_rate');
-        $postHemoDialysis->heart_rate = $request->input('heart_rate');
-        $postHemoDialysis->weight_out = $request->input('weight_out');
-        $postHemoDialysis->fall_risk = $request->input('fall_risk');
-        $postHemoDialysis->save();
+        $postHemoDialysis = PostHemoDialysis::updateOrCreate(
+            ['patient_id' => $request->input('patient_id'), 'history' => 0],
+            [
+            'final_ultrafiltration' => $request->input('final_ultrafiltration'),
+            'treated_blood' => $request->input('treated_blood'),
+            'ktv' => $request->input('ktv'),
+            'patient_temperature' => $request->input('patient_temperature'),
+            'blood_pressure_stand' => $request->input('blood_pressure_stand'),
+            'blood_pressure_sit' => $request->input('blood_pressure_sit'),
+            'respiratory_rate' => $request->input('respiratory_rate'),
+            'heart_rate' => $request->input('heart_rate'),
+            'weight_out' => $request->input('weight_out'),
+            'fall_risk' => $request->input('fall_risk'),
+            ]
+        );
         return redirect()->route('treatment.index')->with('success', 'Datos de guardados exitosamente');
     }
     public function fillEvaluation(Request $request){
@@ -405,16 +445,16 @@ class TreatmentController extends Controller
             'hour' => 'required|date_format:H:i',
             'due_date' => 'required|date',
         ]);
-        $medicineAdministration = new MedicationAdministration();
-        $medicineAdministration->patient_id  = $request->input('patient_id');
-        $medicineAdministration->nurse_prepare_id = $request->input('nurse_prepare_id');
-        $medicineAdministration->nurse_admin_id = $request->input('nurse_admin_id');
-        $medicineAdministration->medicine_id = $request->input('medicine_id');
-        $medicineAdministration->dilution = $request->input('dilution');
-        $medicineAdministration->velocity = $request->input('velocity');
-        $medicineAdministration->hour = $request->input('hour');
-        $medicineAdministration->due_date = $request->input('due_date');
-        $medicineAdministration->save();
+        $medicineAdministration = MedicationAdministration::updateOrCreate(
+            ['patient_id' => $request->input('patient_id'), 'medicine_id' => $request->input('medicine_id'), 'hour' => $request->input('hour')],
+            [
+            'nurse_prepare_id' => $request->input('nurse_prepare_id'),
+            'nurse_admin_id' => $request->input('nurse_admin_id'),
+            'dilution' => $request->input('dilution'),
+            'velocity' => $request->input('velocity'),
+            'due_date' => $request->input('due_date'),
+            ]
+        );
         $patient = Patient::where('id',$medicineAdministration->patient_id)->first();
         $medicineAdministration = MedicationAdministration::where(['patient_id' => $request->input('patient_id'), 'history' =>  0])
             ->whereDate('created_at', now())

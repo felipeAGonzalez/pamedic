@@ -129,7 +129,7 @@
         <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">FRECUENCIA RESPIRATORIA</td>
         <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">SATURACIÓN DE OXÍGENO</td>
         <td style="background-color: #e6e6e6; width: 5.25%; font-size: 7px;">CONDUCTIVIDAD</td>
-        <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">DESTROSTIX</td>
+        <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">DESTROSTIS</td>
         <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">PRURITO</td>
     </tr>
     <tr>
@@ -175,8 +175,8 @@
             <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Tiempo</th>
             <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Presión Arterial</th>
             <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Presión Media</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Ritmo Cardíaco</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Ritmo Respiratorio</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Frecuencia Cardíaco</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Frecuencia Respiratorio</th>
             <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Temperatura</th>
             <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Monitor de Presión Arterial</th>
             <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Monitor de Presión Venosa</th>
@@ -321,31 +321,31 @@
     </table>
         <table border=1 style="width: 100%;">
             <tr>
-            <td colspan=3 style="background-color: #e6e6e6; width: 100%; font-size: 12px;">Enfermero que prepara</td>
-            <td colspan=3 style="background-color: #e6e6e6; width: 100%; font-size: 12px;">Enfermero que administra</td>
+            <td colspan=3 style="background-color: #e6e6e6; width: 100%; font-size: 18px;">Enfermero que prepara</td>
+            <td colspan=3 style="background-color: #e6e6e6; width: 100%; font-size: 18px;">Enfermero que administra</td>
             </tr>
                 <tr>
-                    <td colspan=3 style="font-size: 12px;">{{ $medicineAdmin[0]->nurse_prepare->name }}</td>
-                    <td colspan=3 style="font-size: 12px;">{{ $medicineAdmin[0]->nurse_admin->name }}</td>
+                    <td colspan=3 style="font-size: 18px;">{{ $medicineAdmin[0]->nurse_prepare->name }}</td>
+                    <td colspan=3 style="font-size: 18px;">{{ $medicineAdmin[0]->nurse_admin->name }}</td>
                 </tr>
             <tr>
-                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 12px;">Medicamento</td>
-                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 12px;">Via de administración</td>
-                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 12px;">Dilución</td>
-                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 12px;">Velocidad</td>
-                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 12px;">Hora</td>
-                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 12px;">Fecha de Vencimiento</td>
+                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Medicamento</td>
+                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Via de administración</td>
+                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Dilución</td>
+                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Velocidad</td>
+                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Hora</td>
+                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Fecha de Vencimiento</td>
             </tr>
             <tr>
 
                 @foreach($medicineAdmin as $medication)
                     <tr>
-                        <td style="font-size: 12px;">{{ $medication->medicine->name }}</td>
-                        <td style="font-size: 12px;">{{ $medication->medicine->route_administration }}</td>
-                        <td style="font-size: 12px;">{{ $medication['dilution'] }}</td>
-                        <td style="font-size: 12px;">{{ $medication['velocity'] }}</td>
-                        <td style="font-size: 12px;">{{ date('H:i', strtotime($medication['hour'])) }}</td>
-                        <td style="font-size: 12px;">{{ date('Y-m-d', strtotime($medication['dueDate'])) }}</td>
+                        <td style="font-size: 18px;">{{ $medication->medicine->name }}</td>
+                        <td style="font-size: 18px;">{{ $medication->medicine->route_administration }}</td>
+                        <td style="font-size: 18px;">{{ $medication['dilution'] }}</td>
+                        <td style="font-size: 18px;">{{ $medication['velocity'] }}</td>
+                        <td style="font-size: 18px;">{{ date('H:i', strtotime($medication['hour'])) }}</td>
+                        <td style="font-size: 18px;">{{ date('Y-m-d', strtotime($medication['dueDate'])) }}</td>
                     </tr>
                 @endforeach
             </tr>

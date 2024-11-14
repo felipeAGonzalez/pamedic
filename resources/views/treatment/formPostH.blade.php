@@ -42,12 +42,16 @@
                 <input type="text" class="form-control" id="heart_rate" name="heart_rate" value="{{ old('heart_rate', $postHemoDialysis->heart_rate ?? '') }}">
             </div>
             <div class="form-group">
-                <label for="weight_out">Peso Saliente</label>
+                <label for="weight_out">Peso Final</label>
                 <input type="text" class="form-control" id="weight_out" name="weight_out" value="{{ old('weight_out', $postHemoDialysis->weight_out ?? '') }}">
             </div>
             <div class="form-group">
                 <label for="fall_risk">Riesgo de Caída</label>
-                <input type="text" class="form-control" id="fall_risk" name="fall_risk" value="{{ old('fall_risk', $postHemoDialysis->fall_risk ?? '') }}">
+                <select class="form-control" id="fall_risk" name="fall_risk">
+                    <option value="low" {{ old('fall_risk', $postHemoDialysis->fall_risk ?? '') == 'low' ? 'selected' : '' }}>Bajo</option>
+                    <option value="medium" {{ old('fall_risk', $postHemoDialysis->fall_risk ?? '') == 'medium' ? 'selected' : '' }}>Medio</option>
+                    <option value="high" {{ old('fall_risk', $postHemoDialysis->fall_risk ?? '') == 'high' ? 'selected' : '' }}>Alto</option>
+                </select>
             </div>
         </div>
     </div>
