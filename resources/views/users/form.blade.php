@@ -7,10 +7,25 @@
         @if(isset($user))
             @method('PUT')
         @endif
-        <div class = "col-md-6">
+        <div class="col-md-6">
             <div class="form-group">
                 <label for="name">Nombre:</label>
                 <input type="text" name="name" id="name" class="form-control" value="{{ old('name', isset($user) ? $user->name : '') }}">
+            </div>
+
+            <div class="form-group">
+                <label for="last_name_one">Primer Apellido:</label>
+                <input type="text" name="last_name_one" id="last_name_one" class="form-control" value="{{ old('last_name_one', isset($user) ? $user->last_name_one : '') }}">
+            </div>
+
+            <div class="form-group">
+                <label for="last_name_two">Segundo Apellido:</label>
+                <input type="text" name="last_name_two" id="last_name_two" class="form-control" value="{{ old('last_name_two', isset($user) ? $user->last_name_two : '') }}">
+            </div>
+
+            <div class="form-group">
+                <label for="profesional_id">ID Profesional:</label>
+                <input type="text" name="profesional_id" id="profesional_id" class="form-control" value="{{ old('profesional_id', isset($user) ? $user->profesional_id : '') }}">
             </div>
 
             <div class="form-group">
@@ -32,13 +47,13 @@
             <a href="{{ route('users.index') }}" class="btn btn-secondary">Cancelar</a>
         </div>
         @if ($errors->any())
-                <div class="alert2 alert2-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ __($error) }}<br></li>
-                        @endforeach
-                        </ul>
-                    </div>
-            @endif
+            <div class="alert2 alert2-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ __($error) }}<br></li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
     </form>
 @endsection

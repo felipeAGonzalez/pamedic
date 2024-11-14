@@ -39,7 +39,10 @@ class UserController extends Controller
     {
         $validator = $request->validate([
             'name' => 'required',
-            'shift' => 'required',
+            'last_name_one' => 'required',
+            'last_name_two' => 'required',
+            'profesional_id' => 'required',
+            'position' => 'required',
             'email' => 'required|email|unique:users,email',
         ]);
         $user = User::create(array_merge($request->all(),['password'=>'pamedic','need_change' => true]));
@@ -60,7 +63,10 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'nullable',
-            'shift' => 'nullable',
+            'last_name_one' => 'nullable',
+            'last_name_two' => 'nullable',
+            'profesional_id' => 'nullable',
+            'position' => 'nullable',
             'email' => 'nullable|email|unique:users,email,' . $id,
         ]);
         $data=$request->all();

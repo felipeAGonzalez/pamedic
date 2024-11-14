@@ -2,9 +2,10 @@
 
 return [
 'ROOT'=>'Super Usuario',
-'DIRECTIVE'=>'Directivo',
-'MANAGER'=>'Encargado',
+'DIRECTIVE'=>'Medico General',
+'MANAGER'=>'Calidad',
 'RECEPTIONIST'=>'Recepcionista',
+'NURSE'=>'Enfermero',
 'none'=>'No aplica',
 'catheter'=>'Catéter',
 'fistula'=>'Fístula',
