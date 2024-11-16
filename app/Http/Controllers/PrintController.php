@@ -65,7 +65,7 @@ class PrintController extends Controller
         $evaluationRisk = EvaluationRisk::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->get();
         $nurseValo = NurseEvaluation::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->get();
         $medicineAdmin = MedicationAdministration::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->get();
-        \Log::info($medicineAdmin->toArray());
+        \Log::info($evaluationRisk->toArray());
         $pdf = Pdf::loadView('print.paper', compact('patient', 'dialysisMonitoring', 'dialysisPrescription', 'transHemodialysis', 'preHemodialysis', 'postHemoDialysis','user','evaluationRisk','nurseValo','medicineAdmin'));
         return $pdf->stream('expediente.pdf');
     }

@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-<h1>Monitoreo Pre-Trans y Post Diálisis</h1>
+<h1>Monitoreo Pre-Trans y Post Diálisis </h1>
+<h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
+
 
 <form action="{{ route('treatment.fill') }}" method="POST" class="row">
     @csrf
@@ -110,8 +112,8 @@
             ["group" => "O", "rh_factor" => "Negativo"]
             ];
             foreach ($bloodTypes as $bloodType) {
-            $selected = (isset($dialysisMonitoring) && $dialysisMonitoring->blood_type == $bloodType['group'] . " " . $bloodType['rh_factor']) ? 'selected' : '';
-            echo "<option value='" . $bloodType['group'] ." ". $bloodType['rh_factor'] . "' $selected>" . $bloodType['group'] ." ". $bloodType['rh_factor'] . "</option>";
+                $selected = (isset($dialysisMonitoring) && $dialysisMonitoring->blood_type == $bloodType['group'] . " " . $bloodType['rh_factor']) ? 'selected' : '';
+                echo "<option value='" . $bloodType['group'] ." ". $bloodType['rh_factor'] . "' $selected>" . $bloodType['group'] ." ". $bloodType['rh_factor'] . "</option>";
             }
             ?>
             </select>

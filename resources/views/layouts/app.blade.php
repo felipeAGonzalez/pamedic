@@ -27,6 +27,9 @@
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
+    <div>
+        <a class="nav-link" href="{{ url('/') }}"><span style="color: #f8f9fa">{{ Auth::user()->name .' '. Auth::user()->last_name_one }}</span></a>
+    </div>
     <div class="collapse navbar-collapse" id="menu">
         <ul class="navbar-nav ms-auto">
             <li class="nav-item">

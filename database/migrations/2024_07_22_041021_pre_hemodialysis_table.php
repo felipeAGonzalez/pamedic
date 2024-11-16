@@ -29,7 +29,7 @@ return new class extends Migration
             $table->integer('respiratory_rate')->comment('Ritmo respiratorio');
             $table->integer('oxygen_saturation')->comment('Saturación de oxígeno');
             $table->integer('conductivity')->comment('Conductividad');
-            $table->integer('dextrostix')->comment('Destroxtis');
+            $table->string('dextrostix')->comment('Destroxtis');
             $table->enum('itchiness',['high', 'medium', 'low'])->comment('Prurito');
             $table->enum('pallor_skin', ['high', 'medium', 'low'])->comment('Palidez de la piel');
             $table->enum('edema', ['high', 'medium', 'low'])->comment('Edema');

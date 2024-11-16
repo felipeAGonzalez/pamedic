@@ -30,7 +30,7 @@
                         <td>{{ $patient->birth_date->format('d-m-Y')}}</td>
                         <td>{{ $patient->activePatient->active}}</td>
                         <td>
-                            <a href="{{ route('attendance.asigne', $patient->activePatient->id) }}" class="btn btn-success">Asignar Enfermero</a>
+                            <a href="{{ route('attendance.asigne', $patient->id) }}" class="btn btn-success">Asignar Enfermero</a>
                         </td>
                     </tr>
                 @endforeach

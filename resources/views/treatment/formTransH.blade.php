@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+<h1>TransHemodiálisis</h1>
+<h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
 <div class="container">
     <div class="row">
         <div class="col-md-12">
@@ -46,7 +48,7 @@
                                     <input type="number" name="respiratory_rate[]" value="{{ $item->respiratory_rate }}" class="form-control" required>
                                 </td>
                                 <td>
-                                    <input type="number" name="temperature[]" value="{{ $item->temperature }}" step="0.01" class="form-control" required>
+                                    <input type="number" name="temperature[]" value="{{ $item->temperature }}" step="0.1" min="35" class="form-control" required>
                                 </td>
                                 <td>
                                     <input type="number" name="arterial_pressure_monitor[]" value="{{ $item->arterial_pressure_monitor }}" class="form-control" required>

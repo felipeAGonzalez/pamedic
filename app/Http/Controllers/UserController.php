@@ -11,9 +11,10 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
     private $position = [
+        "DIRECTIVE" => "Calidad",
         "DIRECTIVE" => "Medico",
         "MANAGER" => "Jefe de Enfermería",
-        "RECEPTIONIST" => "Enfermero",
+        "NURSE" => "Enfermero",
     ];
 
     public function index()

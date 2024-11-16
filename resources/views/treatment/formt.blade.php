@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+<h1>TransHemodiálisis</h1>
+<h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
 <form  action="{{ route('treatment.fillTransHemo') }}" method="POST" class="row">
 <div class="container">
     <div class="row">

@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+<h1>Post Hemodiálisis</h1>
+<h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
 <form  action="{{ route('treatment.fillPostHemo') }}" method="POST" class="row">
 <div class="container">
     <div class="row">
@@ -24,12 +26,12 @@
                 <input type="text" class="form-control" id="patient_temperature" name="patient_temperature" value="{{ old('patient_temperature', $postHemoDialysis->patient_temperature ?? '') }}">
             </div>
             <div class="form-group">
-                <label for="blood_pressure_stand">Presión Arterial (De Pie)</label>
-                <input type="text" class="form-control" id="blood_pressure_stand" name="blood_pressure_stand" value="{{ old('blood_pressure_stand', $postHemoDialysis->blood_pressure_stand ?? '') }}">
-            </div>
-            <div class="form-group">
                 <label for="blood_pressure_sit">Presión Arterial (Sentado)</label>
                 <input type="text" class="form-control" id="blood_pressure_sit" name="blood_pressure_sit" value="{{ old('blood_pressure_sit', $postHemoDialysis->blood_pressure_sit ?? '') }}">
+            </div>
+            <div class="form-group">
+                <label for="blood_pressure_stand">Presión Arterial (De Pie)</label>
+                <input type="text" class="form-control" id="blood_pressure_stand" name="blood_pressure_stand" value="{{ old('blood_pressure_stand', $postHemoDialysis->blood_pressure_stand ?? '') }}">
             </div>
         </div>
         <div class="col-md-6">

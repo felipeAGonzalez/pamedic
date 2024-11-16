@@ -159,11 +159,11 @@
     <td style="background-color: #e6e6e6; width: 20%; font-size: 9px;">OBSERVACIONES</td>
 </tr>
 <tr>
-    <td>{{ __('web.'.$preHemodialysis['pallor_skin']) }}</td>
-    <td>{{ __('web.'.$preHemodialysis['edema']) }}</td>
-    <td>{{ $preHemodialysis['vascular_access_conditions'] }}</td>
-    <td>{{ __('web.'.$preHemodialysis['fall_risk']) }}</td>
-    <td>{{ $preHemodialysis['observations'] }}</td>
+    <td style="width: 20%; font-size: 12px;">{{ __('web.'.$preHemodialysis['pallor_skin']) }}</td>
+    <td style="width: 20%; font-size: 12px;">{{ __('web.'.$preHemodialysis['edema']) }}</td>
+    <td style="width: 20%; font-size: 12px;">{{ $preHemodialysis['vascular_access_conditions'] }}</td>
+    <td style="width: 20%; font-size: 12px;">{{ __('web.'.$preHemodialysis['fall_risk']) }}</td>
+    <td style="width: 20%; font-size: 12px;">{{ $preHemodialysis['observations'] }}</td>
 </tr>
 <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
         <h4 style="margin: 0;">TRANS-HEMODIÁLISIS</h4>
@@ -224,16 +224,16 @@
                 <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">RIESGO DE CAÍDA</td>
             </tr>
             <tr>
-                <td>{{ $postHemoDialysis['final_ultrafiltration'] }}</td>
-                <td>{{ $postHemoDialysis['treated_blood'] }}</td>
-                <td>{{ $postHemoDialysis['ktv'] }}</td>
-                <td>{{ $postHemoDialysis['patient_temperature'] }}</td>
-                <td>{{ $postHemoDialysis['blood_pressure_stand'] }}</td>
-                <td>{{ $postHemoDialysis['blood_pressure_sit'] }}</td>
-                <td>{{ $postHemoDialysis['respiratory_rate'] }}</td>
-                <td>{{ $postHemoDialysis['heart_rate'] }}</td>
-                <td>{{ $postHemoDialysis['weight_out'] }}</td>
-                <td>{{ __('web.'.$postHemoDialysis['fall_risk']) }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['final_ultrafiltration'] }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['treated_blood'] }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['ktv'] }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['patient_temperature'] }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['blood_pressure_stand'] }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['blood_pressure_sit'] }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['respiratory_rate'] }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['heart_rate'] }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['weight_out'] }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ __('web.'.$postHemoDialysis['fall_risk']) }}</td>
             </tr>
             <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
                     <h4 style="margin: 0;">ENFERMERO RESPONSABLE</h4>
@@ -241,13 +241,13 @@
         </table>
         <table border=1 style="width: 100%;">
             <tr>
-                <td>{{ $user['name'] }}</td>
-                <td>{{ $user['last_name_one'] }}</td>
-                <td>{{ $user['last_name_two'] }}</td>
-                <td>{{ $user['profesional_id'] }}</td>
-                <td></td>
-                <td>{{ date('H:i', strtotime($dialysisMonitoring['date_hour'])) }}</td>
-                <td>{{ date('H', strtotime($dialysisMonitoring['date_hour'])) < 14 ? 'Matutino' : 'Vespertino' }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ $user['name'] }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ $user['last_name_one'] }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ $user['last_name_two'] }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ $user['profesional_id'] }}</td>
+                <td style="width: 20%; font-size: 12px;"></td>
+                <td style="width: 20%; font-size: 12px;">{{ date('H:i', strtotime($dialysisMonitoring['date_hour'])) }}</td>
+                <td style="width: 20%; font-size: 12px;">{{ date('H', strtotime($dialysisMonitoring['date_hour'])) < 14 ? 'Matutino' : 'Vespertino' }}</td>
             </tr>
             <tr>
                 <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Nombre</td>
@@ -295,8 +295,8 @@
                 </table>
                 <table border=1 style="width: 100%;">
                 <tr>
-                    <td style="background-color: #e6e6e6; width: 75%;">RIESGO DE CAÍDAS TRANS</td>
-                    <td style="width:25%;">{{__('web.'.$evaluationRisk['fall_risk_trans'])}}</td>
+                    <td style="background-color: #e6e6e6; width: 75%; font-size: 12px;">RIESGO DE CAÍDAS TRANS</td>
+                    <td style="width:25%; font-size: 12px;">{{__('web.'.$evaluationRisk['fall_risk_trans'])}}</td>
                 </tr>
                 </table>
             </td>

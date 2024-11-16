@@ -2,6 +2,7 @@
 
 @section('content')
 <h1>Prescripción de Hemodiálisis</h1>
+<h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
 <form  action="{{ route('treatment.fillPres') }}" method="POST" class="row">
     <div class="row">
         @csrf

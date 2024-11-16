@@ -25,8 +25,6 @@
                     <th scope="col">Foto</th>
                     <th scope="col">Nombre</th>
                     <th scope="col">Género</th>
-                    <th scope="col">Fecha de nacimiento</th>
-                    <th scope="col">Fecha de ingreso</th>
                     <th scope="col">Acciones</th>
                 </tr>
             </thead>
@@ -41,18 +39,18 @@
                         </td>
                         <td>{{ $patient->name . ' ' . $patient->last_name . ' ' . $patient->last_name_two }}</td>
                         <td>{{ $patient->gender}}</td>
-                        <td>{{ $patient->birth_date->format('d-m-Y')}}</td>
-                        <td>{{ $patient->date_entry->format('d-m-Y')}}</td>
                         <td>
                         <div >
                                     <a href="{{ route('treatment.create', ['id' => $patient->id]) }}" class="btn btn-info">Pre-dialisis</a>
                                     <a href="{{ route('treatment.createPres', ['id' => $patient->id]) }}" class="btn btn-primary">Prescripción</a>
                                     <a href="{{ route('treatment.createPreHemo', ['id' => $patient->id]) }}" class="btn btn-success">Pre-Hemodiálisis</a>
                                     <a href="{{ route('treatment.createTransHemo', ['id' => $patient->id]) }}" class="btn btn-danger">Trans-Hemodialisis</a>
-                                    <a href="{{ route('treatment.createPostHemo', ['id' => $patient->id]) }}" class="btn btn-warning">Post-Hemodialisis</a>
                                     <a href="{{ route('treatment.createEvaluation', ['id' => $patient->id]) }}" class="btn btn-secondary">Evaluación</a>
                                     <a href="{{ route('treatment.createEvaluationNurse', ['id' => $patient->id]) }}" class="btn btn-secondary">Valoración de enfermería</a>
                                     <a href="{{ route('treatment.createMedicineAdmin', ['id' => $patient->id]) }}" class="btn btn-info">Ministración de medicamentos</a>
+                                    <a href="{{ route('treatment.createPostHemo', ['id' => $patient->id]) }}" class="btn btn-warning">Post-Hemodialisis</a>
+                                    <br>
+                                    <br>
                                     <br>
                                     <a href="{{ route('treatment.finaliceTreatment', ['id' => $patient->id]) }}" class="btn btn-success">Finalizar Tratamiento</a>
                                 </div>

@@ -1,5 +1,7 @@
 @extends('layouts.app')
 @section('content')
+<h1>Valoración de Enfermería</h1>
+<h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
 <form action="{{ route('treatment.fillNurseEvaluation') }}" method="POST" class="row">
 @csrf
 @foreach ($nurseValo as $evaluation)

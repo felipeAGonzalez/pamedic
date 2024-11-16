@@ -13,7 +13,7 @@
                     <tr>
                         <th><strong>Medicamento</strong></th>
                         <th><strong>Dilución</strong></th>
-                        <th><strong>Fecha</strong></th>
+                        <th><strong>Fecha de caducidad</strong></th>
                         <th><strong>Hora</strong></th>
                         <th><strong>Enfermero que Administró</strong></th>
                         <th><strong>Velocidad</strong></th>
@@ -42,7 +42,7 @@
                         <tr>
                             <th>Medicamento</th>
                             <th>Dilución</th>
-                            <th>Fecha</th>
+                            <th>Fecha de caducidad</th>
                             <th>Hora</th>
                             <th>Enfermero que Preparó</th>
                             <th>Enfermero que Administró</th>
@@ -71,7 +71,7 @@
                                     <option value="50ml">50ml</option>
                                 </select>
                             </td>
-                            <td><input type="date" class="form-control" id="due_date" name="due_date"></td>
+                            <td><input type="month" class="form-control" id="due_date" name="due_date"></td>
                             <td><input type="time" class="form-control" id="hour" name="hour"></td>
                             <td>
                                 <select class="form-control" id="nurse_prepare_id" name="nurse_prepare_id">

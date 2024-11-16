@@ -37,18 +37,24 @@ class AttendanceController extends Controller
     }
 
     public function register(Request $request, $id){
+        $patient = Patient::find($id);
         $existingPatient = ActivePatient::where(['patient_id' => $id,'active' => 1])->where('date', date('Y-m-d'))->first();
+        $existingTodayPatient = ActivePatient::where(['patient_id' => $id])->where('date', date('Y-m-d'))->first();
         $timezone = new DateTimeZone('America/Mexico_City');
         $date = new DateTime('now', $timezone);
-
-        if (! $existingPatient) {
+        if($existingTodayPatient){
+            $assignedPatient = NursePatient::where(['active_patient_id' => $existingTodayPatient->id,'history' => 0])->first();
+            if($assignedPatient)
+                $message = ValidationException::withMessages(['Error' => 'El paciente ya esta en tratamiento']);
+                throw $message;
+        }
+        if (! $existingPatient && ! $existingTodayPatient) {
             $activePatient = new ActivePatient();
             $activePatient->patient_id = $id;
             $activePatient->date = $date->format('Y-m-d');
             $activePatient->active = 1;
             $activePatient->save();
-            $message = ValidationException::withMessages(['Error' => 'Asistencia registrada correctamente']);
-            throw $message;
+            return redirect()->route('attendance.index')->with('message', 'Asistencia registrada correctamente');
         }
         $message = ValidationException::withMessages(['Error' => 'El paciente ya tiene asistencia registrada']);
             throw $message;
@@ -67,7 +73,7 @@ class AttendanceController extends Controller
     }
 
     public function asigne(Request $request,$id){
-        $activePatient = ActivePatient::where('id', $id)->where('active', 1)->first();
+        $activePatient = ActivePatient::where('patient_id', $id)->where('active', 1)->first();
         if ($activePatient) {
             $nursePatients = NursePatient::create([
                 'active_patient_id' => $activePatient->id,

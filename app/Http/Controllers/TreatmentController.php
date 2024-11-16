@@ -37,11 +37,12 @@ class TreatmentController extends Controller
     }
     public function create(Request $request,$id)
     {
-        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->first();
+        $patient = Patient::where('id',$id)->first();
+        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $patient->id, 'history' =>  0])->first();
         if ($dialysisMonitoring) {
-            return view('treatment.form', compact('dialysisMonitoring'));
+            return view('treatment.form', compact('dialysisMonitoring','patient'));
         }else{
-            $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  1])->orderBy('date_hour','DESC')->first();
+            $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $patient->id, 'history' =>  1])->orderBy('date_hour','DESC')->first();
             if ($dialysisMonitoring) {
                 $dialysisMonitoring = $dialysisMonitoring->replicate();
                 $dialysisMonitoring->date_hour = date('Y-m-d H:i');
@@ -49,21 +50,24 @@ class TreatmentController extends Controller
                 $dialysisMonitoring->session_number = $dialysisMonitoring->session_number + 1;
                 $dialysisMonitoring->history = 0;
                 $dialysisMonitoring->save();
-                return view('treatment.form', compact('dialysisMonitoring'));
+                return view('treatment.form', compact('dialysisMonitoring','patient'));
             }
-            return view('treatment.form', compact('id'));
+            return view('treatment.form', compact('patient','id'));
         }
     }
     public function createPres(Request $request,$id)
     {
+        $patient = Patient::where('id',$id)->first();
         $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
         if ($dialysisPrescription) {
-            return view('treatment.formPres', compact('dialysisPrescription'));
+            return view('treatment.formPres', compact('dialysisPrescription','patient'));
         }
-        return view('treatment.formPres', compact('id'));
+        return view('treatment.formPres', compact('id','patient'));
     }
     public function createPreHemo(Request $request,$id)
-    {   $noReuse = 0;
+    {
+        $patient = Patient::where('id',$id)->first();
+        $noReuse = 0;
         $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  0])->first();
         $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  0])->first();
         if (!$dialysisPrescription) {
@@ -73,7 +77,7 @@ class TreatmentController extends Controller
             $noReuse = 1;
         }
         if ($preHemodialysis) {
-            return view('treatment.formPreH', compact('preHemodialysis','noReuse'));
+            return view('treatment.formPreH', compact('preHemodialysis','noReuse','patient'));
         }else{
             $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
             $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('created_at','DESC')->first();
@@ -86,13 +90,19 @@ class TreatmentController extends Controller
                 $newPreHemodialysis->history = 0;
                 $newPreHemodialysis->save();
                 $preHemodialysis = $newPreHemodialysis;
-                return view('treatment.formPreH', compact('preHemodialysis','noReuse'));
+                return view('treatment.formPreH', compact('preHemodialysis','noReuse','patient'));
             }
         }
-        return view('treatment.formPreH', compact('id','noReuse'));
+        return view('treatment.formPreH', compact('id','noReuse','patient'));
     }
     public function createTransHemo(Request $request,$id)
     {
+        $patient = Patient::where('id',$id)->first();
+        $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+        if (!$dialysisPrescription) {
+            return redirect()->route('treatment.index')->with('error', 'Primero debe llenar la prescripción de diálisis');
+        }
+        $scheduleUltrafilter = floor($dialysisPrescription->schedule_ultrafilter / 12);
         $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('date_hour','DESC')->first();
         if (!$dialysisMonitoring) {
             return redirect()->route('treatment.index')->with('error', 'Primero debe llenar el monitoreo de diálisis');
@@ -100,7 +110,7 @@ class TreatmentController extends Controller
         $hour = date('H:i', strtotime($dialysisMonitoring->date_hour));
         $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('time','ASC')->get();
         if (($transHemodialysis->count() > 0)) {
-                return view('treatment.formTransH', compact('transHemodialysis'));
+                return view('treatment.formTransH', compact('transHemodialysis','patient'));
             }
         for ($i=0; $i <13 ; $i++) {
                 TransHemodialysis::create([
@@ -110,30 +120,32 @@ class TreatmentController extends Controller
                     'mean_pressure' => 0,
                     'heart_rate' => 0,
                     'respiratory_rate' => 0,
-                    'temperature' => 0,
+                    'temperature' => 35.5,
                     'arterial_pressure_monitor' => 0,
                     'venous_pressure_monitor' => 0,
                     'transmembrane_pressure_monitor' => 0,
                     'blood_flow' => 0,
-                    'ultrafiltration' => 0,
+                    'ultrafiltration' => $i * $scheduleUltrafilter,
                     'heparin' => 0,
-                    'observations' => 0
+                    'observations' => '',
                 ]);
             }
             $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('time','ASC')->get();
-            return view('treatment.formTransH', compact('transHemodialysis'));
+            return view('treatment.formTransH', compact('transHemodialysis','patient'));
         }
 
     public function createPostHemo(Request $request,$id)
     {
+        $patient = Patient::where('id',$id)->first();
         $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
         if ($postHemoDialysis) {
-            return view('treatment.formPostH', compact('postHemoDialysis'));
+            return view('treatment.formPostH', compact('postHemoDialysis','patient'));
         }
-        return view('treatment.formPostH', compact('id'));
+        return view('treatment.formPostH', compact('id','patient'));
     }
     public function createEvaluation(Request $request,$id)
     {
+        $patient = Patient::where('id',$id)->first();
         $fase = [0 => 'Pre-Hemodiálisis',
                  1 => 'Trans-Hemodiálisis',
                  2 => 'Post-Hemodiálisis'
@@ -142,7 +154,7 @@ class TreatmentController extends Controller
         $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  0])->orderBy('hour','ASC')->get();
         if (($evaluationRisk->count() > 0)) {
 
-            return view('treatment.formEvaluation', compact('evaluationRisk'));
+            return view('treatment.formEvaluation', compact('evaluationRisk','patient'));
             }
             $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('date_hour','ASC')->first();
         if (!$dialysisMonitoring) {
@@ -159,10 +171,11 @@ class TreatmentController extends Controller
                 ]);
             }
             $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  0])->orderBy('hour','ASC')->get();
-            return view('treatment.formEvaluation', compact('evaluationRisk'));
+            return view('treatment.formEvaluation', compact('evaluationRisk','patient'));
     }
     public function createEvaluationNurse(Request $request,$id)
     {
+       $patient = Patient::where('id',$id)->first();
        $fase = [ 0 => 'Pre-Hemodiálisis',
                  1 => 'Trans-Hemodiálisis',
                  2 => 'Post-Hemodiálisis'
@@ -170,7 +183,7 @@ class TreatmentController extends Controller
 
         $nurseValo = NurseEvaluation::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
         if (($nurseValo->count() > 0)) {
-            return view('treatment.formNurseValo', compact('nurseValo'));
+            return view('treatment.formNurseValo', compact('nurseValo','patient'));
             }
         for ($i=0; $i < 3 ; $i++) {
             NurseEvaluation::create([
@@ -181,7 +194,7 @@ class TreatmentController extends Controller
                 ]);
             }
             $nurseValo = NurseEvaluation::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
-            return view('treatment.formNurseValo', compact('nurseValo'));
+            return view('treatment.formNurseValo', compact('nurseValo','patient'));
     }
     public function createMedicineAdmin(Request $request,$id)
     {
@@ -248,8 +261,8 @@ class TreatmentController extends Controller
             'flux_dialyzer' => 'required|string',
             'heparin' => 'required|string',
             'schedule_ultrafilter' => 'required|string',
-            'profile_ultrafilter' => 'required|string',
-            'sodium_profile' => 'required|string',
+            'profile_ultrafilter' => 'nullable|string',
+            'sodium_profile' => 'nullable|string',
             'machine_temperature' => 'required|string',
         ]);
         $dialysisPrescription = DialysisPrescription::updateOrCreate(
@@ -279,8 +292,8 @@ class TreatmentController extends Controller
             'dry_weight' => 'numeric',
             'weight_gain' => 'numeric',
             'reuse_number' => 'required|numeric',
-            'sitting_blood_pressure' => 'required|numeric',
-            'standing_blood_pressure' => 'required|numeric',
+            'sitting_blood_pressure' => 'required|string',
+            'standing_blood_pressure' => 'required|string',
             'body_temperature' => 'required|numeric',
             'heart_rate' => 'required|numeric',
             'respiratory_rate' => 'required|numeric',
@@ -368,8 +381,8 @@ class TreatmentController extends Controller
             'treated_blood' => 'required|numeric',
             'ktv' => 'required|numeric',
             'patient_temperature' => 'required|numeric',
-            'blood_pressure_stand' => 'required|numeric',
-            'blood_pressure_sit' => 'required|numeric',
+            'blood_pressure_stand' => 'required|string',
+            'blood_pressure_sit' => 'required|string',
             'respiratory_rate' => 'required|numeric',
             'heart_rate' => 'required|numeric',
             'weight_out' => 'required|numeric',
@@ -394,10 +407,10 @@ class TreatmentController extends Controller
         return redirect()->route('treatment.index')->with('success', 'Datos de guardados exitosamente');
     }
     public function fillEvaluation(Request $request){
-
+        \Log::info($request->all());
         $validator = $request->validate([
             'fase.*' => 'required|string',
-            'hour.*' => 'required|date_format:H:i:s',
+            'hour.*' => 'required|date_format:H:i',
             'result.*' => 'required|numeric',
             // 'fall_risk_trans.*' => 'required|string',
         ]);
@@ -443,7 +456,7 @@ class TreatmentController extends Controller
             'dilution' => 'required|string',
             'velocity' => 'required|string',
             'hour' => 'required|date_format:H:i',
-            'due_date' => 'required|date',
+            'due_date' => 'required|date_format:Y-m',
         ]);
         $medicineAdministration = MedicationAdministration::updateOrCreate(
             ['patient_id' => $request->input('patient_id'), 'medicine_id' => $request->input('medicine_id'), 'hour' => $request->input('hour')],

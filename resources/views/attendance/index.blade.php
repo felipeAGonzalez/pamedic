@@ -21,7 +21,7 @@
                     <th>Foto</th>
                     <th>Numero de expediente</th>
                     <th>Nombre</th>
-                    <th>Fecha de Ingreso</th>
+                    <th>Fecha de nacimiento</th>
                     <th>Genero</th>
                     @if($patients)
                         <th>Acción</th>
@@ -47,7 +47,7 @@
                         </td>
                         <td>{{ $patient->expedient_number}}</td>
                         <td>{{ $patient->name . ' ' . $patient->last_name . ' ' . $patient->last_name_two}}</td>
-                        <td>{{ date('d/m/Y', strtotime($patient->date_entry))}}</td>
+                        <td>{{ date('d/m/Y', strtotime($patient->birth_date))}}</td>
                         <td>{{ $patient->gender}}</td>
                         <td>
                             <form action="{{ route('attendance.register', $patient->id) }}" method="POST">
@@ -68,10 +68,17 @@
                 </div>
             </div>
     </div>
-    @if(Session::has('message'))
-    <div class="alert2 alert2-danger">
+    @if(Session::has('success'))
+    <div class="alert2 alert2-success">
         <ul>
-            <li>{!! Session::get('message') !!}<br></li>
+            <li>{!! Session::get('success') !!}<br></li>
+        </ul>
+    </div>
+    @endif
+    @if(Session::has('message'))
+    <div class="alert2 alert-success">
+        <ul>
+            <li style="color: green;">{!! Session::get('message') !!}<br></li>
         </ul>
     </div>
     @endif
