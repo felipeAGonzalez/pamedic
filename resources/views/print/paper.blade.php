@@ -325,8 +325,8 @@
             <td colspan=3 style="background-color: #e6e6e6; width: 100%; font-size: 18px;">Enfermero que administra</td>
             </tr>
                 <tr>
-                    <td colspan=3 style="font-size: 18px;">{{ $medicineAdmin[0]->nurse_prepare->name }}</td>
-                    <td colspan=3 style="font-size: 18px;">{{ $medicineAdmin[0]->nurse_admin->name }}</td>
+                    <td colspan=3 style="font-size: 18px;">{{ !empty($medicineAdmin) ? $medicineAdmin[0]->nurse_prepare->name : 'Sin medicamentos' }}</td>
+                    <td colspan=3 style="font-size: 18px;">{{ !empty($medicineAdmin) ? $medicineAdmin[0]->nurse_admin->name : 'Sin medicamentos'}}</td>
                 </tr>
             <tr>
                 <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Medicamento</td>
@@ -338,16 +338,22 @@
             </tr>
             <tr>
 
-                @foreach($medicineAdmin as $medication)
+                @if(!empty($medicineAdmin))
+                    @foreach($medicineAdmin as $medication)
+                        <tr>
+                            <td style="font-size: 18px;">{{ $medication->medicine->name }}</td>
+                            <td style="font-size: 18px;">{{ $medication->medicine->route_administration }}</td>
+                            <td style="font-size: 18px;">{{ $medication['dilution'] }}</td>
+                            <td style="font-size: 18px;">{{ $medication['velocity'] }}</td>
+                            <td style="font-size: 18px;">{{ date('H:i', strtotime($medication['hour'])) }}</td>
+                            <td style="font-size: 18px;">{{ date('Y-m-d', strtotime($medication['dueDate'])) }}</td>
+                        </tr>
+                    @endforeach
+                @else
                     <tr>
-                        <td style="font-size: 18px;">{{ $medication->medicine->name }}</td>
-                        <td style="font-size: 18px;">{{ $medication->medicine->route_administration }}</td>
-                        <td style="font-size: 18px;">{{ $medication['dilution'] }}</td>
-                        <td style="font-size: 18px;">{{ $medication['velocity'] }}</td>
-                        <td style="font-size: 18px;">{{ date('H:i', strtotime($medication['hour'])) }}</td>
-                        <td style="font-size: 18px;">{{ date('Y-m-d', strtotime($medication['dueDate'])) }}</td>
+                        <td colspan="6" style="font-size: 18px; text-align: center;">Sin medicamentos</td>
                     </tr>
-                @endforeach
+                @endif
             </tr>
         </table>
 </body>
