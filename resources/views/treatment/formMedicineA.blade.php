@@ -1,12 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<form  action="{{ route('treatment.fillMedicineAdmin') }}" method="POST" class="row">
 <div class="container">
     <div class="row">
-    @csrf
-    @if(isset($medicineAdministration) && !empty($medicineAdministration))
-    <h3><strong>Medicina aplicada a paciente:</strong> {{ $patient->name.' '.$patient->last_name." ".$patient->last_name_two }}</h3>
+        @if(isset($medicineAdministration) && !empty($medicineAdministration))
+        <h3><strong>Medicina aplicada a paciente:</strong> {{ $patient->name.' '.$patient->last_name." ".$patient->last_name_two }}</h3>
         <div class="table-responsive">
             <table class="table">
                 <thead>
@@ -22,20 +20,28 @@
                 </thead>
                 <tbody>
                     @foreach($medicineAdministration as $administration)
-                        <tr>
-                            <td>{{ $administration->medicine->name }}</td>
-                            <td>{{ $administration['dilution'] }}</td>
-                            <td>{{ $administration['due_date'] }}</td>
-                            <td>{{ $administration['hour'] }}</td>
-                            <td>{{ $administration->nurse_admin->name }}</td>
-                            <td>{{ $administration['velocity'] }}</td>
-
-                        </tr>
+                    <tr>
+                        <td>{{ $administration->medicine->name }}</td>
+                        <td>{{ $administration['dilution'] }}</td>
+                        <td>{{ \Carbon\Carbon::parse($administration['due_date'])->format('m-Y') }}</td>
+                        <td>{{ $administration['hour'] }}</td>
+                        <td>{{ $administration->nurse_admin->name }}</td>
+                        <td>{{ $administration['velocity'] }}</td>
+                        <td>
+                            <form action="{{ route('treatment.destroy', $administration->id) }}" method="POST" style="display: inline-block;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Estás seguro de eliminar este medicamento?')">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
-    @endif
+        @endif
+ <form  action="{{ route('treatment.fillMedicineAdmin') }}" method="POST" class="row">
+  @csrf
             <div class="table-responsive">
                 <table class="table">
                     <thead>

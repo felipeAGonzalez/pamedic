@@ -69,7 +69,13 @@ class AttendanceController extends Controller
         $patients = $activePatients->map(function ($activePatients) {
             return $activePatients->patient;
         });
-        return view('attendance.treatment', compact('patients'));
+        $nursePatients = NursePatient::where('date', date('Y-m-d'))->get();
+        // // \Log::info($nursePatients->toArray());
+        // foreach ($nursePatients as $nursePatient) {
+        //     \Log::info($nursePatient->nurse->toArray());
+        //     \Log::info($nursePatient->active_patient->patient->toArray());
+        // }
+        return view('attendance.treatment', compact('patients','nursePatients'));
     }
 
     public function asigne(Request $request,$id){

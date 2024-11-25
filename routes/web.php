@@ -73,6 +73,7 @@ Route::group(['middleware'=>['auth']],function () {
         Route::get('/print', [PrintController::class, 'index'])->name('treatment.index');
         Route::get('/print/search', [PrintController::class,'search'])->name('print.search');
         Route::get('/print/expedient/{id}', [PrintController::class,'printNurseExpedient'])->name('print.printNurseExpedient');
+        Route::get('/print/expedient/{id}/date/{date}', [PrintController::class,'printNurseExpedient'])->name('print.printNurseExpedientDate');
 
     });
 

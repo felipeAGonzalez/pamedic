@@ -53,4 +53,8 @@ class User extends Authenticatable
     {
         return $this->belongsTo('App\Models\Subsidiary', 'subsidiary_id');
     }
+    public function assignedNurse()
+    {
+        return $this->belongsTo('App\Models\NursePatient', 'user_id');
+    }
 }

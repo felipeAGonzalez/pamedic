@@ -4,6 +4,21 @@
 
 <h1>Imprimir Hoja de Enfermería</h1>
 <h3>Se muestran por defecto los pacientes atendidos el día de hoy</h3>
+<div class="container">
+        @if ($errors->any())
+                <div class="alert2 alert2-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ __($error) }}<br></li>
+                        @endforeach
+                        </ul>
+                    </div>
+            @endif
+    @if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
         <div class="row">
             <div class="col-md-6">
                 <form action="{{ route('print.search') }}" method="GET" class="mb-3">
@@ -23,28 +38,27 @@
                     <th scope="col">Nombre</th>
                     <th scope="col">Género</th>
                     <th scope="col">Fecha de nacimiento</th>
-                    <th scope="col">Fecha de ingreso</th>
+                    <th scope="col">Fecha de ultima sesión</th>
                     <th scope="col">Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($patients as $patient)
+                @foreach($activePatients as $activePatient)
                     <tr>
-                        <td>{{ $patient->expedient_number}}</td>
+                        <td>{{ $activePatient->patient->expedient_number}}</td>
                         <td>
                             <div style="width: 200px; height: 200px; overflow: hidden;">
-                                <img src="{{$patient->photo ? asset($patient->photo) : asset('default/no-photo-m.png')}}" alt="Foto Paciente" style="width: auto; height: auto; object-fit: contain;">
+                                <img src="{{$activePatient->patient->photo ? asset($activePatient->patient->photo) : asset('default/no-photo-m.png')}}" alt="Foto Paciente" style="width: auto; height: auto; object-fit: contain;">
                             </div>
                         </td>
-                        <td>{{ $patient->name . ' ' . $patient->last_name . ' ' . $patient->last_name_two }}</td>
-                        <td>{{ $patient->gender}}</td>
-                        <td>{{ $patient->birth_date->format('d-m-Y')}}</td>
-                        <td>{{ $patient->date_entry->format('d-m-Y')}}</td>
+                        <td>{{ $activePatient->patient->name . ' ' . $activePatient->patient->last_name . ' ' . $activePatient->patient->last_name_two }}</td>
+                        <td>{{ $activePatient->patient->gender}}</td>
+                        <td>{{ $activePatient->patient->birth_date->format('d-m-Y')}}</td>
+                        <td>{{ \Carbon\Carbon::parse($activePatient->date)->format('d-m-Y')}}</td>
                         <td>
                         <div >
-                                    <a href="{{ route('print.printNurseExpedient', ['id' => $patient->id]) }}" class="btn btn-info">Imprimir Hoja</a>
-                                </div>
-                            </div>
+                            <a href="{{ route('print.printNurseExpedientDate', ['id' => $activePatient->patient->id, 'date' => $activePatient->date]) }}" class="btn btn-info" target="_blank">Imprimir Hoja</a>
+                        </div>
                         </td>
                         </td>
                     </tr>
@@ -53,19 +67,5 @@
         </table>
         <div class="d-flex justify-content-end">
         </div>
-    <div class="container">
-        @if ($errors->any())
-                <div class="alert2 alert2-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ __($error) }}<br></li>
-                        @endforeach
-                        </ul>
-                    </div>
-            @endif
-    @if(session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-@endif
+
 @endsection

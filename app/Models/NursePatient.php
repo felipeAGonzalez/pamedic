@@ -19,7 +19,10 @@ class NursePatient extends Model
     {
         return $this->belongsTo(ActivePatient::class);
     }
-
+    public function nurse()
+    {
+        return $this->belongsTo(User::class)->where(['position' => 'nurse']);
+    }
     public function user()
     {
         return $this->belongsTo(User::class);

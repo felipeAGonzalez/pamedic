@@ -25,22 +25,49 @@
 
         <div class="form-group">
             <label for="vascular_access">Acceso Vascular:</label>
-            <select name="vascular_access" id="vascular_access" class="form-control">
+            <select name="vascular_access" id="vascular_access" class="form-control" onchange="toggleFields()">
             <option value="">Seleccionar</option> <!-- Opción neutra -->
             <option value="fistula" {{ isset($dialysisMonitoring) && $dialysisMonitoring->vascular_access == 'fistula' ? 'selected' : '' }}>Fistula</option>
             <option value="catheter" {{ isset($dialysisMonitoring) && $dialysisMonitoring->vascular_access == 'catheter' ? 'selected' : '' }}>Catéter</option>
             </select>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="catheter_type_group" style="display: none;">
             <label for="catheter_type">Tipo de Catéter:</label>
             <select name="catheter_type" id="catheter_type" class="form-control">
-                <option value="">Seleccionar</option> <!-- Opción neutra -->
-                <option value="tunneling" {{isset($dialysisMonitoring) && $dialysisMonitoring->catheter_type == 'tunneling' ? 'selected' : '' }}>Tunelizado</option>
-                <option value="no_tunneling"{{isset($dialysisMonitoring) && $dialysisMonitoring->catheter_type == 'no_tunneling' ? 'selected' : '' }}>No Tunelizado</option>
+            <option value="">Seleccionar</option> <!-- Opción neutra -->
+            <option value="tunneling" {{isset($dialysisMonitoring) && $dialysisMonitoring->catheter_type == 'tunneling' ? 'selected' : '' }}>Tunelizado</option>
+            <option value="no_tunneling"{{isset($dialysisMonitoring) && $dialysisMonitoring->catheter_type == 'no_tunneling' ? 'selected' : '' }}>No Tunelizado</option>
             </select>
         </div>
 
+        <div class="form-group" id="needle_mesure_group" style="display: none;">
+            <label for="needle_mesure">Medida de Aguja:</label>
+            <input type="text" name="needle_mesure" id="needle_mesure" class="form-control" value="{{ $dialysisMonitoring->needle_mesure ?? '' }}">
+        </div>
+
+        <script>
+            function toggleFields() {
+            var vascularAccess = document.getElementById('vascular_access').value;
+            var catheterTypeGroup = document.getElementById('catheter_type_group');
+            var needleMesureGroup = document.getElementById('needle_mesure_group');
+
+            if (vascularAccess === 'catheter') {
+                catheterTypeGroup.style.display = 'block';
+                needleMesureGroup.style.display = 'none';
+            } else if (vascularAccess === 'fistula') {
+                catheterTypeGroup.style.display = 'none';
+                needleMesureGroup.style.display = 'block';
+            } else {
+                catheterTypeGroup.style.display = 'none';
+                needleMesureGroup.style.display = 'none';
+            }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+            toggleFields();
+            });
+        </script>
         <div class="form-group">
             <label for="implantation">Implantación:</label>
             <select name="implantation" id="implantation" class="form-control">
@@ -53,10 +80,6 @@
             </select>
         </div>
 
-        <div class="form-group">
-            <label for="needle_mesure">Medida de Aguja:</label>
-            <input type="text" name="needle_mesure" id="needle_mesure" class="form-control" value="{{ $dialysisMonitoring->needle_mesure ?? '' }}">
-        </div>
 
         <div class="form-group">
             <label for="side">Lado:</label>

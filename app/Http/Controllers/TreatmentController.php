@@ -215,9 +215,9 @@ class TreatmentController extends Controller
         $validator = $request->validate([
             'date_hour' => 'required|date',
             'vascular_access' => 'required|in:fistula,catheter',
-            'catheter_type' => 'in:tunneling,no_tunneling',
+            'catheter_type' => 'nullable|in:tunneling,no_tunneling',
             'implantation' => 'required|in:femoral,yugular,subclavia,brazo,antebrazo',
-            'needle_mesure' => 'integer',
+            'needle_mesure' => 'nullable|integer',
             'machine_number' => 'required|integer',
             'session_number' => 'required|integer',
             'side' => 'required|in:right,left',
@@ -228,6 +228,7 @@ class TreatmentController extends Controller
             'allergy' => 'required|string',
             'diagnostic' => 'required|string',
         ]);
+        \Log::info($request->all());
         $dialysisMonitoring = DialysisMonitoring::updateOrCreate(
             ['patient_id' => $request->input('patient_id'), 'history' => 0],
             [
@@ -247,6 +248,8 @@ class TreatmentController extends Controller
                 'diagnostic' => $request->input('diagnostic'),
             ]
         );
+        \Log::info($dialysisMonitoring);
+
 
         return redirect()->route('treatment.index')->with('success', 'Monitoreo de diálisis guardado exitosamente');
 
@@ -283,7 +286,6 @@ class TreatmentController extends Controller
         return redirect()->route('treatment.index')->with('success', 'Prescripción de diálisis guardada exitosamente');
     }
     public function fillPreHemo(Request $request){
-        \Log::info($request->all());
         $validator = $request->validate([
             'previous_initial_weight' => 'numeric',
             'previous_final_weight' => 'numeric',
@@ -407,7 +409,6 @@ class TreatmentController extends Controller
         return redirect()->route('treatment.index')->with('success', 'Datos de guardados exitosamente');
     }
     public function fillEvaluation(Request $request){
-        \Log::info($request->all());
         $validator = $request->validate([
             'fase.*' => 'required|string',
             'hour.*' => 'required|date_format:H:i',
@@ -465,7 +466,7 @@ class TreatmentController extends Controller
             'nurse_admin_id' => $request->input('nurse_admin_id'),
             'dilution' => $request->input('dilution'),
             'velocity' => $request->input('velocity'),
-            'due_date' => $request->input('due_date'),
+            'due_date' => $request->input('due_date') . '-01',
             ]
         );
         $patient = Patient::where('id',$medicineAdministration->patient_id)->first();
@@ -479,12 +480,11 @@ class TreatmentController extends Controller
     }
     public function destroy($id)
     {
-        $medicine = MedicationAdministration::findOrFail($id);
-        $medicineAdministration =$medicine;
+        $medicineAdministration = MedicationAdministration::findOrFail($id);
+        $medicineAdministration->delete();
         $patient = Patient::where('id',$medicineAdministration->patient_id)->first();
         $users = User::where('position','NURSE')->get();
         $medicines = Medicine::all();
-        $medicine->delete();
         $medicineAdministration = MedicationAdministration::where(['patient_id' => $patient->id, 'history' =>  0])
             ->whereDate('created_at', now())
             ->orderBy('created_at','DESC')

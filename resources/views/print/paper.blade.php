@@ -18,20 +18,20 @@
     </table>
     <table border="1" style="width: 100%;">
         <tr>
-            <td><Strong>{{ $patient->name }}</Strong></td>
-            <td><Strong>{{ $patient->last_name }}</Strong></td>
-            <td><Strong>{{ $patient->last_name_two }}</Strong></td>
-            <td><Strong>{{ $patient->expedient_number }}</Strong></td>
-            <td><Strong>{{ $patient->gender}}</Strong></td>
-            <td><Strong>{{$patient->birth_date->age }}</Strong></td>
+            <td style="font-size: 12px;"><Strong>{{ $patient->name }}</Strong></td>
+            <td style="font-size: 12px;"><Strong>{{ $patient->last_name }}</Strong></td>
+            <td style="font-size: 12px;"><Strong>{{ $patient->last_name_two }}</Strong></td>
+            <td style="font-size: 12px;"><Strong>{{ $patient->expedient_number }}</Strong></td>
+            <td style="font-size: 12px;"><Strong>{{ $patient->gender}}</Strong></td>
+            <td style="font-size: 12px;"><Strong>{{$patient->birth_date->age }}</Strong></td>
         </tr>
         <tr>
-            <td style="background-color: #e6e6e6; width: 24.66%;">Nombre(s) del Paciente</td>
-            <td style="background-color: #e6e6e6; width: 20%;">Apellido Paterno</td>
-            <td style="background-color: #e6e6e6; width: 20%;">Apellido Materno</td>
-            <td style="background-color: #e6e6e6; width: 22.32%;">No. de Expediente</td>
-            <td style="background-color: #e6e6e6; width: 7.5%;">Género</td>
-            <td style="background-color: #e6e6e6; width: 5.5%;">Edad</td>
+            <td style="background-color: #e6e6e6; font-size: 12px; width: 24.66%;">Nombre(s) del Paciente</td>
+            <td style="background-color: #e6e6e6; font-size: 12px; width: 20%;">Apellido Paterno</td>
+            <td style="background-color: #e6e6e6; font-size: 12px; width: 20%;">Apellido Materno</td>
+            <td style="background-color: #e6e6e6; font-size: 12px; width: 22.32%;">No. de Expediente</td>
+            <td style="background-color: #e6e6e6; font-size: 12px; width: 7.5%;">Género</td>
+            <td style="background-color: #e6e6e6; font-size: 12px; width: 5.5%;">Edad</td>
         </tr>
         <tr>
             <td colspan="6" style="background-color: #8db4e3; text-align: center; padding: 5px;">
@@ -100,15 +100,15 @@
     </tr>
     <tr>
         <td>---</td>
-        <td>{{ $dialysisPrescription['type_dialyzer'] }}</td>
-        <td>{{ $dialysisPrescription['time'] }}</td>
-        <td>{{ $dialysisPrescription['blood_flux'] }}</td>
-        <td>{{ $dialysisPrescription['flux_dialyzer'] }}</td>
-        <td>{{ __('web.'.$dialysisPrescription['heparin']) }}</td>
-        <td>{{ $dialysisPrescription['schedule_ultrafilter'] }}</td>
-        <td>{{ $dialysisPrescription['profile_ultrafilter'] }}</td>
-        <td>{{ $dialysisPrescription['sodium_profile'] }}</td>
-        <td>{{ $dialysisPrescription['machine_temperature'] }}</td>
+        <td style='font-size: 12px'>{{ $dialysisPrescription['type_dialyzer'] }}</td>
+        <td style='font-size: 12px'>{{ $dialysisPrescription['time'] }}</td>
+        <td style='font-size: 12px'>{{ $dialysisPrescription['blood_flux'] }}</td>
+        <td style='font-size: 12px'>{{ $dialysisPrescription['flux_dialyzer'] }}</td>
+        <td style='font-size: 12px'>{{ __('web.'.$dialysisPrescription['heparin']) }}</td>
+        <td style='font-size: 12px'>{{ $dialysisPrescription['schedule_ultrafilter'] }}</td>
+        <td style='font-size: 12px'>{{ $dialysisPrescription['profile_ultrafilter'] }}</td>
+        <td style='font-size: 12px'>{{ $dialysisPrescription['sodium_profile'] }}</td>
+        <td style='font-size: 12px'>{{ $dialysisPrescription['machine_temperature'] }}</td>
     </tr>
     <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
             <h4 style="margin: 0;">PRE-HEMODIÁLISIS</h4>
@@ -325,8 +325,8 @@
             <td colspan=3 style="background-color: #e6e6e6; width: 100%; font-size: 18px;">Enfermero que administra</td>
             </tr>
                 <tr>
-                    <td colspan=3 style="font-size: 18px;">{{ !empty($medicineAdmin) ? $medicineAdmin[0]->nurse_prepare->name : 'Sin medicamentos' }}</td>
-                    <td colspan=3 style="font-size: 18px;">{{ !empty($medicineAdmin) ? $medicineAdmin[0]->nurse_admin->name : 'Sin medicamentos'}}</td>
+                <td colspan=3 style="font-size: 18px;">{{ !empty($medicineAdmin) && isset($medicineAdmin[0]) ? $medicineAdmin[0]->nurse_prepare->name : 'Sin medicamentos' }}</td>
+                <td colspan=3 style="font-size: 18px;">{{ !empty($medicineAdmin) && isset($medicineAdmin[0]) ? $medicineAdmin[0]->nurse_admin->name : 'Sin medicamentos'}}</td>
                 </tr>
             <tr>
                 <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Medicamento</td>
@@ -338,15 +338,15 @@
             </tr>
             <tr>
 
-                @if(!empty($medicineAdmin))
-                    @foreach($medicineAdmin as $medication)
+                @if(count($medicineAdmin)>0)
+                @foreach($medicineAdmin as $medication)
                         <tr>
                             <td style="font-size: 18px;">{{ $medication->medicine->name }}</td>
                             <td style="font-size: 18px;">{{ $medication->medicine->route_administration }}</td>
                             <td style="font-size: 18px;">{{ $medication['dilution'] }}</td>
                             <td style="font-size: 18px;">{{ $medication['velocity'] }}</td>
                             <td style="font-size: 18px;">{{ date('H:i', strtotime($medication['hour'])) }}</td>
-                            <td style="font-size: 18px;">{{ date('Y-m-d', strtotime($medication['dueDate'])) }}</td>
+                            <td style="font-size: 18px;">{{ date('m-Y', $medication['dueDate']) }}</td>
                         </tr>
                     @endforeach
                 @else
