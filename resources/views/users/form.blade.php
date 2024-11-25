@@ -31,7 +31,7 @@
             <div class="form-group">
                 <label for="position">Seleccione un cargo:</label>
                 <select name="position" class="form-select" id="position">
-                    <option value="" disabled>Seleccione una opción</option>
+                    <option value="">Seleccione una opción</option>
                     @foreach($position as $key => $value)
                         <option value="{{ $key }}" {{ isset($user) && $user->position == $key ? 'selected' : '' }}>
                             {{ $value }}

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
     private $position = [
-        "DIRECTIVE" => "Calidad",
+        "QUALITY" => "Calidad",
         "DIRECTIVE" => "Medico",
         "MANAGER" => "Jefe de Enfermería",
         "NURSE" => "Enfermero",
