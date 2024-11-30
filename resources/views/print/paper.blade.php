@@ -126,11 +126,6 @@
         <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">TENSIÓN ARTERIAL</td>
         <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">TEMPERATURA CORPORAL</td>
         <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">FRECUENCIA CARDIACA</td>
-        <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">FRECUENCIA RESPIRATORIA</td>
-        <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">SATURACIÓN DE OXÍGENO</td>
-        <td style="background-color: #e6e6e6; width: 5.25%; font-size: 7px;">CONDUCTIVIDAD</td>
-        <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">DESTROSTIS</td>
-        <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">PRURITO</td>
     </tr>
     <tr>
         <td style="font-size: 8px;">{{ $preHemodialysis['previous_initial_weight'] }}</td>
@@ -143,15 +138,15 @@
         <td style="font-size: 7px;">Sentado: {{ $preHemodialysis['sitting_blood_pressure'] }}<br>De Pie: {{ $preHemodialysis['standing_blood_pressure'] }}</td>
         <td style="font-size: 8px;">{{ $preHemodialysis['body_temperature'] }}</td>
         <td style="font-size: 8px;">{{ $preHemodialysis['heart_rate'] }}</td>
-        <td style="font-size: 8px;">{{ $preHemodialysis['respiratory_rate'] }}</td>
-        <td style="font-size: 8px;">{{ $preHemodialysis['oxygen_saturation'] }}</td>
-        <td style="font-size: 8px;">{{ $preHemodialysis['conductivity'] }}</td>
-        <td style="font-size: 8px;">{{ $preHemodialysis['destrostix'] }}</td>
-        <td style="font-size: 8px;">{{ $preHemodialysis['itchiness'] }}</td>
     </tr>
 </table>
 <table border=1 style="width: 100%;">
 <tr>
+    <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">FRECUENCIA RESPIRATORIA</td>
+    <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">SATURACIÓN DE OXÍGENO</td>
+    <td style="background-color: #e6e6e6; width: 5.25%; font-size: 7px;">CONDUCTIVIDAD</td>
+    <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">DESTROSTIS</td>
+    <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">PRURITO</td>
     <td style="background-color: #e6e6e6; width: 20%; font-size: 9px;">PALIDEZ DE PIEL</td>
     <td style="background-color: #e6e6e6; width: 20%; font-size: 9px;">EDEMA</td>
     <td style="background-color: #e6e6e6; width: 20%; font-size: 9px;">CONDICIONES DEL ACCESO VASCULAR</td>
@@ -159,6 +154,11 @@
     <td style="background-color: #e6e6e6; width: 20%; font-size: 9px;">OBSERVACIONES</td>
 </tr>
 <tr>
+    <td style="font-size: 8px;">{{ $preHemodialysis['respiratory_rate'] }}</td>
+    <td style="font-size: 8px;">{{ $preHemodialysis['oxygen_saturation'] }}</td>
+    <td style="font-size: 8px;">{{ $preHemodialysis['conductivity'] }}</td>
+    <td style="font-size: 8px;">{{ $preHemodialysis['destrostix'] }}</td>
+    <td style="font-size: 8px;">{{ $preHemodialysis['itchiness'] }}</td>
     <td style="width: 20%; font-size: 12px;">{{ __('web.'.$preHemodialysis['pallor_skin']) }}</td>
     <td style="width: 20%; font-size: 12px;">{{ __('web.'.$preHemodialysis['edema']) }}</td>
     <td style="width: 20%; font-size: 12px;">{{ $preHemodialysis['vascular_access_conditions'] }}</td>
@@ -172,92 +172,40 @@
 <table class="table table-responsive" style="width: 100%">
     <thead>
         <tr>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Tiempo</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Presión Arterial</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Presión Media</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Frecuencia Cardíaco</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Frecuencia Respiratorio</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Temperatura</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Monitor de Presión Arterial</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Monitor de Presión Venosa</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Monitor de Presión Transmembrana</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Flujo Sanguíneo</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Ultrafiltración</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Heparina</th>
-            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 9px;">Observaciones</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 10px;">Tiempo</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 10px;">Presión Arterial</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 10px;">Presión Media</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 10px;">Frecuencia Cardíaco</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 10px;">Frecuencia Respiratorio</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 10px;">Temperatura</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 10px;">Monitor de Presión Arterial</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 10px;">Monitor de Presión Venosa</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 10px;">Monitor de Presión Transmembrana</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 10px;">Flujo Sanguíneo</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 10px;">Ultrafiltración</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 10px;">Heparina</th>
+            <th style="background-color: #e6e6e6; width: 7.1%; font-size: 10px;">Observaciones</th>
         </tr>
     </thead>
     <tbody>
             @foreach ($transHemodialysis as $item)
                 <tr>
-                    <td style="font-size: 9px;">{{ $item->time ?: '-' }}</td>
-                    <td style="font-size: 9px;">{{ $item->arterial_pressure ?: '-' }}</td>
-                    <td style="font-size: 9px;">{{ $item->mean_pressure ?: '-' }}</td>
-                    <td style="font-size: 9px;">{{ $item->heart_rate ?: '-' }}</td>
-                    <td style="font-size: 9px;">{{ $item->respiratory_rate ?: '-' }}</td>
-                    <td style="font-size: 9px;">{{ $item->temperature == '0.00' ? '-' : $item->temperature }}</td>
-                    <td style="font-size: 9px;">{{ $item->arterial_pressure_monitor ?: '-' }}</td>
-                    <td style="font-size: 9px;">{{ $item->venous_pressure_monitor ?: '-' }}</td>
-                    <td style="font-size: 9px;">{{ $item->transmembrane_pressure_monitor ?: '-' }}</td>
-                    <td style="font-size: 9px;">{{ $item->blood_flow ?: '-' }}</td>
-                    <td style="font-size: 9px;">{{ $item->ultrafiltration ?: '-' }}</td>
-                    <td style="font-size: 9px;">{{ $item->heparin ?: '-' }}</td>
-                    <td style="font-size: 9px;">{{ $item->observations ?: '-' }}</td>
+                    <td style="font-size: 15px;">{{ date('H:i', strtotime($item->time)) ?: '-' }}</td>
+                    <td style="font-size: 15px;">{{ $item->arterial_pressure ?: '-' }}</td>
+                    <td style="font-size: 15px;">{{ $item->mean_pressure ?: '-' }}</td>
+                    <td style="font-size: 15px;">{{ $item->heart_rate ?: '-' }}</td>
+                    <td style="font-size: 15px;">{{ $item->respiratory_rate ?: '-' }}</td>
+                    <td style="font-size: 15px;">{{ $item->temperature == '0.00' ? '-' : $item->temperature }}</td>
+                    <td style="font-size: 15px;">{{ $item->arterial_pressure_monitor ?: '-' }}</td>
+                    <td style="font-size: 15px;">{{ $item->venous_pressure_monitor ?: '-' }}</td>
+                    <td style="font-size: 15px;">{{ $item->transmembrane_pressure_monitor ?: '-' }}</td>
+                    <td style="font-size: 15px;">{{ $item->blood_flow ?: '-' }}</td>
+                    <td style="font-size: 15px;">{{ $item->ultrafiltration ?: '-' }}</td>
+                    <td style="font-size: 15px;">{{ $item->heparin ?: '-' }}</td>
+                    <td style="font-size: 15px;">{{ $item->observations ?: '-' }}</td>
                 </tr>
             @endforeach
             </tbody>
-            <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
-                    <h4 style="margin: 0;">POST-HEMODIÁLISIS</h4>
-            </td>
-        </table>
-        <table border=1 style="width: 100%;">
-            <tr>
-                <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">ULTRAFILTRACIÓN FINAL</td>
-                <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">SANGRE TRATADA</td>
-                <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">KTV</td>
-                <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">TEMPERATURA DEL PACIENTE</td>
-                <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">PRESIÓN ARTERIAL DE PIE</td>
-                <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">PRESIÓN ARTERIAL SENTADO</td>
-                <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">FRECUENCIA RESPIRATORIA</td>
-                <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">FRECUENCIA CARDIACA</td>
-                <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">PESO DE SALIDA</td>
-                <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">RIESGO DE CAÍDA</td>
-            </tr>
-            <tr>
-                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['final_ultrafiltration'] }}</td>
-                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['treated_blood'] }}</td>
-                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['ktv'] }}</td>
-                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['patient_temperature'] }}</td>
-                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['blood_pressure_stand'] }}</td>
-                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['blood_pressure_sit'] }}</td>
-                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['respiratory_rate'] }}</td>
-                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['heart_rate'] }}</td>
-                <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['weight_out'] }}</td>
-                <td style="width: 20%; font-size: 12px;">{{ __('web.'.$postHemoDialysis['fall_risk']) }}</td>
-            </tr>
-            <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
-                    <h4 style="margin: 0;">ENFERMERO RESPONSABLE</h4>
-            </td>
-        </table>
-        <table border=1 style="width: 100%;">
-            <tr>
-                <td style="width: 20%; font-size: 12px;">{{ $user['name'] }}</td>
-                <td style="width: 20%; font-size: 12px;">{{ $user['last_name_one'] }}</td>
-                <td style="width: 20%; font-size: 12px;">{{ $user['last_name_two'] }}</td>
-                <td style="width: 20%; font-size: 12px;">{{ $user['profesional_id'] }}</td>
-                <td style="width: 20%; font-size: 12px;"></td>
-                <td style="width: 20%; font-size: 12px;">{{ date('H:i', strtotime($dialysisMonitoring['date_hour'])) }}</td>
-                <td style="width: 20%; font-size: 12px;">{{ date('H', strtotime($dialysisMonitoring['date_hour'])) < 14 ? 'Matutino' : 'Vespertino' }}</td>
-            </tr>
-            <tr>
-                <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Nombre</td>
-                <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Apellido Paterno</td>
-                <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Apellido Materno</td>
-                <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Cedula Profesional</td>
-                <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Firma</td>
-                <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Hora</td>
-                <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Turno</td>
-            </tr>
         </table>
         <table>
             <td>
@@ -356,5 +304,57 @@
                 @endif
             </tr>
         </table>
+    <table border=1 style="width: 100%;">
+    <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
+            <h4 style="margin: 0;">POST-HEMODIÁLISIS</h4>
+    </td>
+        <tr>
+            <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">ULTRAFILTRACIÓN FINAL</td>
+            <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">SANGRE TRATADA</td>
+            <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">KTV</td>
+            <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">TEMPERATURA DEL PACIENTE</td>
+            <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">PRESIÓN ARTERIAL DE PIE</td>
+            <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">PRESIÓN ARTERIAL SENTADO</td>
+            <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">FRECUENCIA RESPIRATORIA</td>
+            <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">FRECUENCIA CARDIACA</td>
+            <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">PESO DE SALIDA</td>
+            <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">RIESGO DE CAÍDA</td>
+        </tr>
+        <tr>
+            <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['final_ultrafiltration'] }}</td>
+            <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['treated_blood'] }}</td>
+            <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['ktv'] }}</td>
+            <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['patient_temperature'] }}</td>
+            <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['blood_pressure_stand'] }}</td>
+            <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['blood_pressure_sit'] }}</td>
+            <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['respiratory_rate'] }}</td>
+            <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['heart_rate'] }}</td>
+            <td style="width: 20%; font-size: 12px;">{{ $postHemoDialysis['weight_out'] }}</td>
+            <td style="width: 20%; font-size: 12px;">{{ __('web.'.$postHemoDialysis['fall_risk']) }}</td>
+        </tr>
+        <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
+                <h4 style="margin: 0;">ENFERMERO RESPONSABLE</h4>
+        </td>
+    </table>
+    <table border=1 style="width: 100%;">
+        <tr>
+            <td style="width: 20%; font-size: 12px;">{{ $user['name'] }}</td>
+            <td style="width: 20%; font-size: 12px;">{{ $user['last_name_one'] }}</td>
+            <td style="width: 20%; font-size: 12px;">{{ $user['last_name_two'] }}</td>
+            <td style="width: 20%; font-size: 12px;">{{ $user['profesional_id'] }}</td>
+            <td style="width: 20%; font-size: 12px;"></td>
+            <td style="width: 20%; font-size: 12px;">{{ date('H:i', strtotime($dialysisMonitoring['date_hour'])) }}</td>
+            <td style="width: 20%; font-size: 12px;">{{ date('H', strtotime($dialysisMonitoring['date_hour'])) < 14 ? 'Matutino' : 'Vespertino' }}</td>
+        </tr>
+        <tr>
+            <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Nombre</td>
+            <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Apellido Paterno</td>
+            <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Apellido Materno</td>
+            <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Cedula Profesional</td>
+            <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Firma</td>
+            <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Hora</td>
+            <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Turno</td>
+        </tr>
+    </table>
 </body>
 </html>
