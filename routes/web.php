@@ -10,6 +10,7 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\PrintController;
+use App\Http\Controllers\EditController;
 
 
 
@@ -70,11 +71,32 @@ Route::group(['middleware'=>['auth']],function () {
         Route::get('/medicines/{id}', [MedicineController::class, 'show'])->name('medicines.show');
         Route::delete('/medicines/{id}', [MedicineController::class, 'destroy'])->name('medicines.destroy');
 
-        Route::get('/print', [PrintController::class, 'index'])->name('treatment.index');
+        Route::get('/print', [PrintController::class, 'index'])->name('print.index');
         Route::get('/print/search', [PrintController::class,'search'])->name('print.search');
         Route::get('/print/expedient/{id}', [PrintController::class,'printNurseExpedient'])->name('print.printNurseExpedient');
         Route::get('/print/expedient/{id}/date/{date}', [PrintController::class,'printNurseExpedient'])->name('print.printNurseExpedientDate');
 
+        Route::get('/edit', [EditController::class, 'index'])->name('edit.index');
+        Route::get('/edit/search', [EditController::class,'search'])->name('edit.search');
+        Route::get('/edit/create/{id}/fecha/{date}', [EditController::class, 'create'])->name('edit.create');
+        Route::get('/edit/createPres/{id}/fecha/{date}', [EditController::class, 'createPres'])->name('edit.createPres');
+        Route::get('/edit/create/pre-hemo/{id}/fecha/{date}', [EditController::class, 'createPreHemo'])->name('edit.createPreHemo');
+        Route::get('/edit/create/trans-hemo/{id}/fecha/{date}', [EditController::class, 'createTransHemo'])->name('edit.createTransHemo');
+        Route::get('/edit/create/post-hemo/{id}/fecha/{date}', [EditController::class, 'createPostHemo'])->name('edit.createPostHemo');
+        Route::get('/edit/create/evaluation/{id}/fecha/{date}', [EditController::class, 'createEvaluation'])->name('edit.createEvaluation');
+        Route::get('/edit/create/evaluationN/{id}/fecha/{date}', [EditController::class, 'createEvaluationNurse'])->name('edit.createEvaluationNurse');
+        Route::get('/edit/create/medicine/{id}/fecha/{date}', [EditController::class, 'createMedicineAdmin'])->name('edit.createMedicineAdmin');
+        Route::get('/edit/finalice/{id}/fecha/{date}', [EditController::class, 'finaliceTreatment'])->name('edit.finaliceTreatment');
+        Route::delete('/edit/fill/{id}', [EditController::class, 'destroy'])->name('edit.destroy');
+
+        Route::post('/edit/fill', [EditController::class, 'fill'])->name('edit.fill');
+        Route::post('/edit/fillPres', [EditController::class, 'fillPres'])->name('edit.fillPres');
+        Route::post('/edit/fill/pre-hemo', [EditController::class, 'fillPreHemo'])->name('edit.fillPreHemo');
+        Route::post('/edit/fill/trans-hemo', [EditController::class, 'fillTransHemo'])->name('edit.fillTransHemo');
+        Route::post('/edit/fill/post-hemo', [EditController::class, 'fillPostHemo'])->name('edit.fillPostHemo');
+        Route::post('/edit/fill/evaluation', [EditController::class, 'fillEvaluation'])->name('edit.fillEvaluation');
+        Route::post('/edit/fill/evaluationN', [EditController::class, 'fillNurseEvaluation'])->name('edit.fillNurseEvaluation');
+        Route::post('/edit/fill/medicine', [EditController::class, 'fillMedicineAdmin'])->name('edit.fillMedicineAdmin');
     });
 
     Route::get('/patients/search', [PatientController::class,'search'])->name('patients.search');

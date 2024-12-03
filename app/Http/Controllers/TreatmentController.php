@@ -228,7 +228,6 @@ class TreatmentController extends Controller
             'allergy' => 'required|string',
             'diagnostic' => 'required|string',
         ]);
-        \Log::info($request->all());
         $dialysisMonitoring = DialysisMonitoring::updateOrCreate(
             ['patient_id' => $request->input('patient_id'), 'history' => 0],
             [
@@ -248,9 +247,6 @@ class TreatmentController extends Controller
                 'diagnostic' => $request->input('diagnostic'),
             ]
         );
-        \Log::info($dialysisMonitoring);
-
-
         return redirect()->route('treatment.index')->with('success', 'Monitoreo de diálisis guardado exitosamente');
 
     }

@@ -54,7 +54,6 @@
                                     <br>
                                     <a href="{{ route('treatment.finaliceTreatment', ['id' => $patient->id]) }}" class="btn btn-success">Finalizar Tratamiento</a>
                                 </div>
-                            </div>
                         </td>
                         </td>
                     </tr>

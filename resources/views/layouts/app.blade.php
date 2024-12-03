@@ -41,21 +41,27 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ url('/treatment') }}"><span style="color: #f8f9fa">Tratamiento</span></a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url('/print') }}" ><span style="color: #f8f9fa">Imprimir</span></a>
-            </li>
         </ul>
+        <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Impresión
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{{url('/print') }}">Nota de enfermería</a>
+                        <!-- <a class="dropdown-item" href="{{ url('/print.MedicNote') }}">Nota Medica</a> -->
+                    </div>
+        </li>
         <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Administración
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{{ url('/users') }}">Usuarios</a>
+                        <a class="dropdown-item" href="{{ url('/edit') }}">Editar Nota de enfermería</a>
                         <a class="dropdown-item" href="{{ url('/patients') }}">Pacientes</a>
                         <a class="dropdown-item" href="{{ url('/medicines') }}">Medicamentos</a>
                     </div>
-
-                </li>
+        </li>
             <!-- <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Reportes</a>
                 <div class="dropdown-menu" aria-labelledby="dropdown03">

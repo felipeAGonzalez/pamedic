@@ -59,7 +59,7 @@ class PrintController extends Controller
     public function printNurseExpedient($id,$date = null){
         $date = $date ?? date('Y-m-d');
         $patient = Patient::findOrFail($id);
-        $dialysisMonitoring = DialysisMonitoring::where('patient_id', $id)->orderBy('created_at', 'desc')->first();
+        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
         if ($dialysisMonitoring == null) {
             $error = ValidationException::withMessages(['Error' => 'No se ha encontrado el monitoreo']);
             throw $error;
