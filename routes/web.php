@@ -97,6 +97,8 @@ Route::group(['middleware'=>['auth']],function () {
         Route::post('/edit/fill/evaluation', [EditController::class, 'fillEvaluation'])->name('edit.fillEvaluation');
         Route::post('/edit/fill/evaluationN', [EditController::class, 'fillNurseEvaluation'])->name('edit.fillNurseEvaluation');
         Route::post('/edit/fill/medicine', [EditController::class, 'fillMedicineAdmin'])->name('edit.fillMedicineAdmin');
+
+        Route::delete('/delete/treatment/{id}', [EditController::class, 'destroyTreatment'])->name('delete.treatment');
     });
 
     Route::get('/patients/search', [PatientController::class,'search'])->name('patients.search');

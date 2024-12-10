@@ -390,4 +390,53 @@ class EditController extends Controller
             ->get();
         return view('edit.formMedicineA', compact('medicineAdministration','users','medicines','patient'))->with('success', 'Medicamento eliminado exitosamente');
     }
+     public function destroyTreatment(Request $request,$id)
+    {
+        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+        if ($dialysisMonitoring) {
+            $dialysisMonitoring->delete();
+        }
+        $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+        if ($dialysisPrescription) {
+            $dialysisPrescription->delete();
+        }
+
+        $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+        if ($preHemodialysis) {
+            $preHemodialysis->delete();
+        }
+
+        $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('time','ASC')->get();
+        foreach ($transHemodialysis as $trans) {
+            $trans->delete();
+        }
+
+        $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+        if ($postHemoDialysis) {
+            $postHemoDialysis->delete();
+        }
+        $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  0])->orderBy('hour','ASC')->get();
+        foreach ($evaluationRisk as $eval) {
+            $eval->delete();
+        }
+
+        $nurseValo = NurseEvaluation::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
+        foreach ($nurseValo as $nurse) {
+            $nurse->delete();
+        }
+
+        $medicineAdministration = MedicationAdministration::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
+        foreach ($medicineAdministration as $medicine) {
+            $medicine->delete();
+        }
+
+        $activePatient = ActivePatient::where(['patient_id' => $id, 'active' => 0])->orderBy('date','DESC')->first();
+        if ($activePatient) {
+            $activePatient->delete();
+            $nursePatients = NursePatient::where(['active_patient_id' => $activePatient->id,'history' => 0])->first();
+            $nursePatients->delete();
+        }
+
+        return redirect()->route('treatment.index')->with('success', 'Tratamiento eliminado exitosamente');
+    }
 }

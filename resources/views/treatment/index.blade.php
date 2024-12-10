@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h2>Pacientes a tratamiento con {{$user->name}} </h2>
+        <h2>Pacientes a tratamiento con {{$user->name . $user->position}} </h2>
         @if ($errors->any())
                 <div class="alert2 alert2-danger">
                     <ul>
@@ -53,6 +53,13 @@
                                     <br>
                                     <br>
                                     <a href="{{ route('treatment.finaliceTreatment', ['id' => $patient->id]) }}" class="btn btn-success">Finalizar Tratamiento</a>
+                                    @if(in_array($user->position, ['ROOT', 'DIRECTIVE', 'QUALITY']))
+                                        <form action="{{ route('delete.treatment', ['id' => $patient->id]) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger">Eliminar tratamiento</button>
+                                        </form>
+                                    @endif
                                 </div>
                         </td>
                         </td>

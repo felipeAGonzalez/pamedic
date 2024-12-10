@@ -36,40 +36,40 @@
                                     <input type="time" name="time[]" value="{{ $item->time }}" class="form-control" required>
                                 </td>
                                 <td>
-                                    <input type="text" name="arterial_pressure[]" value="{{ $item->arterial_pressure }}" class="form-control" required>
+                                    <input type="text" name="arterial_pressure[]" value="{{ $item->arterial_pressure }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="mean_pressure[]" value="{{ $item->mean_pressure }}" class="form-control" required>
+                                    <input type="number" name="mean_pressure[]" value="{{ $item->mean_pressure }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="heart_rate[]" value="{{ $item->heart_rate }}" class="form-control" required>
+                                    <input type="number" name="heart_rate[]" value="{{ $item->heart_rate }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="respiratory_rate[]" value="{{ $item->respiratory_rate }}" class="form-control" required>
+                                    <input type="number" name="respiratory_rate[]" value="{{ $item->respiratory_rate }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="temperature[]" value="{{ $item->temperature }}" step="0.1" min="35" class="form-control" required>
+                                    <input type="number" name="temperature[]" value="{{ $item->temperature }}" step="0.1" min="35" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="arterial_pressure_monitor[]" value="{{ $item->arterial_pressure_monitor }}" class="form-control" required>
+                                    <input type="number" name="arterial_pressure_monitor[]" value="{{ $item->arterial_pressure_monitor }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="venous_pressure_monitor[]" value="{{ $item->venous_pressure_monitor }}" class="form-control" required>
+                                    <input type="number" name="venous_pressure_monitor[]" value="{{ $item->venous_pressure_monitor }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="transmembrane_pressure_monitor[]" value="{{ $item->transmembrane_pressure_monitor }}" class="form-control" required>
+                                    <input type="number" name="transmembrane_pressure_monitor[]" value="{{ $item->transmembrane_pressure_monitor }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="blood_flow[]" value="{{ $item->blood_flow }}" class="form-control" required>
+                                    <input type="number" name="blood_flow[]" value="{{ $item->blood_flow }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="ultrafiltration[]" value="{{ $item->ultrafiltration }}" class="form-control" required>
+                                    <input type="number" name="ultrafiltration[]" value="{{ $item->ultrafiltration }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="heparin[]" value="{{ $item->heparin }}" class="form-control" required>
+                                    <input type="number" name="heparin[]" value="{{ $item->heparin }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="text" name="observations[]" value="{{ $item->observations }}" class="form-control" required>
+                                    <input type="text" name="observations[]" value="{{ $item->observations }}" class="form-control">
                                 </td>
                             </tr>
                         @endforeach

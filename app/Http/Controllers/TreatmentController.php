@@ -289,7 +289,7 @@ class TreatmentController extends Controller
             'initial_weight' => 'required|numeric',
             'dry_weight' => 'numeric',
             'weight_gain' => 'numeric',
-            'reuse_number' => 'required|numeric',
+            'reuse_number' => 'nullable|numeric',
             'sitting_blood_pressure' => 'required|string',
             'standing_blood_pressure' => 'required|string',
             'body_temperature' => 'required|numeric',
@@ -349,7 +349,7 @@ class TreatmentController extends Controller
             'blood_flow.*' => 'required|numeric',
             'ultrafiltration.*' => 'required|numeric',
             'heparin.*' => 'required|numeric',
-            'observations.*' => 'required|string',
+            'observations.*' => 'nullable|string',
         ]);
         foreach ($request->input('time') as $key => $value) {
             TransHemodialysis::updateOrCreate(
@@ -489,6 +489,13 @@ class TreatmentController extends Controller
     }
     public function finaliceTreatment(Request $request,$id)
     {
+        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+        if (!$dialysisMonitoring) {
+            $error = ValidationException::withMessages(['Error' => 'Primero debe llenar el monitoreo de diálisis']);
+            throw $error;
+        }
+        $dialysisMonitoring->history = 1;
+        $dialysisMonitoring->save();
         $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
         if (!$dialysisPrescription) {
             $error = ValidationException::withMessages(['Error' => 'Primero debe llenar la prescripción de diálisis']);
