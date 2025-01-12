@@ -43,9 +43,12 @@ class AttendanceController extends Controller
         $timezone = new DateTimeZone('America/Mexico_City');
         $date = new DateTime('now', $timezone);
         if($existingTodayPatient){
+            \Log::info($existingTodayPatient);
             $assignedPatient = NursePatient::where(['active_patient_id' => $existingTodayPatient->id,'history' => 0])->first();
+            \Log::info($assignedPatient);
             if($assignedPatient)
                 $message = ValidationException::withMessages(['Error' => 'El paciente ya esta en tratamiento']);
+            \Log::info($message);
                 throw $message;
         }
         if (! $existingPatient && ! $existingTodayPatient) {

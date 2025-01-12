@@ -45,37 +45,37 @@
             @endif
             <div class="form-group">
                 <label for="sitting_blood_pressure">Presión Arterial Sentado</label>
-                <input type="text" class="form-control" id="sitting_blood_pressure" name="sitting_blood_pressure" value="{{ old('sitting_blood_pressure', $preHemodialysis->sitting_blood_pressure ?? '') }}">
+                <input type="text" class="form-control" id="sitting_blood_pressure" name="sitting_blood_pressure" value="{{ old('sitting_blood_pressure', $preHemodialysis->sitting_blood_pressure ?? '') }}" onclick="this.value=''">
             </div>
             <div class="form-group">
                 <label for="standing_blood_pressure">Presión Arterial de Pie</label>
-                <input type="text" class="form-control" id="standing_blood_pressure" name="standing_blood_pressure" value="{{ old('standing_blood_pressure', $preHemodialysis->standing_blood_pressure ?? '') }}">
+                <input type="text" class="form-control" id="standing_blood_pressure" name="standing_blood_pressure" value="{{ old('standing_blood_pressure', $preHemodialysis->standing_blood_pressure ?? '') }}" onclick="this.value=''">
             </div>
             <div class="form-group">
                 <label for="body_temperature">Temperatura Corporal</label>
-                <input type="text" class="form-control" id="body_temperature" name="body_temperature" value="{{ old('body_temperature', $preHemodialysis->body_temperature ?? '') }}">
+                <input type="text" class="form-control" id="body_temperature" name="body_temperature" value="{{ old('body_temperature', $preHemodialysis->body_temperature ?? '') }}" onclick="this.value=''">
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
                 <label for="heart_rate">Frecuencia Cardíaca</label>
-                <input type="text" class="form-control" id="heart_rate" name="heart_rate" value="{{ old('heart_rate', $preHemodialysis->heart_rate ?? '') }}">
+                <input type="text" class="form-control" id="heart_rate" name="heart_rate" value="{{ old('heart_rate', $preHemodialysis->heart_rate ?? '') }}" onclick="this.value=''">
             </div>
             <div class="form-group">
                 <label for="respiratory_rate">Frecuencia Respiratoria</label>
-                <input type="text" class="form-control" id="respiratory_rate" name="respiratory_rate" value="{{ old('respiratory_rate', $preHemodialysis->respiratory_rate ?? '') }}">
+                <input type="text" class="form-control" id="respiratory_rate" name="respiratory_rate" value="{{ old('respiratory_rate', $preHemodialysis->respiratory_rate ?? '') }}" onclick="this.value=''">
             </div>
             <div class="form-group">
                 <label for="oxygen_saturation">Saturación de Oxígeno</label>
-                <input type="text" class="form-control" id="oxygen_saturation" name="oxygen_saturation" value="{{ old('oxygen_saturation', $preHemodialysis->oxygen_saturation ?? '') }}">
+                <input type="text" class="form-control" id="oxygen_saturation" name="oxygen_saturation" value="{{ old('oxygen_saturation', $preHemodialysis->oxygen_saturation ?? '') }}" onclick="this.value=''">
             </div>
             <div class="form-group">
                 <label for="conductivity">Conductividad</label>
-                <input type="text" class="form-control" id="conductivity" name="conductivity" value="{{ old('conductivity', $preHemodialysis->conductivity ?? '') }}">
+                <input type="text" class="form-control" id="conductivity" name="conductivity" value="{{ old('conductivity', $preHemodialysis->conductivity ?? '') }}" onclick="this.value=''">
             </div>
             <div class="form-group">
                 <label for="dextrostix">Dexstrostis</label>
-                <input type="text" class="form-control" id="dextrostix" name="dextrostix" value="{{ old('dextrostix', $preHemodialysis->dextrostix ?? '') }}">
+                <input type="text" class="form-control" id="dextrostix" name="dextrostix" value="{{ old('dextrostix', $preHemodialysis->dextrostix ?? '') }}" onclick="this.value=''">
             </div>
             <div class="form-group">
                 <label for="itchiness">Prurito</label>

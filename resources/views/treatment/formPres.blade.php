@@ -23,7 +23,7 @@
                 <label for="time">Tiempo (Min)</label>
                 <select class="form-control" id="time" name="time">
                     <option value="">Seleccionar</option>
-                    <?php for ($i = 10; $i <= 180; $i += 10): ?>
+                    <?php for ($i = 10; $i <= 300; $i += 10): ?>
                     <option value="<?php echo $i; ?>" {{ old('time', $dialysisPrescription->time ?? '') == $i ? 'selected' : '' }}><?php echo $i; ?></option>
                     <?php endfor; ?>
                 </select>

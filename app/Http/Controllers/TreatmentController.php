@@ -86,7 +86,16 @@ class TreatmentController extends Controller
                 $newPreHemodialysis->previous_initial_weight = $preHemodialysis->initial_weight;
                 $newPreHemodialysis->previous_final_weight = $postHemoDialysis->weight_out;
                 $newPreHemodialysis->previous_weight_gain = (double) $preHemodialysis->initial_weight - (double) $postHemoDialysis->weight_out;
-                //    $weight_gain = initial_weight - dry_weight
+                $newPreHemodialysis->sitting_blood_pressure = 0;
+                $newPreHemodialysis->standing_blood_pressure = 0;
+                $newPreHemodialysis->body_temperature = 0;
+                $newPreHemodialysis->heart_rate = 0;
+                $newPreHemodialysis->respiratory_rate = 0;
+                $newPreHemodialysis->oxygen_saturation = 0;
+                $newPreHemodialysis->conductivity = 0;
+                $newPreHemodialysis->dextrostix = 0;
+                $newPreHemodialysis->vascular_access_conditions = '';
+                $newPreHemodialysis->observations = '';
                 $newPreHemodialysis->history = 0;
                 $newPreHemodialysis->save();
                 $preHemodialysis = $newPreHemodialysis;
@@ -255,7 +264,7 @@ class TreatmentController extends Controller
 
        $validator = $request->validate([
             'type_dialyzer' => 'required|in:HF80S,F6ELISIO21H,F6ELISIO19H',
-            'time' => 'required|numeric|min:10|max:180',
+            'time' => 'required|numeric|min:10|max:300',
             'blood_flux' => 'required|string',
             'flux_dialyzer' => 'required|string',
             'heparin' => 'required|string',
@@ -303,7 +312,7 @@ class TreatmentController extends Controller
             'edema' => 'required|in:low,medium,high',
             'vascular_access_conditions' => 'required|string',
             'fall_risk' => 'required|in:low,medium,high',
-            'observations' => 'required|string',
+            'observations' => 'nullable|string',
         ]);
         $preHemodialysis = PreHemodialysis::updateOrCreate(
             ['patient_id' => $request->input('patient_id'), 'history' => 0],
@@ -435,6 +444,7 @@ class TreatmentController extends Controller
         foreach ($request->input('fase') as $key => $value) {
             NurseEvaluation::updateOrCreate(
             ['patient_id' => $request->input('patient_id')[$key],
+            'history' => false,
              'fase' => $value],
             [
             'nurse_valuation' => $request->input('nurse_valuation')[$key],
@@ -489,59 +499,77 @@ class TreatmentController extends Controller
     }
     public function finaliceTreatment(Request $request,$id)
     {
-        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
-        if (!$dialysisMonitoring) {
-            $error = ValidationException::withMessages(['Error' => 'Primero debe llenar el monitoreo de diálisis']);
-            throw $error;
-        }
-        $dialysisMonitoring->history = 1;
-        $dialysisMonitoring->save();
-        $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
-        if (!$dialysisPrescription) {
-            $error = ValidationException::withMessages(['Error' => 'Primero debe llenar la prescripción de diálisis']);
-            throw $error;
-        }
-        $dialysisPrescription->history = 1;
-        $dialysisPrescription->save();
-        $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
-        if (!$preHemodialysis) {
-            $error = ValidationException::withMessages(['Error' => 'Primero debe llenar la pre-diálisis']);
-            throw $error;
-        }
-        $preHemodialysis->history = 1;
-        $preHemodialysis->save();
-        $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('time','ASC')->get();
-        foreach ($transHemodialysis as $trans) {
-            $trans->history = 1;
-            $trans->save();
-        }
-        $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
-        $postHemoDialysis->history = 1;
-        $postHemoDialysis->save();
-        $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  0])->orderBy('hour','ASC')->get();
-        foreach ($evaluationRisk as $eval) {
-            $eval->history = 1;
-            $eval->save();
-        }
-        $nurseValo = NurseEvaluation::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
-        foreach ($nurseValo as $nurse) {
-            $nurse->history = 1;
-            $nurse->save();
-        }
-        $medicineAdministration = MedicationAdministration::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
-        foreach ($medicineAdministration as $medicine) {
-            $medicine->history = 1;
-            $medicine->save();
-        }
-        $activePatient = ActivePatient::where(['patient_id' => $id, 'active' => 0, 'date' => date('Y-m-d')])->first();
-        if (!$activePatient) {
-            $error = ValidationException::withMessages(['Error' => 'Paciente no encontrado']);
-            throw $error;
+        try {
+            \DB::beginTransaction();
+
+            $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+            if (!$dialysisMonitoring) {
+                throw ValidationException::withMessages(['Error' => 'Primero debe llenar el monitoreo de diálisis']);
             }
-        $nursePatients = NursePatient::where(['active_patient_id' => $activePatient->id,'history' => 0])->first();
-        $nursePatients->history = 1;
-        $nursePatients->save();
-        return redirect()->route('treatment.index')->with('success', 'Tratamiento finalizado exitosamente');
+            $dialysisMonitoring->history = 1;
+            $dialysisMonitoring->save();
+
+            $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+            if (!$dialysisPrescription) {
+                throw ValidationException::withMessages(['Error' => 'Primero debe llenar la prescripción de diálisis']);
+            }
+            $dialysisPrescription->history = 1;
+            $dialysisPrescription->save();
+
+            $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+            if (!$preHemodialysis) {
+                throw ValidationException::withMessages(['Error' => 'Primero debe llenar la pre-diálisis']);
+            }
+            $preHemodialysis->history = 1;
+            $preHemodialysis->save();
+
+            $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('time','ASC')->get();
+            foreach ($transHemodialysis as $trans) {
+                $trans->history = 1;
+                $trans->save();
+            }
+
+            $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+            if (!$postHemoDialysis) {
+                throw ValidationException::withMessages(['Error' => 'Primero debe llenar la post-diálisis']);
+            }
+            $postHemoDialysis->history = 1;
+            $postHemoDialysis->save();
+
+            $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  0])->orderBy('hour','ASC')->get();
+            foreach ($evaluationRisk as $eval) {
+                $eval->history = 1;
+                $eval->save();
+            }
+
+            $nurseValo = NurseEvaluation::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
+            foreach ($nurseValo as $nurse) {
+                $nurse->history = 1;
+                $nurse->save();
+            }
+
+            $medicineAdministration = MedicationAdministration::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
+            foreach ($medicineAdministration as $medicine) {
+                $medicine->history = 1;
+                $medicine->save();
+            }
+
+            $activePatient = ActivePatient::where(['patient_id' => $id, 'active' => 0, 'date' => date('Y-m-d')])->first();
+            if (!$activePatient) {
+                throw ValidationException::withMessages(['Error' => 'Paciente no encontrado']);
+            }
+
+            $nursePatients = NursePatient::where(['active_patient_id' => $activePatient->id,'history' => 0])->first();
+            $nursePatients->history = 1;
+            $nursePatients->save();
+
+            \DB::commit();
+
+            return redirect()->route('treatment.index')->with('success', 'Tratamiento finalizado exitosamente');
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return redirect()->route('treatment.index')->with('error', $e->getMessage());
+        }
     }
 
 }
