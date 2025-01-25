@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>{{$date.'-'.substr($patient->expedient_number, -4)}}</title>
 </head>
 <body>
     <table style="width: 100%;  border-collapse: collapse;">

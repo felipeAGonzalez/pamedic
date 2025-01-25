@@ -98,7 +98,7 @@ class PrintController extends Controller
             throw $error;
         }
         $medicineAdmin = MedicationAdministration::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->get();
-        $pdf = Pdf::loadView('print.paper', compact('patient', 'dialysisMonitoring', 'dialysisPrescription', 'transHemodialysis', 'preHemodialysis', 'postHemoDialysis','user','evaluationRisk','oxygenTherapy','nurseValo','medicineAdmin'));
+        $pdf = Pdf::loadView('print.paper', compact('date','patient', 'dialysisMonitoring', 'dialysisPrescription', 'transHemodialysis', 'preHemodialysis', 'postHemoDialysis','user','evaluationRisk','oxygenTherapy','nurseValo','medicineAdmin'));
         return $pdf->stream($date.'-'.substr($patient->expedient_number, -4) . '.pdf');
     }
 }
