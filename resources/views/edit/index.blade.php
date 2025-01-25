@@ -65,6 +65,7 @@
                                     <a href="{{ route('edit.createEvaluationNurse', ['id' => $activePatient->patient->id, 'date' => $activePatient->date]) }}" class="btn btn-secondary">Valoración de enfermería</a>
                                     <a href="{{ route('edit.createMedicineAdmin', ['id' => $activePatient->patient->id, 'date' => $activePatient->date]) }}" class="btn btn-info">Ministración de medicamentos</a>
                                     <a href="{{ route('edit.createPostHemo', ['id' => $activePatient->patient->id, 'date' => $activePatient->date]) }}" class="btn btn-warning">Post-Hemodialisis</a>
+                                    <a href="{{ route('treatment.createOxygen', ['id' => $activePatient->id]) }}" class="btn btn-danger">Oxigeno Terapia</a>
                                 </div>
                         </div>
                         </td>

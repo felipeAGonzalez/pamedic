@@ -15,6 +15,7 @@ use App\Models\PostHemoDialysis;
 use App\Models\EvaluationRisk;
 use App\Models\NurseEvaluation;
 use App\Models\MedicationAdministration;
+use App\Models\OxygenTherapy;
 use App\Models\User;
 use App\Models\Medicine;
 use App\Models\Patient;
@@ -29,7 +30,14 @@ class TreatmentController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $nursePatients = NursePatient::where(['user_id' => Auth::user()->id,'history' => 0])->get();
+        if ($user->position == 'NURSE') {
+            $nursePatients = NursePatient::where(['user_id' => Auth::user()->id,'history' => 0])->get();
+            $patients = $nursePatients->map(function ($nursePatients) {
+                return $nursePatients->active_patient->patient;
+            });
+            return view('treatment.index', compact('patients','user'));
+        }
+        $nursePatients = NursePatient::where(['history' => 0])->get();
         $patients = $nursePatients->map(function ($nursePatients) {
             return $nursePatients->active_patient->patient;
         });
@@ -111,7 +119,8 @@ class TreatmentController extends Controller
         if (!$dialysisPrescription) {
             return redirect()->route('treatment.index')->with('error', 'Primero debe llenar la prescripción de diálisis');
         }
-        $scheduleUltrafilter = floor($dialysisPrescription->schedule_ultrafilter / 12);
+        $times = ($dialysisPrescription->time / 15 ) +1;
+        $scheduleUltrafilter = floor($dialysisPrescription->schedule_ultrafilter / $times-1);
         $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('date_hour','DESC')->first();
         if (!$dialysisMonitoring) {
             return redirect()->route('treatment.index')->with('error', 'Primero debe llenar el monitoreo de diálisis');
@@ -121,7 +130,7 @@ class TreatmentController extends Controller
         if (($transHemodialysis->count() > 0)) {
                 return view('treatment.formTransH', compact('transHemodialysis','patient'));
             }
-        for ($i=0; $i <13 ; $i++) {
+        for ($i=0; $i <$times ; $i++) {
                 TransHemodialysis::create([
                     'patient_id' => $id,
                     'time' => date('H:i', strtotime($hour) + ($i * 15 * 60)),
@@ -151,6 +160,27 @@ class TreatmentController extends Controller
             return view('treatment.formPostH', compact('postHemoDialysis','patient'));
         }
         return view('treatment.formPostH', compact('id','patient'));
+    }
+
+    public function createOxygenTherapy(Request $request,$id)
+    {
+        $patient = Patient::where('id',$id)->first();
+        $oxygenTherapy = OxygenTherapy::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+        if ($oxygenTherapy) {
+            return view('treatment.formOx', compact('oxygenTherapy','patient'));
+        }
+        $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+
+        $oxygenTherapy = OxygenTherapy::create([
+            'patient_id' => $id,
+            'initial_oxygen_saturation' => $preHemodialysis->oxygen_saturation,
+            'final_oxygen_saturation' => 0,
+            'start_time' => '00:00',
+            'end_time' => '00:00',
+            'oxygen_flow' => 0,
+        ]);
+        $oxygenTherapy = OxygenTherapy::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+        return view('treatment.formOx', compact('oxygenTherapy','patient'));
     }
     public function createEvaluation(Request $request,$id)
     {
@@ -307,9 +337,9 @@ class TreatmentController extends Controller
             'oxygen_saturation' => 'required|numeric',
             'conductivity' => 'required|numeric',
             'destrostix' => '|numeric',
-            'pallor_skin' => 'required|in:low,medium,high',
-            'itchiness' => 'required|in:low,medium,high',
-            'edema' => 'required|in:low,medium,high',
+            'pallor_skin' => 'required|in:low,medium,high,N/A,N/P',
+            'itchiness' => 'required|in:low,medium,high,N/A,N/P',
+            'edema' => 'required|in:low,medium,high,N/A,N/P',
             'vascular_access_conditions' => 'required|string',
             'fall_risk' => 'required|in:low,medium,high',
             'observations' => 'nullable|string',
@@ -363,7 +393,7 @@ class TreatmentController extends Controller
         foreach ($request->input('time') as $key => $value) {
             TransHemodialysis::updateOrCreate(
             ['patient_id' => $request->input('patient_id'),
-             'time' => $value],
+             'time' => $value, 'history' => 0],
             [
                 'arterial_pressure' => floatval($request->input('arterial_pressure')[$key]),
                 'mean_pressure' => $request->input('mean_pressure')[$key],
@@ -424,7 +454,7 @@ class TreatmentController extends Controller
         foreach ($request->input('hour') as $key => $value) {
             EvaluationRisk::updateOrCreate(
             ['patient_id' => $request->input('patient_id')[$key],
-             'hour' => $value],
+             'hour' => $value,'history' => 0],
             [
             'fase' => $request->input('fase')[$key],
             'result' => $request->input('score')[$key],
@@ -444,7 +474,7 @@ class TreatmentController extends Controller
         foreach ($request->input('fase') as $key => $value) {
             NurseEvaluation::updateOrCreate(
             ['patient_id' => $request->input('patient_id')[$key],
-            'history' => false,
+            'history' => 0,
              'fase' => $value],
             [
             'nurse_valuation' => $request->input('nurse_valuation')[$key],
@@ -453,6 +483,29 @@ class TreatmentController extends Controller
             );
         }
         return redirect()->route('treatment.index')->with('success', 'Datos de guardados exitosamente');
+    }
+    public function fillOxygenTherapy(Request $request){
+        $validator = $request->validate([
+            'patient_id' => 'required|integer',
+            'initial_oxygen_saturation' => 'nullable|numeric',
+            'final_oxygen_saturation' => 'nullable|numeric',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i',
+            'oxygen_flow' => 'nullable|numeric',
+        ]);
+
+        $oxygenTherapy = OxygenTherapy::updateOrCreate(
+            ['patient_id' => $request->input('patient_id'), 'history' => 0],
+            [
+                'initial_oxygen_saturation' => $request->input('initial_oxygen_saturation'),
+                'final_oxygen_saturation' => $request->input('final_oxygen_saturation'),
+                'start_time' => $request->input('start_time'),
+                'end_time' => $request->input('end_time'),
+                'oxygen_flow' => $request->input('oxygen_flow'),
+            ]
+        );
+
+        return redirect()->route('treatment.index')->with('success', 'Terapia de oxígeno guardada exitosamente');
     }
     public function fillMedicineAdmin(Request $request)
     {
@@ -466,7 +519,7 @@ class TreatmentController extends Controller
             'due_date' => 'required|date_format:Y-m',
         ]);
         $medicineAdministration = MedicationAdministration::updateOrCreate(
-            ['patient_id' => $request->input('patient_id'), 'medicine_id' => $request->input('medicine_id'), 'hour' => $request->input('hour')],
+            ['patient_id' => $request->input('patient_id'), 'medicine_id' => $request->input('medicine_id'), 'hour' => $request->input('hour'),'history' => 0],
             [
             'nurse_prepare_id' => $request->input('nurse_prepare_id'),
             'nurse_admin_id' => $request->input('nurse_admin_id'),
@@ -553,7 +606,11 @@ class TreatmentController extends Controller
                 $medicine->history = 1;
                 $medicine->save();
             }
-
+            $oxygenTherapy = OxygenTherapy::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+            if ($oxygenTherapy) {
+                $oxygenTherapy->history = 1;
+                $oxygenTherapy->save();
+            }
             $activePatient = ActivePatient::where(['patient_id' => $id, 'active' => 0, 'date' => date('Y-m-d')])->first();
             if (!$activePatient) {
                 throw ValidationException::withMessages(['Error' => 'Paciente no encontrado']);
@@ -568,7 +625,8 @@ class TreatmentController extends Controller
             return redirect()->route('treatment.index')->with('success', 'Tratamiento finalizado exitosamente');
         } catch (\Exception $e) {
             \DB::rollBack();
-            return redirect()->route('treatment.index')->with('error', $e->getMessage());
+            \Log::error($e);
+            return redirect()->route('treatment.index')->with('Error', $e->getMessage());
         }
     }
 

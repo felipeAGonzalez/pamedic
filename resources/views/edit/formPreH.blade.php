@@ -82,7 +82,9 @@
                 <select class="form-control" id="itchiness" name="itchiness">
                     <option value="low" {{ old('itchiness', $preHemodialysis->itchiness ?? '') == 'low' ? 'selected' : '' }}>Bajo</option>
                     <option value="medium" {{ old('itchiness', $preHemodialysis->itchiness ?? '') == 'medium' ? 'selected' : '' }}>Medio</option>
-                    <option value="high" {{ old('itchiness', $preHemodialysis->itchiness_level ?? '') == 'high' ? 'selected' : '' }}>Alto</option>
+                    <option value="high" {{ old('itchiness', $preHemodialysis->itchiness ?? '') == 'high' ? 'selected' : '' }}>Alto</option>
+                    <option value="na" {{ old('itchiness', $preHemodialysis->itchiness ?? '') == 'na' ? 'selected' : '' }}>N/A</option>
+                    <option value="np" {{ old('itchiness', $preHemodialysis->itchiness ?? '') == 'np' ? 'selected' : '' }}>N/P</option>
                 </select>
             </div>
             <div class="form-group">
@@ -91,6 +93,8 @@
                     <option value="low" {{ old('pallor_skin', $preHemodialysis->pallor_skin ?? '') == 'low' ? 'selected' : '' }}>Bajo</option>
                     <option value="medium" {{ old('pallor_skin', $preHemodialysis->pallor_skin ?? '') == 'medium' ? 'selected' : '' }}>Medio</option>
                     <option value="high" {{ old('pallor_skin', $preHemodialysis->pallor_skin ?? '') == 'high' ? 'selected' : '' }}>Alto</option>
+                    <option value="na" {{ old('pallor_skin', $preHemodialysis->pallor_skin ?? '') == 'na' ? 'selected' : '' }}>N/A</option>
+                    <option value="np" {{ old('pallor_skin', $preHemodialysis->pallor_skin ?? '') == 'np' ? 'selected' : '' }}>N/P</option>
                 </select>
             </div>
             <div class="form-group">
@@ -99,6 +103,8 @@
                     <option value="low" {{ old('edema', $preHemodialysis->edema ?? '') == 'low' ? 'selected' : '' }}>Bajo</option>
                     <option value="medium" {{ old('edema', $preHemodialysis->edema ?? '') == 'medium' ? 'selected' : '' }}>Medio</option>
                     <option value="high" {{ old('edema', $preHemodialysis->edema ?? '') == 'high' ? 'selected' : '' }}>Alto</option>
+                    <option value="na" {{ old('edema', $preHemodialysis->edema ?? '') == 'na' ? 'selected' : '' }}>N/A</option>
+                    <option value="np" {{ old('edema', $preHemodialysis->edema ?? '') == 'np' ? 'selected' : '' }}>N/P</option>
                 </select>
             </div>
             <div class="form-group">

@@ -43,12 +43,9 @@ class AttendanceController extends Controller
         $timezone = new DateTimeZone('America/Mexico_City');
         $date = new DateTime('now', $timezone);
         if($existingTodayPatient){
-            \Log::info($existingTodayPatient);
             $assignedPatient = NursePatient::where(['active_patient_id' => $existingTodayPatient->id,'history' => 0])->first();
-            \Log::info($assignedPatient);
             if($assignedPatient)
                 $message = ValidationException::withMessages(['Error' => 'El paciente ya esta en tratamiento']);
-            \Log::info($message);
                 throw $message;
         }
         if (! $existingPatient && ! $existingTodayPatient) {
@@ -73,11 +70,6 @@ class AttendanceController extends Controller
             return $activePatients->patient;
         });
         $nursePatients = NursePatient::where('date', date('Y-m-d'))->get();
-        // // \Log::info($nursePatients->toArray());
-        // foreach ($nursePatients as $nursePatient) {
-        //     \Log::info($nursePatient->nurse->toArray());
-        //     \Log::info($nursePatient->active_patient->patient->toArray());
-        // }
         return view('attendance.treatment', compact('patients','nursePatients'));
     }
 
@@ -96,11 +88,9 @@ class AttendanceController extends Controller
             throw $message;
         }
         $activePatients = ActivePatient::where('active', 1)->get();
-        // $patients = Patient::where('id',$activePatients->patient_id)->get();
         $patients = $activePatients->map(function ($activePatients) {
             return $activePatients->patient;
         });
         return view('attendance.treatment', compact('patients'));
-        // return view('attendance.treatment');
     }
 }

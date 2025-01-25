@@ -102,6 +102,15 @@ class EditController extends Controller
         $nurseValo = NurseEvaluation::where(['patient_id' => $id, 'history' =>  1])->whereDate('created_at', $date)->orderBy('id','ASC')->get();
         return view('edit.formNurseValo', compact('nurseValo','patient'));
     }
+    public function createOxygenTherapy(Request $request,$id)
+    {
+        $patient = Patient::where('id',$id)->first();
+        $oxygenTherapy = OxygenTherapy::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+        if ($oxygenTherapy) {
+            return view('treatment.formOx', compact('oxygenTherapy','patient'));
+        }
+        return view('treatment.formOx', compact('id','patient'));
+    }
     public function createMedicineAdmin(Request $request,$id,$date)
     {
         $medicineAdministration = MedicationAdministration::where(['patient_id' => $id, 'history' =>  1])
@@ -158,7 +167,7 @@ class EditController extends Controller
 
        $validator = $request->validate([
             'type_dialyzer' => 'nullable|in:HF80S,F6ELISIO21H,F6ELISIO19H',
-            'time' => 'nullable|numeric|min:10|max:180',
+            'time' => 'nullable|numeric|min:10|max:300',
             'blood_flux' => 'nullable|string',
             'flux_dialyzer' => 'nullable|string',
             'heparin' => 'nullable|string',
@@ -346,6 +355,29 @@ class EditController extends Controller
             );
         }
         return redirect()->route('edit.index')->with('success', 'Datos de guardados exitosamente');
+    }
+    public function fillOxygenTherapy(Request $request){
+        $validator = $request->validate([
+            'patient_id' => 'required|integer',
+            'initial_oxygen_saturation' => 'nullable|numeric',
+            'final_oxygen_saturation' => 'nullable|numeric',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i',
+            'oxygen_flow' => 'nullable|numeric',
+        ]);
+
+        $oxygenTherapy = OxygenTherapy::updateOrCreate(
+            ['patient_id' => $request->input('patient_id'), 'history' => 0],
+            [
+                'initial_oxygen_saturation' => $request->input('initial_oxygen_saturation'),
+                'final_oxygen_saturation' => $request->input('final_oxygen_saturation'),
+                'start_time' => $request->input('start_time'),
+                'end_time' => $request->input('end_time'),
+                'oxygen_flow' => $request->input('oxygen_flow'),
+            ]
+        );
+
+        return redirect()->route('treatment.index')->with('success', 'Terapia de oxígeno guardada exitosamente');
     }
     public function fillMedicineAdmin(Request $request)
     {

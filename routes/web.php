@@ -124,6 +124,7 @@ Route::group(['middleware'=>['auth']],function () {
     Route::get('/treatment/create/evaluation/{id}', [TreatmentController::class, 'createEvaluation'])->name('treatment.createEvaluation');
     Route::get('/treatment/create/evaluationN/{id}', [TreatmentController::class, 'createEvaluationNurse'])->name('treatment.createEvaluationNurse');
     Route::get('/treatment/create/medicine/{id}', [TreatmentController::class, 'createMedicineAdmin'])->name('treatment.createMedicineAdmin');
+    Route::get('/treatment/create/oxygen/{id}', [TreatmentController::class, 'createOxygenTherapy'])->name('treatment.createOxygen');
     Route::get('/treatment/finalice/{id}', [TreatmentController::class, 'finaliceTreatment'])->name('treatment.finaliceTreatment');
     Route::delete('/treatment/fill/{id}', [TreatmentController::class, 'destroy'])->name('treatment.destroy');
 
@@ -135,5 +136,6 @@ Route::group(['middleware'=>['auth']],function () {
     Route::post('/treatment/fill/evaluation', [TreatmentController::class, 'fillEvaluation'])->name('treatment.fillEvaluation');
     Route::post('/treatment/fill/evaluationN', [TreatmentController::class, 'fillNurseEvaluation'])->name('treatment.fillNurseEvaluation');
     Route::post('/treatment/fill/medicine', [TreatmentController::class, 'fillMedicineAdmin'])->name('treatment.fillMedicineAdmin');
+    Route::post('/treatment/fill/oxygen', [TreatmentController::class, 'fillOxygenTherapy'])->name('treatment.fillOxygen');
 
 });

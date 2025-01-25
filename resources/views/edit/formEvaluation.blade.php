@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<h1>Evaluación de paciente</h1>
+<h1>Evaluación de Dolor</h1>
 <h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
 <form action="{{ route('edit.fillEvaluation') }}" method="POST" class="row">
 @csrf

@@ -2,15 +2,11 @@
 
 @section('content')
     <div class="container">
-        <h2>Pacientes a tratamiento con {{$user->name . $user->position}} </h2>
-        @if ($errors->any())
-                <div class="alert2 alert2-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ __($error) }}<br></li>
-                        @endforeach
-                        </ul>
-                    </div>
+        <h2>Pacientes a tratamiento con {{$user->name .' '. __('web.'.$user->position)}} </h2>
+        @if (session('Error'))
+                <div class="alert alert-danger">
+                    {{ session('Error') }}
+                </div>
             @endif
     @if(session('success'))
     <div class="alert alert-success">
@@ -49,6 +45,7 @@
                                     <a href="{{ route('treatment.createEvaluationNurse', ['id' => $patient->id]) }}" class="btn btn-secondary">Valoración de enfermería</a>
                                     <a href="{{ route('treatment.createMedicineAdmin', ['id' => $patient->id]) }}" class="btn btn-info">Ministración de medicamentos</a>
                                     <a href="{{ route('treatment.createPostHemo', ['id' => $patient->id]) }}" class="btn btn-warning">Post-Hemodialisis</a>
+                                    <a href="{{ route('treatment.createOxygen', ['id' => $patient->id]) }}" class="btn btn-danger">Oxigeno Terapia</a>
                                     <br>
                                     <br>
                                     <br>
