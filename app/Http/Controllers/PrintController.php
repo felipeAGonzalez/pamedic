@@ -13,6 +13,7 @@ use App\Models\PostHemoDialysis;
 use App\Models\EvaluationRisk;
 use App\Models\NurseEvaluation;
 use App\Models\ActivePatient;
+use App\Models\OxygenTherapy;
 use App\Models\MedicationAdministration;
 use Illuminate\Validation\ValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -90,13 +91,14 @@ class PrintController extends Controller
             $error = ValidationException::withMessages(['Error' => 'No se ha encontrado la evaluación de caidas']);
             throw $error;
         }
+        $oxygenTherapy = OxygenTherapy::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
         $nurseValo = NurseEvaluation::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->get();
         if ($nurseValo->isEmpty()) {
             $error = ValidationException::withMessages(['Error' => 'No se ha encontrado la evaluación de enfermería']);
             throw $error;
         }
         $medicineAdmin = MedicationAdministration::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->get();
-        $pdf = Pdf::loadView('print.paper', compact('patient', 'dialysisMonitoring', 'dialysisPrescription', 'transHemodialysis', 'preHemodialysis', 'postHemoDialysis','user','evaluationRisk','nurseValo','medicineAdmin'));
-        return $pdf->stream('expediente.pdf');
+        $pdf = Pdf::loadView('print.paper', compact('patient', 'dialysisMonitoring', 'dialysisPrescription', 'transHemodialysis', 'preHemodialysis', 'postHemoDialysis','user','evaluationRisk','oxygenTherapy','nurseValo','medicineAdmin'));
+        return $pdf->stream($date.'-'.substr($patient->expedient_number, -4) . '.pdf');
     }
 }

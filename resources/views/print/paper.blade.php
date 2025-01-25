@@ -333,6 +333,25 @@
             <td style="width: 20%; font-size: 12px;">{{ __('web.'.$postHemoDialysis['fall_risk']) }}</td>
         </tr>
         <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
+                <h4 style="margin: 0;">Oxigenoterapia</h4>
+        </td>
+    </table>
+    <table border=1 style="width: 100%;">
+        <tr>
+            <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Saturación de Oxígeno Inicial</td>
+            <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Saturación de Oxígeno Final</td>
+            <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Hora de Inicio</td>
+            <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Hora de Fin</td>
+            <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Flujo de Oxígeno</td>
+        </tr>
+        <tr>
+            <td style="font-size: 12px;">{{ $oxygenTherapy['initial_oxygen_saturation'] ?? '-' }}</td>
+            <td style="font-size: 12px;">{{ $oxygenTherapy['final_oxygen_saturation'] ?? '-' }}</td>
+            <td style="font-size: 12px;">{{ $oxygenTherapy['start_time'] ?? '-' }}</td>
+            <td style="font-size: 12px;">{{ $oxygenTherapy['end_time'] ?? '-' }}</td>
+            <td style="font-size: 12px;">{{ $oxygenTherapy['oxygen_flow'] ?? '-' }}</td>
+        </tr>
+        <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
                 <h4 style="margin: 0;">ENFERMERO RESPONSABLE</h4>
         </td>
     </table>
