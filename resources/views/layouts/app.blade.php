@@ -48,7 +48,7 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{{url('/print') }}">Nota de enfermería</a>
-                        <!-- <a class="dropdown-item" href="{{ url('/print.MedicNote') }}">Nota Medica</a> -->
+                        <a class="dropdown-item" href="{{url('/print/medic/note') }}">Nota Medica</a>
                     </div>
         </li>
         <li class="nav-item dropdown">

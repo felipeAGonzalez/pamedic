@@ -24,4 +24,6 @@ return [
 'high' => 'Alto',
 'medium' => 'Medio',
 'low' => 'Bajo',
+'N/A' => 'N/A',
+'N/P' => 'N/P',
 ];

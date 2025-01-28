@@ -57,6 +57,60 @@ class PrintController extends Controller
         return view('print.index', compact('activePatients'));
     }
 
+    public function indexMedicNote(){
+        $nursePatients = NursePatient::where(['date' => date('Y-m-d'),'history'=>1])->get();
+        $activePatients = $nursePatients->map(function ($nursePatients) {
+            return $nursePatients->active_patient;
+        });
+
+        return view('noteMedic.index', compact('activePatients'));
+    }
+
+    public function printMedicNote($id,$date = null){
+        $date = $date ?? date('Y-m-d');
+        $patient = Patient::findOrFail($id);
+        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
+        $preHemodialysis = PreHemodialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
+        return view('noteMedic.form', compact('patient','date','dialysisMonitoring','preHemodialysis'));
+    }
+
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'patient_id' => 'required|exists:patients,id',
+            'date' => 'required|date',
+            'notes' => 'required|string',
+        ]);
+
+        $nursePatient = new NursePatient();
+        $nursePatient->patient_id = $validatedData['patient_id'];
+        $nursePatient->date = $validatedData['date'];
+        $nursePatient->notes = $validatedData['notes'];
+        $nursePatient->save();
+
+        return redirect()->route('noteMedic.index')->with('success', 'Nurse patient record created successfully.');
+    }
+
+    public function searchMedicNote(Request $request){
+        $search = $request->query('search');
+        $activePatients = [];
+        if ($search ?? false) {
+            $patients = Patient::where('expedient_number','LIKE','%'.$search.'%')->orWhere('name','LIKE','%'.$search.'%')->orWhere('last_name','LIKE','%'.$search.'%')->orWhere('last_name_two','LIKE','%'.$search.'%');
+            $patients = $patients->get();
+            if ($patients->isEmpty()) {
+                $error = ValidationException::withMessages(['Error' => 'Paciente no encontrado']);
+                throw $error;
+            }
+            $activePatients = ActivePatient::query();
+            $activePatients = $activePatients->whereIn('patient_id', $patients->pluck('id'))->orderBy('date','desc')->get();
+            if ($activePatients->isEmpty()) {
+                $error = ValidationException::withMessages(['Error' => 'Paciente sin tratamientos']);
+                throw $error;
+            }
+        }
+        return view('noteMedic.index', compact('activePatients'));
+    }
+
     public function printNurseExpedient($id,$date = null){
         $date = $date ?? date('Y-m-d');
         $patient = Patient::findOrFail($id);
