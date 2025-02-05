@@ -17,6 +17,6 @@ class Patient extends Model
 
     public function activePatient()
     {
-        return $this->hasOne(ActivePatient::class, 'patient_id');
+        return $this->hasOne(ActivePatient::class, 'patient_id')->orderby('date','desc');
     }
 }

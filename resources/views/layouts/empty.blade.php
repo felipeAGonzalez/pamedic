@@ -20,9 +20,9 @@
     </header>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg" style="background-color: #312baa;">
    <div class="container-fluid">
-    <a class="navbar-brand" href="#"><img src="{{asset('logos/icono.png')}}" width="50" style="color: white;"> Pamedic</a>
+    <a class="navbar-brand" href="#"><img src="{{asset('logos/mini.jpg')}}" width="50">  <span style="color: #f8f9fa">Pamedic</span></a>
       <li class="nav-item">
                    <a class="nav-link" href="{{ url('/logout') }}">Cerrar Sesión</a>
                 </li>

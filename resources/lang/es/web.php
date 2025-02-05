@@ -3,7 +3,9 @@
 return [
 'ROOT'=>'Super Usuario',
 'DIRECTIVE'=>'Medico General',
-'MANAGER'=>'Calidad',
+'MANAGER'=>'Jefe de Enfermería',
+'QUALITY'=>'Calidad',
+'NEPHROLOGIST'=>'Nefrólogo',
 'RECEPTIONIST'=>'Recepcionista',
 'NURSE'=>'Enfermero',
 'none'=>'No aplica',

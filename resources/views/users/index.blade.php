@@ -7,7 +7,6 @@
     <table class="table mt-4">
          <thead class="table-dark">
             <tr>
-                <th>ID</th>
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Cargo</th>
@@ -16,8 +15,9 @@
         </thead>
         <tbody>
             @foreach($users as $user)
+            @if($user->id != 1)
+            @endif
                 <tr>
-                    <td>{{ $user->id }}</td>
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ __('web.'.$user->position) }}</td>

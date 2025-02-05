@@ -8,10 +8,7 @@ use Auth;
 
 class LoginController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('guest')->except('logout');
-    }
+
     // Mostrar el formulario de inicio de sesión
     public function showLoginForm()
     {

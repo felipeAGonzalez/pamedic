@@ -2,7 +2,11 @@
 
 @section('content')
     <div class="container">
+        @if($user->position != 'NURSE' || $user->position != 'MANAGER')
+        <h2>Pacientes en tratamiento actual</h2>
+        @else
         <h2>Pacientes a tratamiento con {{$user->name .' '. __('web.'.$user->position)}} </h2>
+        @endif
         @if (session('Error'))
                 <div class="alert alert-danger">
                     {{ session('Error') }}
@@ -21,7 +25,8 @@
                     <th scope="col">Foto</th>
                     <th scope="col">Nombre</th>
                     <th scope="col">Género</th>
-                    <th scope="col">Acciones</th>
+                <th scope="col">{{ $user->position != 'NURSE' ? 'Asignación' : 'Acciones' }}</th>
+                <th scope="col">{{ $user->position != 'NURSE' ? 'Acciones': '' }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -36,6 +41,9 @@
                         <td>{{ $patient->name . ' ' . $patient->last_name . ' ' . $patient->last_name_two }}</td>
                         <td>{{ $patient->gender}}</td>
                         <td>
+                            @if($user->position != 'NURSE')
+                            <label>{{ $patient->activePatient->nursePatient->user->name }}</label>
+                            @else
                         <div >
                                     <a href="{{ route('treatment.create', ['id' => $patient->id]) }}" class="btn btn-info">Pre-dialisis</a>
                                     <a href="{{ route('treatment.createPres', ['id' => $patient->id]) }}" class="btn btn-primary">Prescripción</a>
@@ -50,15 +58,18 @@
                                     <br>
                                     <br>
                                     <a href="{{ route('treatment.finaliceTreatment', ['id' => $patient->id]) }}" class="btn btn-success">Finalizar Tratamiento</a>
-                                    @if(in_array($user->position, ['ROOT', 'DIRECTIVE', 'QUALITY']))
+
+                        </div>
+                        @endif
+                        </td>
+                        <td>
+                        @if(in_array($user->position, ['ROOT', 'DIRECTIVE', 'QUALITY']))
                                         <form action="{{ route('delete.treatment', ['id' => $patient->id]) }}" method="POST" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger">Eliminar tratamiento</button>
                                         </form>
                                     @endif
-                                </div>
-                        </td>
                         </td>
                     </tr>
                 @endforeach

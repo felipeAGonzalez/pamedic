@@ -30,7 +30,7 @@ class TreatmentController extends Controller
     public function index()
     {
         $user = Auth::user();
-        if ($user->position == 'NURSE') {
+        if ($user->position == 'NURSE' || $user->position == 'MANAGER') {
             $nursePatients = NursePatient::where(['user_id' => Auth::user()->id,'history' => 0])->get();
             $patients = $nursePatients->map(function ($nursePatients) {
                 return $nursePatients->active_patient->patient;
@@ -79,7 +79,7 @@ class TreatmentController extends Controller
         $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  0])->first();
         $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  0])->first();
         if (!$dialysisPrescription) {
-            return redirect()->route('treatment.index')->with('error', 'Primero debe llenar la prescripción de diálisis');
+            return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar la prescripción de diálisis');
         }
         if ($dialysisPrescription->type_dialyzer == 'F6ELISIO21H' || $dialysisPrescription->type_dialyzer == 'F6ELISIO19H') {
             $noReuse = 1;
@@ -117,13 +117,13 @@ class TreatmentController extends Controller
         $patient = Patient::where('id',$id)->first();
         $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
         if (!$dialysisPrescription) {
-            return redirect()->route('treatment.index')->with('error', 'Primero debe llenar la prescripción de diálisis');
+            return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar la prescripción de diálisis');
         }
         $times = ($dialysisPrescription->time / 15 ) +1;
         $scheduleUltrafilter = floor($dialysisPrescription->schedule_ultrafilter / $times-1);
         $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('date_hour','DESC')->first();
         if (!$dialysisMonitoring) {
-            return redirect()->route('treatment.index')->with('error', 'Primero debe llenar el monitoreo de diálisis');
+            return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar el monitoreo de diálisis');
         }
         $hour = date('H:i', strtotime($dialysisMonitoring->date_hour));
         $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('time','ASC')->get();
@@ -155,6 +155,7 @@ class TreatmentController extends Controller
     public function createPostHemo(Request $request,$id)
     {
         $patient = Patient::where('id',$id)->first();
+
         $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
         if ($postHemoDialysis) {
             return view('treatment.formPostH', compact('postHemoDialysis','patient'));
@@ -197,7 +198,7 @@ class TreatmentController extends Controller
             }
             $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('date_hour','ASC')->first();
         if (!$dialysisMonitoring) {
-            return redirect()->route('treatment.index')->with('error', 'Primero debe llenar el monitoreo de diálisis');
+            return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar el monitoreo de diálisis');
         }
         $hour = date('H:i', strtotime($dialysisMonitoring->date_hour));
         for ($i=0; $i < 3 ; $i++) {
@@ -377,7 +378,8 @@ class TreatmentController extends Controller
 
         $validator = $request->validate([
             'time.*' => 'required|date_format:H:i:s',
-            'arterial_pressure.*' => 'required|string',
+            'arterial_pressure_sistolica.*' => 'required|numeric',
+            'arterial_pressure_diastolica.*' => 'required|numeric',
             'mean_pressure.*' => 'required|numeric',
             'heart_rate.*' => 'required|numeric',
             'respiratory_rate.*' => 'required|numeric',
@@ -395,7 +397,7 @@ class TreatmentController extends Controller
             ['patient_id' => $request->input('patient_id'),
              'time' => $value, 'history' => 0],
             [
-                'arterial_pressure' => floatval($request->input('arterial_pressure')[$key]),
+                'arterial_pressure' => floatval($request->input('arterial_pressure_sistolica')[$key]).'/'.floatval($request->input('arterial_pressure_diastolica')[$key]),
                 'mean_pressure' => $request->input('mean_pressure')[$key],
                 'heart_rate' => $request->input('heart_rate')[$key],
                 'respiratory_rate' => $request->input('respiratory_rate')[$key],
@@ -468,8 +470,8 @@ class TreatmentController extends Controller
     public function fillNurseEvaluation(Request $request){
         $validator = $request->validate([
             'fase.*' => 'required|string',
-            'nurse_valuation.*' => 'required|string',
-            'nurse_intervention.*' => 'required|string',
+            'nurse_valuation.*' => 'nullable|string',
+            'nurse_intervention.*' => 'nullable|string',
         ]);
         foreach ($request->input('fase') as $key => $value) {
             NurseEvaluation::updateOrCreate(
@@ -625,7 +627,7 @@ class TreatmentController extends Controller
             return redirect()->route('treatment.index')->with('success', 'Tratamiento finalizado exitosamente');
         } catch (\Exception $e) {
             \DB::rollBack();
-            \Log::error($e);
+            \Log::Error($e);
             return redirect()->route('treatment.index')->with('Error', $e->getMessage());
         }
     }

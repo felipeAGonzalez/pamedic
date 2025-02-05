@@ -4,7 +4,7 @@
     <header>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pamedic</title>
+    <title>Pamedic</title> <!-- Correct spelling -->
     <link rel="shortcut icon" type="image/png" href="{{ asset('favicon.ico') }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
@@ -22,7 +22,7 @@
 <body>
 <nav class="navbar navbar-expand-lg" style="background-color: #312baa;">
    <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url('/') }}"> <img src="{{asset('logos/mini.jpg')}}" width="50" > <span style="color: #f8f9fa">Pamedic</span></a>
+      <a class="navbar-brand" href="{{ url('/') }}"> <img src="{{asset('logos/mini.jpg')}}" width="50" > <span style="color: #f8f9fa">Pamedic</span></a> <!-- Correct spelling -->
       @auth
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -73,7 +73,7 @@
                    <a class="nav-link" href="{{ url('/logout') }}">Cerrar Sesión</a>
                 </li>
     </div>
-    @endauth
+    @endauth <!-- Correct Blade directive -->
 </div>
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>

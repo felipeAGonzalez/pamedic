@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('patient_id')->comment('El ID del paciente asociado con el monitoreo de diálisis');
             $table->foreign('patient_id')->references('id')->on('patient');
-            $table->string('nurse_valuation')->comment('Valoración de enfermería');
+            $table->string('nurse_valuation')->nullable()->comment('Valoración de enfermería');
             $table->string('fase')->comment('Fase de la valoración');
-            $table->string('nurse_intervention')->comment('Intervención de enfermería');
+            $table->string('nurse_intervention')->nullable()->comment('Intervención de enfermería');
             $table->boolean('history')->default(false)->comment('Si el paciente tiene historial de caídas');
             $table->timestamps();
         });

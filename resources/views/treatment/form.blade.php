@@ -43,7 +43,12 @@
 
         <div class="form-group" id="needle_mesure_group" style="display: none;">
             <label for="needle_mesure">Medida de Aguja:</label>
-            <input type="text" name="needle_mesure" id="needle_mesure" class="form-control" value="{{ $dialysisMonitoring->needle_mesure ?? '' }}">
+            <select name="needle_mesure" id="needle_mesure" class="form-control">
+                <option value="">Seleccionar</option>
+                <option value="15" {{ isset($dialysisMonitoring) && $dialysisMonitoring->needle_mesure == '15' ? 'selected' : '' }}>15</option>
+                <option value="16" {{ isset($dialysisMonitoring) && $dialysisMonitoring->needle_mesure == '16' ? 'selected' : '' }}>16</option>
+                <option value="17" {{ isset($dialysisMonitoring) && $dialysisMonitoring->needle_mesure == '17' ? 'selected' : '' }}>17</option>
+            </select>
         </div>
 
         <script>

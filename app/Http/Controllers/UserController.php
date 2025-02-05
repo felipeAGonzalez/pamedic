@@ -15,6 +15,8 @@ class UserController extends Controller
         "DIRECTIVE" => "Medico",
         "MANAGER" => "Jefe de Enfermería",
         "NURSE" => "Enfermero",
+        'NEPHROLOGIST'=>'Nefrólogo',
+
     ];
 
     public function index()
@@ -107,7 +109,7 @@ class UserController extends Controller
             $error = ValidationException::withMessages(['Error' => 'No tiene permisos para reiniciar la contraseña del usuario root']);
             throw $error;
         }
-        $user->password = Hash::make('befit');
+        $user->password = Hash::make('pamedic');
         $user->need_change = true;
         $user->save();
         return redirect()->route('users.index')->with('success', 'Contraseña reiniciada correctamente');

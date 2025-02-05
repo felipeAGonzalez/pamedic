@@ -52,7 +52,7 @@
                     <option value="">Seleccionar</option>
                     <option value="bolo_inicial" {{ old('heparin', $dialysisPrescription->heparin ?? '') == 'bolo_inicial' ? 'selected' : '' }}>Bolo Inicial</option>
                     <option value="dosis_unica" {{ old('heparin', $dialysisPrescription->heparin ?? '') == 'dosis_unica' ? 'selected' : '' }}>Dosis Única</option>
-                    <option value="dosis_por_hora" {{ old('heparin', $dialysisPrescription->heparin ?? '') == 'dosis_por_hora' ? 'selected' : '' }}>Bolo(ui/h)</option>
+                    <option value="dosis_por_hora" {{ old('heparin', $dialysisPrescription->heparin ?? '') == 'dosis_por_hora' ? 'selected' : '' }}>Infusión</option>
                 </select>
             </div>
         </div>

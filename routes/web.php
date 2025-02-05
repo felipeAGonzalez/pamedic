@@ -45,7 +45,7 @@ Route::group(['middleware'=>['auth']],function () {
                         })->name('welcome');
 
 
-    Route::group(['middleware' => 'position:ROOT,DIRECTIVE,QUALITY'], function () {
+    Route::group(['middleware' => 'position:ROOT,DIRECTIVE,QUALITY,MANAGER'], function () {
 
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
@@ -58,10 +58,6 @@ Route::group(['middleware'=>['auth']],function () {
         Route::get('/patients/{id}/edit', [PatientController::class, 'edit'])->name('patients.edit');
         Route::put('/patients/{id}', [PatientController::class, 'update'])->name('patients.update');
         Route::delete('/patients/{id}', [PatientController::class, 'destroy'])->name('patients.destroy');
-
-        Route::match(['get', 'post'],'password/view', [LoginController::class, 'password'])->name('password.view');
-        Route::post('password/reset', [UserController::class, 'changePassword'])->name('password.update');
-        Route::post('password/reset/{id}', [UserController::class, 'resetPassword'])->name('password.reset');
 
         Route::get('/medicines', [MedicineController::class, 'index'])->name('medicines.index');
         Route::get('/medicines/create', [MedicineController::class, 'create'])->name('medicines.create');
@@ -143,4 +139,7 @@ Route::group(['middleware'=>['auth']],function () {
     Route::post('/treatment/fill/medicine', [TreatmentController::class, 'fillMedicineAdmin'])->name('treatment.fillMedicineAdmin');
     Route::post('/treatment/fill/oxygen', [TreatmentController::class, 'fillOxygenTherapy'])->name('treatment.fillOxygen');
 
+    Route::match(['get', 'post'],'password/view', [LoginController::class, 'password'])->name('password.view');
+    Route::post('password/reset', [UserController::class, 'changePassword'])->name('password.update');
+    Route::post('password/reset/{id}', [UserController::class, 'resetPassword'])->name('password.reset');
 });

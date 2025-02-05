@@ -74,7 +74,7 @@
                 <input type="text" class="form-control" id="conductivity" name="conductivity" value="{{ old('conductivity', $preHemodialysis->conductivity ?? '') }}" onclick="this.value=''">
             </div>
             <div class="form-group">
-                <label for="dextrostix">Dexstrostis</label>
+                <label for="dextrostix">Glucemia Capilar</label>
                 <input type="text" class="form-control" id="dextrostix" name="dextrostix" value="{{ old('dextrostix', $preHemodialysis->dextrostix ?? '') }}" onclick="this.value=''">
             </div>
             <div class="form-group">

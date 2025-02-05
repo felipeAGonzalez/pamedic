@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
+<script>
+    setInterval(function() {
+        location.reload();
+    }, 3000);
+</script>
     <div class="container">
         <h2>Listado de Pacientes Para Tratamiento</h2>
         <div class="table-responsive">
@@ -12,8 +17,9 @@
                     <th scope="col">Nombre</th>
                     <th scope="col">Género</th>
                     <th scope="col">Fecha de nacimiento</th>
-                    <th scope="col">Fecha de ingreso</th>
-                    <th scope="col">Acciones</th>
+                    @if(auth()->user()->position == 'NURSE' || auth()->user()->position == 'MANAGER')
+                                <th scope="col">Acciones</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
@@ -28,10 +34,11 @@
                         <td>{{ $patient->name . ' ' . $patient->last_name . ' ' . $patient->last_name_two }}</td>
                         <td>{{ $patient->gender}}</td>
                         <td>{{ $patient->birth_date->format('d-m-Y')}}</td>
-                        <td>{{ $patient->activePatient->active}}</td>
+                        @if(auth()->user()->position == 'NURSE' || auth()->user()->position == 'MANAGER')
                         <td>
-                            <a href="{{ route('attendance.asigne', $patient->id) }}" class="btn btn-success">Asignar Enfermero</a>
+                                <a href="{{ route('attendance.asigne', $patient->id) }}" class="btn btn-success">Asignar Paciente</a>
                         </td>
+                            @endif
                     </tr>
                 @endforeach
             </tbody>

@@ -347,8 +347,8 @@
         <tr>
             <td style="font-size: 12px;">{{ $oxygenTherapy['initial_oxygen_saturation'] ?? '-' }}</td>
             <td style="font-size: 12px;">{{ $oxygenTherapy['final_oxygen_saturation'] ?? '-' }}</td>
-            <td style="font-size: 12px;">{{ $oxygenTherapy['start_time'] ?? '-' }}</td>
-            <td style="font-size: 12px;">{{ $oxygenTherapy['end_time'] ?? '-' }}</td>
+            <td style="font-size: 12px;">{{ $oxygenTherapy['start_time'] != '00:00:00' ? $oxygenTherapy['start_time'] : '-' }}</td>
+            <td style="font-size: 12px;">{{ $oxygenTherapy['end_time'] != '00:00:00' ? $oxygenTherapy['end_time'] : '-' }}</td>
             <td style="font-size: 12px;">{{ $oxygenTherapy['oxygen_flow'] ?? '-' }}</td>
         </tr>
         <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">

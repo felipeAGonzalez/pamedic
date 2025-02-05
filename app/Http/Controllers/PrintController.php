@@ -139,7 +139,8 @@ class PrintController extends Controller
             $error = ValidationException::withMessages(['Error' => 'No se ha encontrado los datos de post hemodialisis']);
             throw $error;
         }
-        $user = auth()->user();
+        $activePatient = ActivePatient::where(['patient_id' => $id , 'date' => $date])->first();
+        $user = NursePatient::where(['active_patient_id' => $activePatient->id , 'date' => $date])->first()->user;
         $evaluationRisk = EvaluationRisk::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->get();
         if ($evaluationRisk->isEmpty()) {
             $error = ValidationException::withMessages(['Error' => 'No se ha encontrado la evaluación de caidas']);

@@ -21,6 +21,6 @@ class ActivePatient extends Model
     }
     public function nursePatient()
     {
-        return $this->hasMany(NursePatient::class);
+        return $this->hasOne(NursePatient::class);
     }
 }
