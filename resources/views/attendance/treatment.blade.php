@@ -33,7 +33,7 @@
                         </td>
                         <td>{{ $patient->name . ' ' . $patient->last_name . ' ' . $patient->last_name_two }}</td>
                         <td>{{ $patient->gender}}</td>
-                        <td>{{ $patient->birth_date->format('d-m-Y')}}</td>
+                        <td>{{ $patient->birth_date ? $patient->birth_date->format('d-m-Y') : 'Sin fecha de nacimiento' }}</td>
                         @if(auth()->user()->position == 'NURSE' || auth()->user()->position == 'MANAGER')
                         <td>
                                 <a href="{{ route('attendance.asigne', $patient->id) }}" class="btn btn-success">Asignar Paciente</a>

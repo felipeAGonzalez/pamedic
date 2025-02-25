@@ -53,7 +53,7 @@
                         </td>
                         <td>{{ $activePatient->patient->name . ' ' . $activePatient->patient->last_name . ' ' . $activePatient->patient->last_name_two }}</td>
                         <td>{{ $activePatient->patient->gender}}</td>
-                        <td>{{ $activePatient->patient->birth_date->format('d-m-Y')}}</td>
+                        <td>{{ $activePatient->patient->birth_date ? $activePatient->patient->birth_date->format('d-m-Y') : 'Sin fecha de nacimiento' }}</td>
                         <td>{{ \Carbon\Carbon::parse($activePatient->date)->format('d-m-Y')}}</td>
                         <td>
                         <div >

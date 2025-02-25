@@ -37,13 +37,13 @@
                                     <input type="time" name="time[]" value="{{ $item->time }}" class="form-control" required>
                                 </td>
                                 <td>
-                                    <input type="text" name="arterial_pressure_sistolica[]" value="{{ $item->arterial_pressure_sistolica }}" class="form-control" required onclick="this.value=''">
+                                    <input type="number" name="arterial_pressure_sistolica[]" value="{{ $item->arterial_pressure != '0' ? explode('/', $item->arterial_pressure)[0] : 0 }}" class="form-control" onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="text" name="arterial_pressure_diastolica[]" value="{{ $item->arterial_pressure_diastolica }}" class="form-control" required onclick="this.value=''">
+                                    <input type="number" name="arterial_pressure_diastolica[]" value="{{ $item->arterial_pressure != '0' ? explode('/', $item->arterial_pressure)[1] : 0 }}" class="form-control" onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="mean_pressure[]" value="{{ (2 * $item->arterial_pressure_diastolica + $item->arterial_pressure_sistolica) / 3 }}" class="form-control" required readonly>
+                                    <input type="number" name="mean_pressure[]" value="{{ $item->mean_pressure}}" class="form-control" readonly style="width: 120px;">
                                 </td>
 
                                 <td>
@@ -119,8 +119,8 @@
             let sistolica = row.querySelector('input[name="arterial_pressure_sistolica[]"]').value;
             let diastolica = row.querySelector('input[name="arterial_pressure_diastolica[]"]').value;
             if (sistolica && diastolica) {
-                let meanPressure = (2 * parseFloat(diastolica) + parseFloat(sistolica)) / 3;
-                row.querySelector('input[name="mean_pressure[]"]').value = meanPressure.toFixed(2);
+                let meanPressure = (2 * parseFloat(sistolica) + parseFloat(diastolica)) / 3;
+                row.querySelector('input[name="mean_pressure[]"]').value = Math.ceil(meanPressure);
             }
         });
     });

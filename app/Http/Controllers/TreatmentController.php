@@ -375,11 +375,12 @@ class TreatmentController extends Controller
 
     }
     public function fillTransHemo(Request $request){
+        \Log::info($request->all());
 
         $validator = $request->validate([
             'time.*' => 'required|date_format:H:i:s',
-            'arterial_pressure_sistolica.*' => 'required|numeric',
-            'arterial_pressure_diastolica.*' => 'required|numeric',
+            'arterial_pressure_sistolica.*' => 'nullable|numeric',
+            'arterial_pressure_diastolica.*' => 'nullable|numeric',
             'mean_pressure.*' => 'required|numeric',
             'heart_rate.*' => 'required|numeric',
             'respiratory_rate.*' => 'required|numeric',

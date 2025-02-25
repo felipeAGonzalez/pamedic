@@ -16,12 +16,11 @@
         <tbody>
             @foreach($users as $user)
             @if($user->id != 1)
-            @endif
-                <tr>
-                    <td>{{ $user->name }}</td>
-                    <td>{{ $user->email }}</td>
-                    <td>{{ __('web.'.$user->position) }}</td>
-                    <td>
+            <tr>
+                <td>{{ $user->name }}</td>
+                <td>{{ $user->email }}</td>
+                <td>{{ __('web.'.$user->position) }}</td>
+                <td>
                         <a href="{{ route('users.show', $user->id) }}" class="btn btn-info">Ver</a>
                         <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary">Editar</a>
                         <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display: inline">
@@ -35,6 +34,7 @@
                         </form>
                     </td>
                 </tr>
+            @endif
             @endforeach
         </tbody>
     </table>

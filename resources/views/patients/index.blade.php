@@ -33,13 +33,16 @@
                         <td>{{ $patient->expedient_number}}</td>
                         <td>
                             <div style="width: 200px; height: 200px; overflow: hidden;">
-                                <img src="{{$patient->photo ? asset($patient->photo) : asset('default/no-photo-m.png')}}" alt="Foto Paciente" style="width: auto; height: auto; object-fit: contain;">
+                            @php
+                                $photo = $patient->gender == 'M' ? 'no-photo-m.png' : 'no-photo-f.png';
+                            @endphp
+                            <img src="{{$patient->photo ? asset($patient->photo) : asset('default/' . $photo)}}" alt="Foto Paciente" style="width: auto; height: auto; object-fit: contain;">
                             </div>
                         </td>
                         <td>{{ $patient->name . ' ' . $patient->last_name . ' ' . $patient->last_name_two }}</td>
                         <td>{{ $patient->gender}}</td>
-                        <td>{{ $patient->birth_date->format('d-m-Y')}}</td>
-                        <td>{{ $patient->date_entry->format('d-m-Y')}}</td>
+                        <td>{{ $patient->birth_date ? $patient->birth_date->format('d-m-Y') : 'Sin fecha de nacimiento' }}</td>
+                        <td>{{ $patient->date_entry ? $patient->date_entry->format('d-m-Y') : 'Sin Fecha de ingreso' }}</td>
                         <td>
                             <a href="{{ route('patients.show', $patient->id) }}" class="btn btn-info">Ver</a>
                             <a href="{{ route('patients.show.photo', $patient->id) }}" class="btn btn-success">Agregar Foto</a>

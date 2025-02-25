@@ -23,7 +23,7 @@
             <td style="font-size: 12px;"><Strong>{{ $patient->last_name_two }}</Strong></td>
             <td style="font-size: 12px;"><Strong>{{ $patient->expedient_number }}</Strong></td>
             <td style="font-size: 12px;"><Strong>{{ $patient->gender}}</Strong></td>
-            <td style="font-size: 12px;"><Strong>{{$patient->birth_date->age }}</Strong></td>
+            <td style="font-size: 12px;"><Strong>{{ $patient->birth_date ? $patient->birth_date->age : 'Sin fecha de nacimiento' }}</Strong></td>
         </tr>
         <tr>
             <td style="background-color: #e6e6e6; font-size: 12px; width: 24.66%;">Nombre(s) del Paciente</td>
@@ -345,11 +345,19 @@
             <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Flujo de Oxígeno</td>
         </tr>
         <tr>
-            <td style="font-size: 12px;">{{ $oxygenTherapy['initial_oxygen_saturation'] ?? '-' }}</td>
-            <td style="font-size: 12px;">{{ $oxygenTherapy['final_oxygen_saturation'] ?? '-' }}</td>
-            <td style="font-size: 12px;">{{ $oxygenTherapy['start_time'] != '00:00:00' ? $oxygenTherapy['start_time'] : '-' }}</td>
-            <td style="font-size: 12px;">{{ $oxygenTherapy['end_time'] != '00:00:00' ? $oxygenTherapy['end_time'] : '-' }}</td>
-            <td style="font-size: 12px;">{{ $oxygenTherapy['oxygen_flow'] ?? '-' }}</td>
+            @if(isset($oxygenTherapy))
+                <td style="font-size: 12px;">{{ $oxygenTherapy['initial_oxygen_saturation'] ?? '-' }}</td>
+                <td style="font-size: 12px;">{{ $oxygenTherapy['final_oxygen_saturation'] ?? '-' }}</td>
+                <td style="font-size: 12px;">{{ $oxygenTherapy['start_time'] != '00:00:00' ? $oxygenTherapy['start_time'] : '-' }}</td>
+                <td style="font-size: 12px;">{{ $oxygenTherapy['end_time'] != '00:00:00' ? $oxygenTherapy['end_time'] : '-' }}</td>
+                <td style="font-size: 12px;">{{ $oxygenTherapy['oxygen_flow'] ?? '-' }}</td>
+            @else
+                <td style="font-size: 12px;">-</td>
+                <td style="font-size: 12px;">-</td>
+                <td style="font-size: 12px;">-</td>
+                <td style="font-size: 12px;">-</td>
+                <td style="font-size: 12px;">-</td>
+            @endif
         </tr>
         <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
                 <h4 style="margin: 0;">ENFERMERO RESPONSABLE</h4>

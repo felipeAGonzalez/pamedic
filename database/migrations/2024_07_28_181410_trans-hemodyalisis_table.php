@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('patient_id')->comment('El ID del paciente asociado con el monitoreo de diálisis');
             $table->foreign('patient_id')->references('id')->on('patient');
             $table->time('time')->comment('Hora de la medición');
-            $table->integer('arterial_pressure')->comment('Valor de la presión arterial');
+            $table->string('arterial_pressure')->comment('Valor de la presión arterial');
             $table->integer('mean_pressure')->comment('Valor de la presión media');
             $table->integer('heart_rate')->comment('Valor de la frecuencia cardíaca');
             $table->integer('respiratory_rate')->comment('Valor de la frecuencia respiratoria');
@@ -38,6 +38,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('trans_hemodialysis');
     }
 };
