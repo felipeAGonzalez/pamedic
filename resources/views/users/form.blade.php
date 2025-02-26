@@ -24,14 +24,14 @@
             </div>
 
             <div class="form-group">
-                <label for="profesional_id">C√©dula Profesional:</label>
+                <label for="profesional_id">C®¶dula Profesional:</label>
                 <input type="text" name="profesional_id" id="profesional_id" class="form-control" value="{{ old('profesional_id', isset($user) ? $user->profesional_id : '') }}">
             </div>
 
             <div class="form-group">
                 <label for="position">Seleccione un cargo:</label>
                 <select name="position" class="form-select" id="position">
-                    <option value="">Seleccione una opci√≥n</option>
+                    <option value="">Seleccione una opci®Æn</option>
                     @foreach($position as $key => $value)
                         <option value="{{ $key }}" {{ isset($user) && $user->position == $key ? 'selected' : '' }}>
                             {{ $value }}

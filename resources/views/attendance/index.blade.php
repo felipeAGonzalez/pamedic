@@ -24,8 +24,9 @@
                     <th>Fecha de nacimiento</th>
                     <th>Genero</th>
                     @if($patients)
-                        <th>Acci√≥n</th>
+                        <th>Acci®Æn</th>
                     @endif
+                    
                 </tr>
             </thead>
             <tbody>

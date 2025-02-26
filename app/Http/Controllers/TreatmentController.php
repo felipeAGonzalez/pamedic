@@ -258,7 +258,7 @@ class TreatmentController extends Controller
             'catheter_type' => 'nullable|in:tunneling,no_tunneling',
             'implantation' => 'required|in:femoral,yugular,subclavia,brazo,antebrazo',
             'needle_mesure' => 'nullable|integer',
-            'machine_number' => 'required|integer',
+            'machine_number' => 'required|string',
             'session_number' => 'required|integer',
             'side' => 'required|in:right,left',
             'collocation_date' => 'required|date',
@@ -375,7 +375,6 @@ class TreatmentController extends Controller
 
     }
     public function fillTransHemo(Request $request){
-        \Log::info($request->all());
 
         $validator = $request->validate([
             'time.*' => 'required|date_format:H:i:s',

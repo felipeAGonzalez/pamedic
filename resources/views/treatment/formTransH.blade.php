@@ -78,7 +78,7 @@
                                 </td>
                                 <td>
                                     <select name="blood_flow[]" class="form-control" required>
-                                        @for ($i = 200; $i <= 400; $i += 50)
+                                        @for ($i = 200; $i <= 400; $i += 10)
                                             <option value="{{ $i }}" {{ $item->blood_flow == $i ? 'selected' : '' }}>{{ $i }}</option>
                                         @endfor
                                     </select>

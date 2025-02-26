@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +9,7 @@
     <table style="width: 100%;  border-collapse: collapse;">
         <tr>
             <td style="width: 50px; background-color: #8db4e3;">
-                <img src="{{ public_path('logos/pamedic.png') }}" width="70" style="margin-right: 10px;">
+                <img src="{{public_path('logos/pamedic.png')}}" width="70" style="margin-right: 10px;">
             </td>
             <td colspan=5>
                 <h3 style="margin: 0; text-align: center; background-color: #8db4e3; padding: 10px;"><strong><pre>       Hoja de Enfermería - Nota de Enfermería        </pre></strong></h3>

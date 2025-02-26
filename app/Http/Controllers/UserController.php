@@ -16,7 +16,7 @@ class UserController extends Controller
         "MANAGER" => "Jefe de Enfermería",
         "NURSE" => "Enfermero",
         'NEPHROLOGIST'=>'Nefrólogo',
-
+        "RECEPCIONIST" => 'Recepcionista',
     ];
 
     public function index()

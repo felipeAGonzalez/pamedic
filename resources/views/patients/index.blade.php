@@ -46,7 +46,7 @@
                         <td>
                             <a href="{{ route('patients.show', $patient->id) }}" class="btn btn-info">Ver</a>
                             <a href="{{ route('patients.show.photo', $patient->id) }}" class="btn btn-success">Agregar Foto</a>
-                            @if (auth()->user()->position == 'ROOT' || auth()->user()->position == 'DIRECTIVE')
+                            @if (auth()->user()->position == 'ROOT' || auth()->user()->position == 'DIRECTIVE' || auth()->user()->position == 'QUALITY')
                             <a href="{{ route('patients.edit', $patient->id) }}" class="btn btn-primary">Editar</a>
                             <form action="{{ route('patients.destroy', $patient->id) }}" method="POST" style="display: inline-block;">
                                 @csrf
