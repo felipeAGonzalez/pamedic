@@ -22,10 +22,10 @@ return [
 'antebrazo' => 'Antebrazo',
 'bolo_inicial' => 'Bolo Inicial',
 'dosis_unica' => 'Dosis Única',
-'dosis_por_hora ' => 'Dosis por Hora',
+'dosis_por_hora ' => 'Infusión',
 'high' => 'Alto',
 'medium' => 'Medio',
 'low' => 'Bajo',
-'N/A' => 'N/A',
-'N/P' => 'N/P',
+'na' => 'N/A',
+'np' => 'N/P',
 ];

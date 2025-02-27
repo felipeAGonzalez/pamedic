@@ -27,6 +27,31 @@ class TreatmentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+     private $diagnostics = [
+        'B15 - Hepatitis aguda tipo A',
+        'B16 - Hepatitis aguda tipo B',
+        'B18 - Hepatitis viral crónica',
+        'B24 - Enfermedad por virus de la inmunodeficiencia humana [VIH], sin otra especificación',
+        'E10 - Diabetes mellitus insulinodependiente',
+        'E11 - Diabetes mellitus no insulinodependiente',
+        'E12 - Diabetes mellitus asociada con desnutrición',
+        'E13 - Otras diabetes mellitus especificadas',
+        'E14 - Diabetes mellitus, no especificada',
+        'E66 - Obesidad',
+        'I10 - Hipertensión esencial (primaria)',
+        'I11 - Enfermedad cardíaca hipertensiva',
+        'I12 - Enfermedad renal hipertensiva',
+        'I13 - Enfermedad cardiorrenal hipertensiva',
+        'I15 - Hipertensión secundaria',
+        'I95 - Hipotensión',
+        'N17 - Insuficiencia renal aguda',
+        'N18 - Insuficiencia renal crónica',
+        'N19 - Insuficiencia renal no especificada',
+        'Q60.3 - Hipoplasia renal, unilateral',
+        'Q60.4 - Hipoplasia renal, bilateral',
+        'Q60.5 - Hipoplasia renal, no especificada',
+    ];
     public function index()
     {
         $user = Auth::user();
@@ -47,8 +72,16 @@ class TreatmentController extends Controller
     {
         $patient = Patient::where('id',$id)->first();
         $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $patient->id, 'history' =>  0])->first();
+        $diagnostic = explode(',', $dialysisMonitoring->diagnostic);
+        $diagnostic = array_map(function($diag) {
+            return trim($diag);
+        }, $diagnostic);
+
+        $diagnostic = array_filter($this->diagnostics, function($diag) use ($diagnostic) {
+            return in_array(explode(' - ', $diag)[0], $diagnostic);
+        });
         if ($dialysisMonitoring) {
-            return view('treatment.form', compact('dialysisMonitoring','patient'));
+            return view('treatment.form', compact('dialysisMonitoring','patient','diagnostic'));
         }else{
             $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $patient->id, 'history' =>  1])->orderBy('date_hour','DESC')->first();
             if ($dialysisMonitoring) {
@@ -119,8 +152,9 @@ class TreatmentController extends Controller
         if (!$dialysisPrescription) {
             return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar la prescripción de diálisis');
         }
-        $times = ($dialysisPrescription->time / 15 ) +1;
-        $scheduleUltrafilter = floor($dialysisPrescription->schedule_ultrafilter / $times-1);
+        $times = ($dialysisPrescription->time / 15 ) + 1;
+
+        $scheduleUltrafilter = $dialysisPrescription->schedule_ultrafilter / ($times -1);
         $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('date_hour','DESC')->first();
         if (!$dialysisMonitoring) {
             return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar el monitoreo de diálisis');
@@ -266,8 +300,11 @@ class TreatmentController extends Controller
             'serology_date' => 'required|date',
             'blood_type' => 'required|string',
             'allergy' => 'required|string',
-            'diagnostic' => 'required|string',
+            'diagnostic' => 'required|array',
         ]);
+        $diagnostic = implode(',', array_map(function($item) {
+            return explode('-', $item)[0];
+        }, $request->input('diagnostic')));
         $dialysisMonitoring = DialysisMonitoring::updateOrCreate(
             ['patient_id' => $request->input('patient_id'), 'history' => 0],
             [
@@ -284,7 +321,7 @@ class TreatmentController extends Controller
                 'serology_date' => $request->input('serology_date'),
                 'blood_type' => $request->input('blood_type'),
                 'allergy' => $request->input('allergy'),
-                'diagnostic' => $request->input('diagnostic'),
+                'diagnostic' => $diagnostic,
             ]
         );
         return redirect()->route('treatment.index')->with('success', 'Monitoreo de diálisis guardado exitosamente');
@@ -538,6 +575,7 @@ class TreatmentController extends Controller
         $users = User::where('position','NURSE')->get();
         $medicines = Medicine::all();
         return view('treatment.formMedicineA', compact('medicineAdministration','users','medicines','patient'))->with('success', 'Medicamento asignado exitosamente');
+        // return redirect()->route('treatment.createMedicineAdmin', ['id' => $request->input('patient_id')])->with('success', 'Medicamento asignado exitosamente');
     }
     public function destroy($id)
     {
@@ -592,12 +630,18 @@ class TreatmentController extends Controller
             $postHemoDialysis->save();
 
             $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  0])->orderBy('hour','ASC')->get();
+            if ($evaluationRisk->count() == 0) {
+                throw ValidationException::withMessages(['Error' => 'Primero debe llenar la evaluación de dolor']);
+            }
             foreach ($evaluationRisk as $eval) {
                 $eval->history = 1;
                 $eval->save();
             }
 
             $nurseValo = NurseEvaluation::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
+            if ($nurseValo->count() == 0) {
+                throw ValidationException::withMessages(['Error' => 'Primero debe llenar la evaluación de enfermería']);
+            }
             foreach ($nurseValo as $nurse) {
                 $nurse->history = 1;
                 $nurse->save();

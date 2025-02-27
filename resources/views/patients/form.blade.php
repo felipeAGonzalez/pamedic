@@ -40,7 +40,7 @@
                     </div>
                     <div class="form-group">
                         <label for="birth_date">Fecha de Nacimiento:</label>
-                        <input type="date" class="form-control" id="birth_date" name="birth_date" value="{{ isset($patient) ? $patient->birth_date->format('Y-m-d') : old('birth_date') }}">
+                        <input type="date" class="form-control" id="birth_date" name="birth_date" value="{{ isset($patient) && $patient->birth_date ? $patient->birth_date->format('Y-m-d') : old('birth_date') }}">
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -50,7 +50,7 @@
                     </div>
                     <div class="form-group">
                         <label for="date_entry">Fecha de Ingreso:</label>
-                        <input type="date" class="form-control" id="date_entry" name="date_entry" value="{{ isset($patient) ? $patient->date_entry->format('Y-m-d') : date('Y-m-d') }}">
+                        <input type="date" class="form-control" id="date_entry" name="date_entry" value="{{ isset($patient) && $patient->date_entry ? $patient->date_entry->format('Y-m-d') : '' }}">
                     </div>
                     @if(isset($patient))
                     <div class="mb-3">
