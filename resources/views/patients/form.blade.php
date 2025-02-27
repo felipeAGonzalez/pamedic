@@ -11,6 +11,12 @@
             <div class="container">
         <div class="row">
                 <div class = "col-md-6">
+                    @if (isset($patient))
+                        <div class="form-group">
+                            <label for="expedient_number">Número de Expediente:</label>
+                            <input type="text" class="form-control" id="expedient_number" name="expedient_number" value="{{ $patient->expedient_number }}">
+                        </div>
+                    @endif
                     <div class="form-group">
                         <label for="name">Nombre:</label>
                         <input type="text" class="form-control" id="name" name="name" value="{{ isset($patient) ? $patient->name : old('name') }}">

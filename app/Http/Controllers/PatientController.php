@@ -90,6 +90,7 @@ class PatientController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
+            'expedient_number' => 'nullable|string|max:255',
             'name' => 'nullable|string|max:255',
             'last_name' => 'nullable|string|max:255',
             'last_name_two' => 'nullable|string|max:255',

@@ -464,9 +464,11 @@ class EditController extends Controller
 
         $activePatient = ActivePatient::where(['patient_id' => $id, 'active' => 0])->orderBy('date','DESC')->first();
         if ($activePatient) {
-            $nursePatients = NursePatient::where(['active_patient_id' => $activePatient->id,'history' => 0])->first();
-            $nursePatients->delete();
             $activePatient->delete();
+            $nursePatients = NursePatient::where(['active_patient_id' => $activePatient->id,'history' => 0])->first();
+            if ($nursePatients) {
+                $nursePatients->delete();
+            }
         }
 
         return redirect()->route('treatment.index')->with('success', 'Tratamiento eliminado exitosamente');

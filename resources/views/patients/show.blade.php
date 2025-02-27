@@ -9,7 +9,10 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4">
-                        <td><img src="{{$patient->photo ? asset($patient->photo):asset('default/no-photo-f.png')}}" alt="Imagen de Ejemplo" class="img-fluid"></td>
+                            @php
+                                $photo = $patient->gender == 'M' ? 'no-photo-m.png' : 'no-photo-f.png';
+                            @endphp
+                        <td><img src="{{$patient->photo ? asset($patient->photo) : asset('default/' . $photo)}}" alt="Imagen de Ejemplo" class="img-fluid"></td>
                     </div>
                     <div class="col-md-8">
                         <h4><strong>{{ $patient->name }} {{ $patient->last_name }} {{ $patient->last_name_two }}</strong></h4>

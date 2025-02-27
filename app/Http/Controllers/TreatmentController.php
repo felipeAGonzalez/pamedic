@@ -577,7 +577,6 @@ class TreatmentController extends Controller
         $users = User::where('position','NURSE')->get();
         $medicines = Medicine::all();
         return view('treatment.formMedicineA', compact('medicineAdministration','users','medicines','patient'))->with('success', 'Medicamento asignado exitosamente');
-        // return redirect()->route('treatment.createMedicineAdmin', ['id' => $request->input('patient_id')])->with('success', 'Medicamento asignado exitosamente');
     }
     public function destroy($id)
     {
