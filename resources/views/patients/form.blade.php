@@ -42,6 +42,10 @@
                         <label for="birth_date">Fecha de Nacimiento:</label>
                         <input type="date" class="form-control" id="birth_date" name="birth_date" value="{{ isset($patient) && $patient->birth_date ? $patient->birth_date->format('Y-m-d') : old('birth_date') }}">
                     </div>
+                    <div class="form-group">
+                        <label for="height">Talla (en metros):</label>
+                        <input type="number" step="0.01" class="form-control" id="height" name="height" value="{{ isset($patient) ? $patient->height : old('height') }}">
+                    </div>
                 </div>
                 <div class="col-md-6">
                 <div class="form-group">

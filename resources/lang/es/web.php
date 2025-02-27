@@ -22,7 +22,7 @@ return [
 'antebrazo' => 'Antebrazo',
 'bolo_inicial' => 'Bolo Inicial',
 'dosis_unica' => 'Dosis Única',
-'dosis_por_hora ' => 'Infusión',
+'dosis_por_hora' => 'Infusión',
 'high' => 'Alto',
 'medium' => 'Medio',
 'low' => 'Bajo',

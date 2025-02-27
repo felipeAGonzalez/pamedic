@@ -72,14 +72,16 @@ class TreatmentController extends Controller
     {
         $patient = Patient::where('id',$id)->first();
         $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $patient->id, 'history' =>  0])->first();
-        $diagnostic = explode(',', $dialysisMonitoring->diagnostic);
-        $diagnostic = array_map(function($diag) {
-            return trim($diag);
-        }, $diagnostic);
+        if ($dialysisMonitoring) {
+            $diagnostic = explode(',', $dialysisMonitoring->diagnostic);
+            $diagnostic = array_map(function($diag) {
+                return trim($diag);
+            }, $diagnostic);
 
-        $diagnostic = array_filter($this->diagnostics, function($diag) use ($diagnostic) {
-            return in_array(explode(' - ', $diag)[0], $diagnostic);
-        });
+            $diagnostic = array_filter($this->diagnostics, function($diag) use ($diagnostic) {
+                return in_array(explode(' - ', $diag)[0], $diagnostic);
+            });
+        }
         if ($dialysisMonitoring) {
             return view('treatment.form', compact('dialysisMonitoring','patient','diagnostic'));
         }else{

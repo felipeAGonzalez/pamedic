@@ -24,17 +24,19 @@
             <td style="font-size: 12px;"><Strong>{{ $patient->expedient_number }}</Strong></td>
             <td style="font-size: 12px;"><Strong>{{ $patient->gender}}</Strong></td>
             <td style="font-size: 12px;"><Strong>{{ $patient->birth_date ? $patient->birth_date->age : 'Sin fecha de nacimiento' }}</Strong></td>
+            <td style="font-size: 12px;"><Strong>{{ $patient->height }}</Strong></td>
         </tr>
         <tr>
-            <td style="background-color: #e6e6e6; font-size: 12px; width: 24.66%;">Nombre(s) del Paciente</td>
-            <td style="background-color: #e6e6e6; font-size: 12px; width: 20%;">Apellido Paterno</td>
-            <td style="background-color: #e6e6e6; font-size: 12px; width: 20%;">Apellido Materno</td>
-            <td style="background-color: #e6e6e6; font-size: 12px; width: 22.32%;">No. de Expediente</td>
-            <td style="background-color: #e6e6e6; font-size: 12px; width: 7.5%;">Género</td>
-            <td style="background-color: #e6e6e6; font-size: 12px; width: 5.5%;">Edad</td>
+            <td style="background-color: #e6e6e6; font-size: 12px; width: 20%;">Nombre(s) del Paciente</td>
+            <td style="background-color: #e6e6e6; font-size: 12px; width: 16%;">Apellido Paterno</td>
+            <td style="background-color: #e6e6e6; font-size: 12px; width: 16%;">Apellido Materno</td>
+            <td style="background-color: #e6e6e6; font-size: 12px; width: 18%;">No. de Expediente</td>
+            <td style="background-color: #e6e6e6; font-size: 12px; width: 7%;">Género</td>
+            <td style="background-color: #e6e6e6; font-size: 12px; width: 7%;">Edad</td>
+            <td style="background-color: #e6e6e6; font-size: 12px; width: 16%;">Talla</td>
         </tr>
         <tr>
-            <td colspan="6" style="background-color: #8db4e3; text-align: center; padding: 5px;">
+            <td colspan="7" style="background-color: #8db4e3; text-align: center; padding: 5px;">
             <h4 style="margin: 0;">MONITOREO PRE-TRANS Y POST DIÁLISIS</h4>
             </td>
         </tr>
@@ -189,21 +191,23 @@
     </thead>
     <tbody>
             @foreach ($transHemodialysis as $item)
-                <tr>
-                    <td style="font-size: 15px;">{{ date('H:i', strtotime($item->time)) ?: '-' }}</td>
-                    <td style="font-size: 15px;">{{ $item->arterial_pressure ?: '-' }}</td>
-                    <td style="font-size: 15px;">{{ $item->mean_pressure ?: '-' }}</td>
-                    <td style="font-size: 15px;">{{ $item->heart_rate ?: '-' }}</td>
-                    <td style="font-size: 15px;">{{ $item->respiratory_rate ?: '-' }}</td>
-                    <td style="font-size: 15px;">{{ $item->temperature == '0.00' ? '-' : $item->temperature }}</td>
-                    <td style="font-size: 15px;">{{ $item->arterial_pressure_monitor ?: '-' }}</td>
-                    <td style="font-size: 15px;">{{ $item->venous_pressure_monitor ?: '-' }}</td>
-                    <td style="font-size: 15px;">{{ $item->transmembrane_pressure_monitor ?: '-' }}</td>
-                    <td style="font-size: 15px;">{{ $item->blood_flow ?: '-' }}</td>
-                    <td style="font-size: 15px;">{{ $item->ultrafiltration ?: '-' }}</td>
-                    <td style="font-size: 15px;">{{ $item->heparin ?: '-' }}</td>
-                    <td style="font-size: 15px;">{{ $item->observations ?: '-' }}</td>
-                </tr>
+                @if (strpos($item->observations, '#') === false)
+                    <tr>
+                        <td style="font-size: 15px;">{{ date('H:i', strtotime($item->time)) ?: '-' }}</td>
+                        <td style="font-size: 15px;">{{ $item->arterial_pressure ?: '-' }}</td>
+                        <td style="font-size: 15px;">{{ $item->mean_pressure ?: '-' }}</td>
+                        <td style="font-size: 15px;">{{ $item->heart_rate ?: '-' }}</td>
+                        <td style="font-size: 15px;">{{ $item->respiratory_rate ?: '-' }}</td>
+                        <td style="font-size: 15px;">{{ $item->temperature == '0.00' ? '-' : $item->temperature }}</td>
+                        <td style="font-size: 15px;">{{ $item->arterial_pressure_monitor ?: '-' }}</td>
+                        <td style="font-size: 15px;">{{ $item->venous_pressure_monitor ?: '-' }}</td>
+                        <td style="font-size: 15px;">{{ $item->transmembrane_pressure_monitor ?: '-' }}</td>
+                        <td style="font-size: 15px;">{{ $item->blood_flow ?: '-' }}</td>
+                        <td style="font-size: 15px;">{{ $item->ultrafiltration ?: '-' }}</td>
+                        <td style="font-size: 15px;">{{ $item->heparin ?: '-' }}</td>
+                        <td style="font-size: 15px;">{{ $item->observations ?: '-' }}</td>
+                    </tr>
+                @endif
             @endforeach
             </tbody>
         </table>

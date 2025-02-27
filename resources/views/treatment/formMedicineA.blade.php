@@ -4,7 +4,7 @@
 <div class="container">
     <div class="row">
         @if(isset($medicineAdministration) && !empty($medicineAdministration))
-        <h3><strong>Medicina aplicada a paciente:</strong> {{ $patient->name.' '.$patient->last_name." ".$patient->last_name_two }}</h3>
+        <h3 style="color: red;"><strong>Medicina aplicada a paciente:</strong> {{ $patient->name.' '.$patient->last_name." ".$patient->last_name_two }}</h3>
         <div class="table-responsive">
             <table class="table">
                 <thead>
@@ -109,7 +109,9 @@
                 </table>
             </div>
             <div class="col-md-6">
-                <button type="submit" class="btn btn-primary">Guardar</button>
+                @if (request()->routeIs('treatment.createMedicineAdmin'))
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                @endif
                 <a href="{{ route('treatment.index') }}" class="btn btn-info">Volver</a>
             </div>
 </form>

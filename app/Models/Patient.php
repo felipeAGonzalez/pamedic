@@ -12,7 +12,7 @@ class Patient extends Model
         'birth_date' => 'date',
         'date_entry' => 'date',
     ];
-    protected $fillable = ['expedient_number','name','last_name','contact_phone_number','last_name_two','gender','birth_date','date_entry','photo',];
+    protected $fillable = ['expedient_number','name','last_name','contact_phone_number','last_name_two','gender','birth_date','date_entry','height','photo',];
 
 
     public function activePatient()
