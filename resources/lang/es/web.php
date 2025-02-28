@@ -26,6 +26,6 @@ return [
 'high' => 'Alto',
 'medium' => 'Medio',
 'low' => 'Bajo',
-'na' => 'N/A',
-'np' => 'N/P',
+'N/A' => 'N/A',
+'N/P' => 'N/P',
 ];
