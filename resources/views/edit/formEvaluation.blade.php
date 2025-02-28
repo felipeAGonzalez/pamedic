@@ -11,6 +11,8 @@
     <input type="hidden" name="fase[]" id="fase" class="form-control" value="{{$evaluation['fase']}}">
 
         <input type="hidden" name="patient_id[]" id="patient_id" class="form-control" value="{{ $evaluation['patient_id'] }}">
+        <input type="hidden" name="created_at[]" value="{{ $evaluation['created_at'] }}">
+
 
         <label for="hour">Hora</label>
         <input type="time" name="hour[]" id="hour" class="form-control" value="{{ \Carbon\Carbon::parse($evaluation['hour'])->format('H:i') }}" required>

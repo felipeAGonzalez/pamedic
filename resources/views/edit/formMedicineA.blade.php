@@ -56,7 +56,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <input type="hidden" class="form-control" id="patient_id" name="patient_id" value="{{ $id ?? $patient->id }}">
+                        <input type="hidden" class="form-control" id="patient_id" name="patient_id" value="{{ $id ?? $administration->patient_id }}">
+                        <input type="hidden" name="created_at" value="{{ $id ?? $administration->created_at}}">
                         <tr>
                             <td>
                                 <select class="form-control" id="medicine_id" name="medicine_id">
@@ -109,7 +110,9 @@
                 </table>
             </div>
             <div class="col-md-6">
-                <button type="submit" class="btn btn-primary">Guardar</button>
+            @if (request()->routeIs('edit.createMedicineAdmin'))
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                @endif
                 <a href="{{ route('edit.index') }}" class="btn btn-info">Volver</a>
             </div>
 </form>

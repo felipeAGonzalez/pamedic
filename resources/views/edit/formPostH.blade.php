@@ -9,6 +9,7 @@
     @csrf
         <div class="col-md-6">
         <input type="hidden" class="form-control" id="patient_id" name="patient_id" value="{{ $id ?? $postHemoDialysis->patient_id}}">
+        <input type="hidden" name="created_at" value="{{ $id ?? $postHemoDialysis->created_at}}">
             <div class="form-group">
                 <label for="final_ultrafiltration">Ultrafiltración Final</label>
                 <input type="text" class="form-control" id="final_ultrafiltration" name="final_ultrafiltration" value="{{ old('final_ultrafiltration', $postHemoDialysis->final_ultrafiltration ?? '') }}">

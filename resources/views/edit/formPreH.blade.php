@@ -9,6 +9,7 @@
         <div class="col-md-6">
             <div class="form-group">
                 <input type="hidden" class="form-control" id="patient_id" name="patient_id" value="{{ $id ?? $preHemodialysis->patient_id }}">
+                <input type="hidden" name="created_at" value="{{ $id ?? $preHemodialysis->created_at}}">
             </div>
             <div class="form-group">
                 <label for="initial_weight">Peso Inicial</label>

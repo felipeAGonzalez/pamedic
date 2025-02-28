@@ -3,6 +3,7 @@
 @section('content')
 <h1>TransHemodiálisis</h1>
 <h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
+<h4>Si es necesario terminar antes, en el apartado de Observaciones pon el símbolo #</h4>
 <div class="container">
     <div class="row">
         <div class="col-md-12">
@@ -12,7 +13,8 @@
                 <thead>
                     <tr>
                         <th>Tiempo</th>
-                        <th>Presión Arterial</th>
+                        <th>Presión Arterial (Sistolica)</th>
+                        <th>Presión Arterial (Diastolica)</th>
                         <th>Presión Media</th>
                         <th>Frecuencia Cardíaco</th>
                         <th>Frecuencia Respiratorio</th>
@@ -36,40 +38,60 @@
                                     <input type="time" name="time[]" value="{{ $item->time }}" class="form-control" required>
                                 </td>
                                 <td>
-                                    <input type="text" name="arterial_pressure[]" value="{{ $item->arterial_pressure }}" class="form-control" required>
+                                    <input type="number" name="arterial_pressure_sistolica[]" value="{{ $item->arterial_pressure != '0' ? explode('/', $item->arterial_pressure)[0] : 0 }}" class="form-control" onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="mean_pressure[]" value="{{ $item->mean_pressure }}" class="form-control" required>
+                                    <input type="number" name="arterial_pressure_diastolica[]" value="{{ $item->arterial_pressure != '0' ? explode('/', $item->arterial_pressure)[1] : 0 }}" class="form-control" onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="heart_rate[]" value="{{ $item->heart_rate }}" class="form-control" required>
+                                    <input type="number" name="mean_pressure[]" value="{{ $item->mean_pressure}}" class="form-control" readonly style="width: 120px;">
+                                </td>
+
+                                <td>
+                                    <select name="heart_rate[]" class="form-control" required>
+                                        @for ($i = 40; $i <= 150; $i++)
+                                            <option value="{{ $i }}" {{ $item->heart_rate == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                        @endfor
+                                    </select>
                                 </td>
                                 <td>
-                                    <input type="number" name="respiratory_rate[]" value="{{ $item->respiratory_rate }}" class="form-control" required>
+                                    <select name="respiratory_rate[]" class="form-control" required>
+                                        @for ($i = 8; $i <= 30; $i++)
+                                            <option value="{{ $i }}" {{ $item->respiratory_rate == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                        @endfor
+                                    </select>
                                 </td>
                                 <td>
-                                    <input type="number" name="temperature[]" value="{{ $item->temperature }}" step="0.1" min="35" class="form-control" required>
+                                    <select name="temperature[]" class="form-control" required>
+                                        @for ($i = 35; $i <= 40; $i += 0.5)
+                                            <option value="{{ $i }}" {{ $item->temperature == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                        @endfor
+                                    </select>
                                 </td>
                                 <td>
-                                    <input type="number" name="arterial_pressure_monitor[]" value="{{ $item->arterial_pressure_monitor }}" class="form-control" required>
+                                    <input type="number" name="arterial_pressure_monitor[]" value="{{ $item->arterial_pressure_monitor }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="venous_pressure_monitor[]" value="{{ $item->venous_pressure_monitor }}" class="form-control" required>
+                                    <input type="number" name="venous_pressure_monitor[]" value="{{ $item->venous_pressure_monitor }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="transmembrane_pressure_monitor[]" value="{{ $item->transmembrane_pressure_monitor }}" class="form-control" required>
+                                    <input type="number" name="transmembrane_pressure_monitor[]" value="{{ $item->transmembrane_pressure_monitor }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="blood_flow[]" value="{{ $item->blood_flow }}" class="form-control" required>
+                                    <select name="blood_flow[]" class="form-control" required>
+                                        @for ($i = 200; $i <= 400; $i += 10)
+                                            <option value="{{ $i }}" {{ $item->blood_flow == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                        @endfor
+                                    </select>
                                 </td>
                                 <td>
-                                    <input type="number" name="ultrafiltration[]" value="{{ $item->ultrafiltration }}" class="form-control" required>
+                                    <input type="number" name="ultrafiltration[]" value="{{ $item->ultrafiltration }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="heparin[]" value="{{ $item->heparin }}" class="form-control" required>
+                                    <input type="number" name="heparin[]" value="{{ $item->heparin }}" class="form-control" required onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="text" name="observations[]" value="{{ $item->observations }}" class="form-control" required>
+                                    <input type="text" name="observations[]" value="{{ $item->observations }}" class="form-control">
                                 </td>
                             </tr>
                         @endforeach
@@ -91,5 +113,17 @@
         </form>
         </div>
 
-
+<script>
+    document.querySelectorAll('input[name="arterial_pressure_sistolica[]"], input[name="arterial_pressure_diastolica[]"]').forEach(function(element) {
+        element.addEventListener('blur', function() {
+            let row = this.closest('tr');
+            let sistolica = row.querySelector('input[name="arterial_pressure_sistolica[]"]').value;
+            let diastolica = row.querySelector('input[name="arterial_pressure_diastolica[]"]').value;
+            if (sistolica && diastolica) {
+                let meanPressure = (2 * parseFloat(sistolica) + parseFloat(diastolica)) / 3;
+                row.querySelector('input[name="mean_pressure[]"]').value = Math.ceil(meanPressure);
+            }
+        });
+    });
+</script>
 @endsection

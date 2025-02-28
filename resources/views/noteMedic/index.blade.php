@@ -53,8 +53,8 @@
                         </td>
                         <td>{{ $activePatient->patient->name . ' ' . $activePatient->patient->last_name . ' ' . $activePatient->patient->last_name_two }}</td>
                         <td>{{ $activePatient->patient->gender}}</td>
-                        <td>{{ $activePatient->patient->birth_date->format('d-m-Y')}}</td>
-                        <td>{{ \Carbon\Carbon::parse($activePatient->date)->format('d-m-Y')}}</td>
+                        <td>{{ $activePatient->patient->birth_date ? $activePatient->patient->birth_date->format('d-m-Y') : 'Sin fecha de nacimiento' }}</td>
+                        <td>{{ $activePatient->date ? \Carbon\Carbon::parse($activePatient->date)->format('d-m-Y') : 'Sin fecha de entrada' }}</td>
                         <td>
                         <div >
                             <a href="{{ route('print.note', ['id' => $activePatient->patient->id, 'date' => $activePatient->date]) }}" class="btn btn-info" target="_blank">Crear Nota</a>

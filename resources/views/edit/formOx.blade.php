@@ -7,6 +7,7 @@
             <form action="{{ route('edit.fillOxygen') }}" method="POST">
                 @csrf
                 <input type="hidden" class="form-control" id="patient_id" name="patient_id" value="{{ $id ?? $oxygenTherapy->patient_id }}">
+                <input type="hidden" name="created_at" value="{{ $id ?? $oxygenTherapy->created_at}}">
                 <div class="form-group">
                     <label for="initial_oxygen_saturation">Saturación de Oxígeno Inicial:</label>
                     <input type="number" step="0.01" name="initial_oxygen_saturation" id="initial_oxygen_saturation" class="form-control" value="{{ $oxygenTherapy->initial_oxygen_saturation ?? '' }}" required>

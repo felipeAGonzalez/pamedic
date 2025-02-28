@@ -10,6 +10,7 @@
         <input type="hidden" name="fase[]" id="fase" class="form-control" value="{{$evaluation['fase']}}">
 
         <input type="hidden" name="patient_id[]" id="patient_id" class="form-control" value="{{ $evaluation['patient_id'] }}">
+        <input type="hidden" name="created_at[]" value="{{ $evaluation['created_at'] }}">
 
         <label for="nurse_valuation">Valoración de Enfermería</label>
         <textarea name="nurse_valuation[]" id="nurse_valuation" class="form-control" required>{{ $evaluation['nurse_valuation'] }}</textarea>

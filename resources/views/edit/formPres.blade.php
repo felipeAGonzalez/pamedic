@@ -7,6 +7,7 @@
     <div class="row">
         @csrf
         <input type="hidden" class="form-control" id="patient_id" name="patient_id" value="{{ $id ?? $dialysisPrescription->patient_id }}">
+        <input type="hidden" name="created_at" value="{{ $id ?? $dialysisPrescription->created_at}}">
         <div class="col-md-6">
             <div class="form-group">
                 <label for="type_dialyzer">Tipo de Dializador</label>

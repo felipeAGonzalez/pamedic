@@ -21,6 +21,32 @@ use Illuminate\Validation\ValidationException;
 
 class EditController extends Controller
 {
+    private $diagnostics = [
+        'B15 - Hepatitis aguda tipo A',
+        'B16 - Hepatitis aguda tipo B',
+        'B18 - Hepatitis viral crónica',
+        'B24 - Enfermedad por virus de la inmunodeficiencia humana [VIH], sin otra especificación',
+        'E10 - Diabetes mellitus insulinodependiente',
+        'E11 - Diabetes mellitus no insulinodependiente',
+        'E12 - Diabetes mellitus asociada con desnutrición',
+        'E13 - Otras diabetes mellitus especificadas',
+        'E14 - Diabetes mellitus, no especificada',
+        'E66 - Obesidad',
+        'I10 - Hipertensión esencial (primaria)',
+        'I11 - Enfermedad cardíaca hipertensiva',
+        'I12 - Enfermedad renal hipertensiva',
+        'I13 - Enfermedad cardiorrenal hipertensiva',
+        'I15 - Hipertensión secundaria',
+        'I95 - Hipotensión',
+        'N17 - Insuficiencia renal aguda',
+        'N18 - Insuficiencia renal crónica',
+        'N19 - Insuficiencia renal no especificada',
+        'Q60.3 - Hipoplasia renal, unilateral',
+        'Q60.4 - Hipoplasia renal, bilateral',
+        'Q60.5 - Hipoplasia renal, no especificada',
+    ];
+
+
     public function index()
     {
         $nursePatients = NursePatient::where(['date' => date('Y-m-d'),'history'=>1])->get();
@@ -53,7 +79,17 @@ class EditController extends Controller
     {
         $patient = Patient::where('id',$id)->first();
         $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $patient->id, 'history' =>  1])->whereDate('created_at', $date)->first();
-        return view('edit.form', compact('dialysisMonitoring','patient'));
+        if ($dialysisMonitoring) {
+            $diagnostic = explode(',', $dialysisMonitoring->diagnostic);
+            $diagnostic = array_map(function($diag) {
+                return trim($diag);
+            }, $diagnostic);
+
+            $diagnostic = array_filter($this->diagnostics, function($diag) use ($diagnostic) {
+                return in_array(explode(' - ', $diag)[0], $diagnostic);
+            });
+        }
+        return view('edit.form', compact('dialysisMonitoring','patient','diagnostic'));
 
     }
     public function createPres(Request $request,$id,$date)
@@ -130,7 +166,7 @@ class EditController extends Controller
             'catheter_type' => 'nullable|in:tunneling,no_tunneling',
             'implantation' => 'nullable|in:femoral,yugular,subclavia,brazo,antebrazo',
             'needle_mesure' => 'nullable|integer',
-            'machine_number' => 'nullable|integer',
+            'machine_number' => 'nullable|string',
             'session_number' => 'nullable|integer',
             'side' => 'nullable|in:right,left',
             'collocation_date' => 'nullable|date',
@@ -138,10 +174,13 @@ class EditController extends Controller
             'serology_date' => 'nullable|date',
             'blood_type' => 'nullable|string',
             'allergy' => 'nullable|string',
-            'diagnostic' => 'nullable|string',
+            'diagnostic' => 'nullable|array',
         ]);
+        $diagnostic = implode(',', array_map(function($item) {
+            return explode('-', $item)[0];
+        }, $request->input('diagnostic')));
         $dialysisMonitoring = DialysisMonitoring::updateOrCreate(
-            ['patient_id' => $request->input('patient_id'), 'history' => 1],
+            ['patient_id' => $request->input('patient_id'),'created_at' => $request->input('created_at'), 'history' => 1],
             [
                 'date_hour' => $request->input('date_hour'),
                 'machine_number' => $request->input('machine_number'),
@@ -156,7 +195,7 @@ class EditController extends Controller
                 'serology_date' => $request->input('serology_date'),
                 'blood_type' => $request->input('blood_type'),
                 'allergy' => $request->input('allergy'),
-                'diagnostic' => $request->input('diagnostic'),
+                'diagnostic' => $diagnostic,
             ]
         );
         return redirect()->route('edit.index')->with('success', 'Monitoreo de diálisis guardado exitosamente');
@@ -177,7 +216,7 @@ class EditController extends Controller
             'machine_temperature' => 'nullable|string',
         ]);
         $dialysisPrescription = DialysisPrescription::updateOrCreate(
-            ['patient_id' => $request->input('patient_id'), 'history' => 1],
+            ['patient_id' => $request->input('patient_id'), 'created_at' => $request->input('created_at'),'history' => 1],
             [
             'type_dialyzer' => $request->input('type_dialyzer'),
             'time' => $request->input('time'),
@@ -218,7 +257,7 @@ class EditController extends Controller
             'observations' => 'nullable|string',
         ]);
         $preHemodialysis = PreHemodialysis::updateOrCreate(
-            ['patient_id' => $request->input('patient_id'), 'history' => 1],
+            ['patient_id' => $request->input('patient_id'), 'created_at' => $request->input('created_at'),'history' => 1],
             [
             'previous_initial_weight' => $request->input('previous_initial_weight', 0),
             'previous_final_weight' => $request->input('previous_final_weight',0),
@@ -250,7 +289,8 @@ class EditController extends Controller
 
         $validator = $request->validate([
             'time.*' => 'nullable|date_format:H:i:s',
-            'arterial_pressure.*' => 'nullable|string',
+            'arterial_pressure_sistolica.*' => 'nullable|numeric',
+            'arterial_pressure_diastolica.*' => 'nullable|numeric',
             'mean_pressure.*' => 'nullable|numeric',
             'heart_rate.*' => 'nullable|numeric',
             'respiratory_rate.*' => 'nullable|numeric',
@@ -266,9 +306,9 @@ class EditController extends Controller
         foreach ($request->input('time') as $key => $value) {
             TransHemodialysis::updateOrCreate(
             ['patient_id' => $request->input('patient_id'),
-             'time' => $value],
+             'time' => $value, 'history' => 1 ],
             [
-                'arterial_pressure' => floatval($request->input('arterial_pressure')[$key]),
+                'arterial_pressure' => floatval($request->input('arterial_pressure_sistolica')[$key]).'/'.floatval($request->input('arterial_pressure_diastolica')[$key]),
                 'mean_pressure' => $request->input('mean_pressure')[$key],
                 'heart_rate' => $request->input('heart_rate')[$key],
                 'respiratory_rate' => $request->input('respiratory_rate')[$key],
@@ -300,7 +340,7 @@ class EditController extends Controller
         ]);
 
         $postHemoDialysis = PostHemoDialysis::updateOrCreate(
-            ['patient_id' => $request->input('patient_id'), 'history' => 1],
+            ['patient_id' => $request->input('patient_id'),'created_at' => $request->input('created_at'), 'history' => 1],
             [
             'final_ultrafiltration' => $request->input('final_ultrafiltration'),
             'treated_blood' => $request->input('treated_blood'),
@@ -327,7 +367,7 @@ class EditController extends Controller
         foreach ($request->input('hour') as $key => $value) {
             EvaluationRisk::updateOrCreate(
             ['patient_id' => $request->input('patient_id')[$key],
-             'hour' => $value],
+             'hour' => $value, 'history' => 1],
             [
             'fase' => $request->input('fase')[$key],
             'result' => $request->input('score')[$key],
@@ -367,7 +407,7 @@ class EditController extends Controller
         ]);
 
         $oxygenTherapy = OxygenTherapy::updateOrCreate(
-            ['patient_id' => $request->input('patient_id'), 'history' => 0],
+            ['patient_id' => $request->input('patient_id'), 'created_at' => $request->input('created_at'),'history' => 0],
             [
                 'initial_oxygen_saturation' => $request->input('initial_oxygen_saturation'),
                 'final_oxygen_saturation' => $request->input('final_oxygen_saturation'),
@@ -398,10 +438,11 @@ class EditController extends Controller
             'dilution' => $request->input('dilution'),
             'velocity' => $request->input('velocity'),
             'due_date' => $request->input('due_date') . '-01',
+            'history' => 1,
             ]
         );
         $patient = Patient::where('id',$medicineAdministration->patient_id)->first();
-        $medicineAdministration = MedicationAdministration::where(['patient_id' => $request->input('patient_id'), 'history' =>  0])
+        $medicineAdministration = MedicationAdministration::where(['patient_id' => $request->input('patient_id'), 'history' =>  1])
             ->whereDate('created_at', now())
             ->orderBy('created_at','DESC')
             ->get();
@@ -416,7 +457,7 @@ class EditController extends Controller
         $patient = Patient::where('id',$medicineAdministration->patient_id)->first();
         $users = User::where('position','NURSE')->get();
         $medicines = Medicine::all();
-        $medicineAdministration = MedicationAdministration::where(['patient_id' => $patient->id, 'history' =>  0])
+        $medicineAdministration = MedicationAdministration::where(['patient_id' => $patient->id, 'history' =>  1])
             ->whereDate('created_at', now())
             ->orderBy('created_at','DESC')
             ->get();

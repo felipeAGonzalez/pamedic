@@ -3,7 +3,7 @@
 @section('content')
 <h1>TransHemodiálisis</h1>
 <h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
-<h4>Si es necesario terminar antes en el apartado de Observaciones pon el símbolo #</h4>
+<h4>Si es necesario terminar antes, en el apartado de Observaciones pon el símbolo #</h4>
 <div class="container">
     <div class="row">
         <div class="col-md-12">
