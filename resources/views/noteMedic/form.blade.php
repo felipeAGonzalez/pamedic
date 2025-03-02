@@ -23,10 +23,10 @@
         <form action="{{ route('noteMedic.store') }}" method="POST">
             @csrf
             <input type="hidden" name="patient_id" value="{{ $id ?? $dialysisMonitoring->patient_id}}">
-            <input type="hidden" name="created_at" value="{{ $medicNote->created_at ?? ''}}">
+            <input type="hidden" name="date" value="{{ $dialysisMonitoring->date_hour ?? ''}}">
             <div class="row">
                 <div class="col-md-6">
-                    <div class="form-group">1
+                    <div class="form-group">
                         <label for="patient_name"><strong>Paciente: </strong>{{ $patient['last_name'] }} {{ $patient['last_name_two'] }} {{ $patient['name'] }}</label><br>
                         <label for="birth_date"><strong>Fecha de Nacimiento: </strong>{{ \Carbon\Carbon::parse($patient['birth_date'])->format('d/m/Y') }}</label><br>
                         <label for="date_entry"><strong>Fecha de Ingreso: </strong>{{ \Carbon\Carbon::parse($patient['date_entry'])->format('d/m/Y') }}</label><br>
@@ -58,6 +58,35 @@
                     <label for="date"><strong>VITALES A SU EGRESO:</strong> PESO DE SALIDA: <strong>{{$postHemoDialysis['weight_out']}}</strong> FLUJO SANGUINEO <strong>{{$dialysisPrescription['blood_flux']}}</strong> ML/MIN ULTRAFILTRACIÓN FINAL: <strong>{{$postHemoDialysis['final_ultrafiltration']}}</strong> ML,
                         SANGRE TRATADA: <strong>{{$postHemoDialysis['treated_blood']}}</strong> L, KTV: <strong>{{$postHemoDialysis['ktv']}}</strong>, TEMPERATURA: <strong>{{$postHemoDialysis['patient_temperature']}}</strong>, TA: <strong>{{$postHemoDialysis['blood_pressure_stand']}}</strong>, FR: <strong>{{$postHemoDialysis['respiratory_rate']}}</strong>, FC: <strong>{{$postHemoDialysis['heart_rate']}}</strong></label><br>
                 </div>
+            </div>
+            <div class="form-group">
+                <label for="medicines">Medicamentos administrados:</label>
+            @if($medicineAdministration->isEmpty())
+                <p>SIN MEDICAMENTOS</p>
+            @else
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><strong>Medicamento</strong></th>
+                            <th><strong>Dilución</strong></th>
+                            <th><strong>Fecha de caducidad</strong></th>
+                            <th><strong>Hora</strong></th>
+                            <th><strong>Velocidad</strong></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($medicineAdministration as $administration)
+                        <tr>
+                            <td>{{ $administration->medicine->name }}</td>
+                            <td>{{ $administration['dilution'] }}</td>
+                            <td>{{ \Carbon\Carbon::parse($administration['due_date'])->format('m-Y') }}</td>
+                            <td>{{ $administration['hour'] }}</td>
+                            <td>{{ $administration['velocity'] }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
             </div>
             <div class="form-group">
                 <label for="patient">P:</label>

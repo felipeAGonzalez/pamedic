@@ -19,7 +19,7 @@
             </td>
         </tr>
     </table>
-            <table style="width: 100%; border-collapse: collapse;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                 <tr>
                     <td style="width: 50%;">
                         <div class="form-group">
@@ -42,9 +42,7 @@
                 </tr>
             </table>
         <br>
-        <br>
-        <br>
-            <table style="width: 100%; border-collapse: collapse;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                 <tr>
                     <td><strong>P:</strong>{{ $medicNote->patient }}</td>
                 </tr>
@@ -85,7 +83,35 @@
                 </tr>
             </table>
             <br>
-            <table>
+            <label for="medicines">Medicamentos administrados:</label>
+            @if($medicineAdministration->isEmpty())
+                <p>SIN MEDICAMENTOS</p>
+            @else
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><strong>Medicamento</strong></th>
+                            <th><strong>Dilución</strong></th>
+                            <th><strong>Fecha de caducidad</strong></th>
+                            <th><strong>Hora</strong></th>
+                            <th><strong>Velocidad</strong></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($medicineAdministration as $administration)
+                        <tr>
+                            <td>{{ $administration->medicine->name }}</td>
+                            <td>{{ $administration['dilution'] }}</td>
+                            <td>{{ \Carbon\Carbon::parse($administration['due_date'])->format('m-Y') }}</td>
+                            <td>{{ $administration['hour'] }}</td>
+                            <td>{{ $administration['velocity'] }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+            <br>
+            <table style="font-size: 14px;">
                 <tr>
                     <td><strong>P: Pronostico:</strong>{{ $medicNote->prognosis }}</td>
                 </tr>

@@ -15,6 +15,7 @@ class MedicNote extends Model
         'objective',
         'prognosis',
         'plan',
+        'date'
     ];
 
     public function patient()
