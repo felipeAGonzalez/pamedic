@@ -73,9 +73,11 @@ Route::group(['middleware'=>['auth']],function () {
         Route::get('/print/expedient/{id}/date/{date}', [PrintController::class,'printNurseExpedient'])->name('print.printNurseExpedientDate');
 
         Route::get('/print/medic/note', [PrintController::class, 'indexMedicNote'])->name('print.medicNote');
-        Route::get('/print/medic/form/{id}/{date}', [PrintController::class, 'printMedicNote'])->name('print.note');
+        Route::get('/print/medic/form/{id}/{date}', [PrintController::class, 'createMedicNote'])->name('print.note');
         Route::get('/print/search/note', [PrintController::class,'searchMedicNote'])->name('noteMedic.search');
         Route::post('/print/medic/store', [PrintController::class, 'store'])->name('noteMedic.store');
+        Route::get('/print/note/{id}', [PrintController::class,'printMedicNote'])->name('print.printMedicNote');
+        Route::get('/print/note/{id}/date/{date}', [PrintController::class,'printMedicNote'])->name('print.noteMedicDate');
 
         Route::get('/edit', [EditController::class, 'index'])->name('edit.index');
         Route::get('/edit/search', [EditController::class,'search'])->name('edit.search');

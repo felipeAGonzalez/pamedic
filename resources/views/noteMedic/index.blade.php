@@ -40,6 +40,7 @@
                     <th scope="col">Fecha de nacimiento</th>
                     <th scope="col">Fecha de ultima sesión</th>
                     <th scope="col">Acciones</th>
+                    <th scope="col">Nota creada</th>
                 </tr>
             </thead>
             <tbody>
@@ -55,10 +56,24 @@
                         <td>{{ $activePatient->patient->gender}}</td>
                         <td>{{ $activePatient->patient->birth_date ? $activePatient->patient->birth_date->format('d-m-Y') : 'Sin fecha de nacimiento' }}</td>
                         <td>{{ $activePatient->date ? \Carbon\Carbon::parse($activePatient->date)->format('d-m-Y') : 'Sin fecha de entrada' }}</td>
+                        @php
+                            $note = $activePatient->patient->medicNote;
+                        @endphp
                         <td>
                         <div >
-                            <a href="{{ route('print.note', ['id' => $activePatient->patient->id, 'date' => $activePatient->date]) }}" class="btn btn-info" target="_blank">Crear Nota</a>
+                            <a href="{{ route('print.note', ['id' => $activePatient->patient->id, 'date' => $activePatient->date]) }}" class="btn btn-info" target="_blank">{{ $note ? 'Editar Nota' : 'Crear Nota' }}</a>
                         </div>
+                        </td>
+                        <td>
+                            @if($note)
+                                <a href="{{ route('print.noteMedicDate', ['id' => $activePatient->patient->id, 'date' => $activePatient->date]) }}" class="btn btn-success" target="_blank">
+                                    <i class="fas fa-check"></i>
+                                </a>
+                            @else
+                                <a href="#" class="btn btn-danger">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            @endif
                         </td>
                         </td>
                     </tr>

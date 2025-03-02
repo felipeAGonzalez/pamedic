@@ -12,9 +12,11 @@ use App\Models\PreHemodialysis;
 use App\Models\PostHemoDialysis;
 use App\Models\EvaluationRisk;
 use App\Models\NurseEvaluation;
+use App\Models\MedicNote;
 use App\Models\ActivePatient;
 use App\Models\OxygenTherapy;
 use App\Models\MedicationAdministration;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -66,31 +68,55 @@ class PrintController extends Controller
         return view('noteMedic.index', compact('activePatients'));
     }
 
+    public function createMedicNote($id,$date = null){
+        $date = $date ?? date('Y-m-d');
+        $patient = Patient::findOrFail($id);
+        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
+        $preHemodialysis = PreHemodialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
+        $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
+        $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
+        $medicNote = MedicNote::where(['patient_id' => $id , 'history' => 0])->whereDate('created_at', $date)->first();
+
+        return view('noteMedic.form', compact('patient','date','dialysisMonitoring','preHemodialysis','dialysisPrescription','postHemoDialysis','medicNote'));
+    }
+
     public function printMedicNote($id,$date = null){
         $date = $date ?? date('Y-m-d');
         $patient = Patient::findOrFail($id);
         $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
         $preHemodialysis = PreHemodialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
-        return view('noteMedic.form', compact('patient','date','dialysisMonitoring','preHemodialysis'));
+        $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
+        $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
+        $medicNote = MedicNote::where(['patient_id' => $id , 'history' => 0])->whereDate('created_at', $date)->first();
+        $user = Auth::user();
+        $pdf = Pdf::loadView('print.note', compact('date','patient', 'dialysisMonitoring', 'preHemodialysis', 'dialysisPrescription', 'postHemoDialysis', 'medicNote','user'));
+        return $pdf->stream('Nota Medica '.$date.'-'.substr($patient->expedient_number, -4) . '.pdf');
     }
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'patient_id' => 'required|exists:patients,id',
-            'date' => 'required|date',
-            'notes' => 'required|string',
+        $validator = $request->validate([
+            'patient_id' => 'required|exists:patient,id',
+            'patient' => 'required|string|max:500',
+            'subjective' => 'required|string|max:500',
+            'objective' => 'required|string|max:500',
+            'prognosis' => 'required|string|max:500',
+            'plan' => 'required|string|max:500',
         ]);
-
-        $nursePatient = new NursePatient();
-        $nursePatient->patient_id = $validatedData['patient_id'];
-        $nursePatient->date = $validatedData['date'];
-        $nursePatient->notes = $validatedData['notes'];
-        $nursePatient->save();
-
-        return redirect()->route('noteMedic.index')->with('success', 'Nurse patient record created successfully.');
+        $medicNote = MedicNote::updateOrCreate(
+            ['patient_id' => $validator['patient_id'], 'created_at' => $request->input('created_at'), 'history' => 0],
+            [
+            'patient' => $validator['patient'],
+            'subjective' => $validator['subjective'],
+            'objective' => $validator['objective'],
+            'prognosis' => $validator['prognosis'],
+            'plan' => $validator['plan'],
+            'created_at' => $request->input('created_at'),
+            ]
+        );
+        // $this->pdf($validator['patient_id'], date('Y-m-d', strtotime($request->input('created_at'))));
+        return redirect()->route('print.medicNote')->with('success', 'Nota medica guardada correctamente.');
     }
-
     public function searchMedicNote(Request $request){
         $search = $request->query('search');
         $activePatients = [];

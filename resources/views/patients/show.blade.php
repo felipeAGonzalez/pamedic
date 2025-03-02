@@ -21,6 +21,7 @@
                         <p><strong>Fecha de Ingreso:</strong> {{ $patient->date_entry ? $patient->date_entry->format('d/m/Y') : 'Sin Fecha de entrada' }}</p>
                         <p><strong>Fecha de Antigüedad:</strong> {{ $patient->date_entry ? $patient->date_entry->age : 'Sin Fecha de entrada' }}</p>
                         <p><strong>Teléfono de contacto:</strong> {{ $patient->contact_phone_number }}</p>
+                        <p><strong>Talla:</strong> {{ $patient->height ? $patient->height . ' Mt' : 'Sin talla' }}</p>
                     </div>
                 </div>
             </div>
