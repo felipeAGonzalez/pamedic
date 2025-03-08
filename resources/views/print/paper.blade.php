@@ -129,7 +129,7 @@
         <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">NÚMERO DE REÚSO DEL DIALIZADOR</td>
         <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">TENSIÓN ARTERIAL</td>
         <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">TEMPERATURA CORPORAL</td>
-        <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">FRECUENCIA CARDIACA</td>
+        <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">FRECUENCIA CARDÍACA</td>
     </tr>
     <tr>
         <td style="font-size: 8px;">{{ $preHemodialysis['previous_initial_weight'] }}</td>
@@ -149,7 +149,7 @@
     <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">FRECUENCIA RESPIRATORIA</td>
     <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">SATURACIÓN DE OXÍGENO</td>
     <td style="background-color: #e6e6e6; width: 5.25%; font-size: 7px;">CONDUCTIVIDAD</td>
-    <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">DESTROSTIS</td>
+    <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">DESTROSTIX</td>
     <td style="background-color: #e6e6e6; width: 6.25%; font-size: 7px;">PRURITO</td>
     <td style="background-color: #e6e6e6; width: 20%; font-size: 9px;">PALIDEZ DE PIEL</td>
     <td style="background-color: #e6e6e6; width: 20%; font-size: 9px;">EDEMA</td>
@@ -161,8 +161,8 @@
     <td style="font-size: 8px;">{{ $preHemodialysis['respiratory_rate'] }}</td>
     <td style="font-size: 8px;">{{ $preHemodialysis['oxygen_saturation'] }}</td>
     <td style="font-size: 8px;">{{ $preHemodialysis['conductivity'] }}</td>
-    <td style="font-size: 8px;">{{ $preHemodialysis['destrostix'] }}</td>
-    <td style="font-size: 8px;">{{ $preHemodialysis['itchiness'] }}</td>
+    <td style="font-size: 8px;">{{ $preHemodialysis['destrostix'] ?: '-' }}</td>
+    <td style="font-size: 8px;">{{ __('web.'.$preHemodialysis['itchiness']) }}</td>
     <td style="width: 20%; font-size: 12px;">{{ __('web.'.$preHemodialysis['pallor_skin']) }}</td>
     <td style="width: 20%; font-size: 12px;">{{ __('web.'.$preHemodialysis['edema']) }}</td>
     <td style="width: 20%; font-size: 12px;">{{ $preHemodialysis['vascular_access_conditions'] }}</td>
@@ -322,7 +322,7 @@
             <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">PRESIÓN ARTERIAL DE PIE</td>
             <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">PRESIÓN ARTERIAL SENTADO</td>
             <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">FRECUENCIA RESPIRATORIA</td>
-            <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">FRECUENCIA CARDIACA</td>
+            <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">FRECUENCIA CARDÍACA</td>
             <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">PESO DE SALIDA</td>
             <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">RIESGO DE CAÍDA</td>
         </tr>
@@ -383,7 +383,7 @@
             <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Nombre</td>
             <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Apellido Paterno</td>
             <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Apellido Materno</td>
-            <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Cedula Profesional</td>
+            <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Cédula Profesional</td>
             <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Firma</td>
             <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Hora</td>
             <td style="background-color: #e6e6e6; width: 25%; font-size: 12px;">Turno</td>
