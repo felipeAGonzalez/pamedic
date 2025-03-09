@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{$date.'-'.substr($patient->expedient_number, -4)}}</title>
+    <style>
+        body {
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
 <table style="width: 100%;  border-collapse: collapse;">
@@ -13,13 +18,13 @@
             </td>
             <td colspan=5>
                 <h3 style="margin: 0; text-align: center;  padding: 10px;"><strong>
-                    <p>   CORPORACIÓN PAMEDIC S.A de C.V <br>
+                    <p>   CORPORACIÓN PAMEDIC S.A DE C.V <br>
                                 UNIDAD DE HEMODIÁLISIS <br>
                             ANEXA AL CENTRO MÉDICO GUADALUPANO     </pre></strong></h3>
             </td>
         </tr>
     </table>
-            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td style="width: 50%;">
                         <div class="form-group">
@@ -27,7 +32,7 @@
                             <label for="birth_date"><strong>Fecha de Nacimiento: </strong>{{ \Carbon\Carbon::parse($patient['birth_date'])->format('d/m/Y') }}</label><br>
                             <label for="date_entry"><strong>Fecha de Ingreso: </strong>{{ \Carbon\Carbon::parse($patient['date_entry'])->format('d/m/Y') }}</label><br>
                             <label for="gender"><strong>Género: </strong>{{ $patient['gender'] == 'M' ? 'Masculino' : 'Femenino' }}</label><br><br>
-                            <label for="date"><strong>NOTA DE EGRESO: </strong>{{ $dialysisMonitoring->date_hour ? \Carbon\Carbon::parse($dialysisMonitoring->date_hour)->addHours(3)->format('d/m/Y H:i') : '' }}</label>
+                            <label for="date"><strong>{{__('web.'.$medicNote->note_type)}}: </strong>{{ $dialysisMonitoring->date_hour ? \Carbon\Carbon::parse($dialysisMonitoring->date_hour)->addHours(3)->format('d/m/Y H:i') : '' }}</label>
                         </div>
                     </td>
                     <td></td>
@@ -42,23 +47,23 @@
                 </tr>
             </table>
         <br>
-            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                    <td><strong>P:</strong>{{ $medicNote->patient }}</td>
+                    <td style="text-align: justify;"><strong>P:</strong>{{ $medicNote->patient }}</td>
                 </tr>
                 <tr><td>&nbsp;</td></tr>
                 <tr>
-                    <td><strong>S:</strong>{{ $medicNote->subjective }}</td>
+                    <td style="text-align: justify;"><strong>S:</strong>{{ $medicNote->subjective }}</td>
                 </tr>
                 <tr><td>&nbsp;</td></tr>
                 <tr>
-                    <td><strong>O:</strong>{{ $medicNote->objective }}</td>
+                    <td style="text-align: justify;"><strong>O:</strong>{{ $medicNote->objective }}</td>
                 </tr>
                 <tr><td>&nbsp;</td></tr>
             </table>
             <table>
                 <tr>
-                    <td style="font-size: 14px;"><strong style="font-size: 14px;">VITALES A SU INGRESO:</strong>
+                    <td style="text-align: justify; font-size: 14px;"><strong>A: VITALES A SU INGRESO:</strong>
                         PESO FINAL ANTERIOR <strong>{{$preHemodialysis['previous_final_weight']}}</strong> KG,
                         GANANCIA INTERDALICA: <strong>{{$preHemodialysis['initial_weight'] - $preHemodialysis['previous_final_weight']}}</strong> KG,
                         PESO INICIAL: <strong>{{$preHemodialysis['initial_weight']}}</strong> KG,
@@ -69,7 +74,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style="font-size: 14px;"><strong style="font-size: 14px;">VITALES A SU EGRESO:</strong><
+                    <td style="text-align: justify; font-size: 14px;"><strong>VITALES A SU EGRESO:</strong><
                         PESO DE SALIDA: <strong>{{$postHemoDialysis['weight_out']}}</strong>
                         FLUJO SANGUINEO <strong>{{$dialysisPrescription['blood_flux']}}</strong> ML/MIN
                         ULTRAFILTRACIÓN FINAL: <strong>{{$postHemoDialysis['final_ultrafiltration']}}</strong> ML,
@@ -80,6 +85,12 @@
                         FR: <strong>{{$postHemoDialysis['respiratory_rate']}}</strong>,
                         FC: <strong>{{$postHemoDialysis['heart_rate']}}</strong>
                     </td>
+                </tr>
+                <br>
+                <tr>
+                    <div class="form-group">
+                        <label for="time"><strong>Tiempo de sesión:</strong> {{ $totalTime }} Horas</label>
+                    </div>
                 </tr>
             </table>
             <br>
@@ -99,7 +110,7 @@
                     </thead>
                     <tbody>
                         @foreach($medicineAdministration as $administration)
-                        <tr>
+                        <tr style="text-align: justify;">
                             <td>{{ $administration->medicine->name }}</td>
                             <td>{{ $administration['dilution'] }}</td>
                             <td>{{ \Carbon\Carbon::parse($administration['due_date'])->format('m-Y') }}</td>
@@ -111,13 +122,23 @@
                 </table>
             @endif
             <br>
-            <table style="font-size: 14px;">
+            <table>
                 <tr>
-                    <td><strong>P: Pronostico:</strong>{{ $medicNote->prognosis }}</td>
+                <div class="form-group">
+                    <label for="medicines"><strong>Tipo de dializador: </strong>{{ $dialysisPrescription->type_dialyzer == 'F6ELISIO21H' || $dialysisPrescription->type_dialyzer == 'F6ELISIO19H' ? "Reúso" : "Desechable"}}</label>
+                </div>
+                </tr>
+                <tr>
+                    <td style="text-align: justify;"><strong>Diagnóstico:</strong>{{ $medicNote->diagnostic }}</td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <td style="text-align: justify;"><strong>P: Pronostico:</strong>{{ $medicNote->prognosis }}</td>
                 </tr>
                 <tr><td>&nbsp;</td></tr>
                 <tr>
-                    <td><strong>Plan:</strong>{{ $medicNote->plan }}</td>
+                    <td style="text-align: justify;"><strong>Plan:</strong>{{ $medicNote->plan }}</td>
                 </tr>
             </table>
             <br>
@@ -127,15 +148,18 @@
             <table style="width: 100%; text-align: right;">
                 <tr>
                     <td>
-                        Dr.{{$user->name . ' ' . $user->last_name . ' ' . $user->last_name_two}}
+                        Dr.{{$medicNote->user->name . ' ' . $medicNote->user->last_name . ' ' . $medicNote->user->last_name_two}}
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        {{$user->position . ' ' . $user->profesional_id}}
+                        {{__('web.'.$medicNote->user->position) }}
+                        <br>
+                        {{$medicNote->user->position == 'NEPHROLOGIST' ? "C.P. Nefrología. ".$medicNote->user->profesional_id: "Ced. Prof. ".$medicNote->user->profesional_id}}
                     </td>
                 </tr>
             </table>
 
     </div>
 </body>
+</html>

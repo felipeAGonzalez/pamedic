@@ -37,7 +37,7 @@
                 </div>
                 @endif
 
-            @if ($noReuse != 1)
+            @if ($noReuse == 1)
                 <div class="form-group">
                     <label for="reuse_number">Número de Reutilización</label>
                     <input type="text" class="form-control" id="reuse_number" name="reuse_number" value="{{ old('reuse_number', $preHemodialysis->reuse_number ?? '') }}">

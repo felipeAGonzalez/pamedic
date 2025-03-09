@@ -130,6 +130,7 @@ class TreatmentController extends Controller
                 $newPreHemodialysis->previous_final_weight = $postHemoDialysis->weight_out;
                 $newPreHemodialysis->previous_weight_gain = (double) $preHemodialysis->initial_weight - (double) $postHemoDialysis->weight_out;
                 $newPreHemodialysis->sitting_blood_pressure = 0;
+                $newPreHemodialysis->reuse_number = $preHemodialysis->reuse_number + 1;
                 $newPreHemodialysis->standing_blood_pressure = 0;
                 $newPreHemodialysis->body_temperature = 0;
                 $newPreHemodialysis->heart_rate = 0;

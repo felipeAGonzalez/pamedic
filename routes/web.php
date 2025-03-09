@@ -45,7 +45,7 @@ Route::group(['middleware'=>['auth']],function () {
                         })->name('welcome');
 
 
-    Route::group(['middleware' => 'position:ROOT,DIRECTIVE,QUALITY,MANAGER'], function () {
+    Route::group(['middleware' => 'position:ROOT,DIRECTIVE,QUALITY,MANAGER,NEPHROLOGIST'], function () {
 
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');

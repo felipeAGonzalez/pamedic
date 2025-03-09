@@ -15,11 +15,17 @@ class MedicNote extends Model
         'objective',
         'prognosis',
         'plan',
-        'date'
+        'date',
+        'note_type',
+        'user_id'
     ];
 
     public function patient()
     {
         return $this->belongsTo(Patient::class);
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

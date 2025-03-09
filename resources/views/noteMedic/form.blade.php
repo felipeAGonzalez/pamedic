@@ -25,7 +25,7 @@
             <input type="hidden" name="patient_id" value="{{ $id ?? $dialysisMonitoring->patient_id}}">
             <input type="hidden" name="date" value="{{ $dialysisMonitoring->date_hour ?? ''}}">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <div class="form-group">
                         <label for="patient_name"><strong>Paciente: </strong>{{ $patient['last_name'] }} {{ $patient['last_name_two'] }} {{ $patient['name'] }}</label><br>
                         <label for="birth_date"><strong>Fecha de Nacimiento: </strong>{{ \Carbon\Carbon::parse($patient['birth_date'])->format('d/m/Y') }}</label><br>
@@ -33,10 +33,15 @@
                         <label for="gender"><strong>Género: </strong>{{ $patient['gender'] == 'M' ? 'Masculino' : 'Femenino' }}</label>
                         <br>
                         <br>
-                        <label for="date"><strong>NOTA DE EGRESO: </strong>{{ \Carbon\Carbon::parse($dialysisMonitoring->date_hour)->addHours(3)->format('d/m/Y H:i') }}</label>
+                        <label for="date"><strong>
+                            <select name="note_type" class="form-control" style="display: inline-block; width: auto;">
+                                <option value="output" {{ (isset($medicNote) && $medicNote->note_type == 'output') ? 'selected' : '' }}>Nota de Egreso</option>
+                                <option value="evolution" {{ (isset($medicNote) && $medicNote->note_type == 'evolution') ? 'selected' : '' }}>Nota de Evolución</option>
+                            </select>
+                            </strong> {{ \Carbon\Carbon::parse($dialysisMonitoring->date_hour)->addHours(3)->format('d/m/Y H:i') }}</label>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <div class="form-group">
                         <label for="date"><strong>Edad:</strong> {{ \Carbon\Carbon::parse($patient['birth_date'])->age }}</label><br>
                         <label for="text"><strong>Servicio:</strong>Hemodialisis</label><br>
@@ -58,6 +63,9 @@
                     <label for="date"><strong>VITALES A SU EGRESO:</strong> PESO DE SALIDA: <strong>{{$postHemoDialysis['weight_out']}}</strong> FLUJO SANGUINEO <strong>{{$dialysisPrescription['blood_flux']}}</strong> ML/MIN ULTRAFILTRACIÓN FINAL: <strong>{{$postHemoDialysis['final_ultrafiltration']}}</strong> ML,
                         SANGRE TRATADA: <strong>{{$postHemoDialysis['treated_blood']}}</strong> L, KTV: <strong>{{$postHemoDialysis['ktv']}}</strong>, TEMPERATURA: <strong>{{$postHemoDialysis['patient_temperature']}}</strong>, TA: <strong>{{$postHemoDialysis['blood_pressure_stand']}}</strong>, FR: <strong>{{$postHemoDialysis['respiratory_rate']}}</strong>, FC: <strong>{{$postHemoDialysis['heart_rate']}}</strong></label><br>
                 </div>
+            </div>
+            <div class="form-group">
+                <label for="time"><strong>Tiempo de sesión:</strong> {{ $totalTime }}</label>
             </div>
             <div class="form-group">
                 <label for="medicines">Medicamentos administrados:</label>
@@ -87,6 +95,9 @@
                     </tbody>
                 </table>
             @endif
+            </div>
+            <div class="form-group">
+                    <label for="medicines"><strong>Tipo de dializador: </strong>{{ $dialysisPrescription->type_dialyzer == 'F6ELISIO21H' || $dialysisPrescription->type_dialyzer == 'F6ELISIO19H' ? "Reúso" : "Desechable"}}</label>
             </div>
             <div class="form-group">
                 <label for="patient">P:</label>

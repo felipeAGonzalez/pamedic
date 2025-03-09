@@ -21,6 +21,6 @@ class Patient extends Model
     }
     public function medicNote()
     {
-        return $this->hasOne(MedicNote::class, 'patient_id');
+        return $this->hasOne(MedicNote::class, 'patient_id')->whereDate('date', now());
     }
 }

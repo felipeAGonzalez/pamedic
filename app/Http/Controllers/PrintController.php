@@ -75,12 +75,27 @@ class PrintController extends Controller
         $preHemodialysis = PreHemodialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
         $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
         $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
-        $medicNote = MedicNote::where(['patient_id' => $id , 'history' => 0])->whereDate('date', $date)->first();
+        $transHemodialysis = TransHemodialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->get();
+        $timeFirst = $transHemodialysis->first()->time;
+        $transHemodialysisWithOutHash = $transHemodialysis->filter(function ($item) {
+            return strpos($item->observations, '#') === false;
+        });
+        $timeLast = $transHemodialysisWithOutHash->last()->time;
+
+        $totalTime = strtotime($timeLast) - strtotime($timeFirst);
+        $hours = floor($totalTime / 3600);
+        $minutes = floor(($totalTime % 3600) / 60);
+        $seconds = $totalTime % 60;
+        $totalTime = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+        $medicNote = MedicNote::where(['patient_id' => $id , 'history' => 0])->orderby('date','desc')->first();
+        $medicNoteNew = $medicNote->replicate();
+        $medicNoteNew->save();
+        $medicNote = $medicNoteNew;
         $medicineAdministration = MedicationAdministration::where(['patient_id' => $id, 'history' =>  1])
             ->whereDate('created_at', $date)
             ->orderBy('created_at','DESC')
             ->get();
-        return view('noteMedic.form', compact('patient','date','dialysisMonitoring','preHemodialysis','dialysisPrescription','postHemoDialysis','medicNote','medicineAdministration'));
+        return view('noteMedic.form', compact('patient','date','dialysisMonitoring','preHemodialysis','dialysisPrescription','postHemoDialysis','medicNote','medicineAdministration','totalTime'));
     }
 
     public function printMedicNote($id,$date = null){
@@ -90,13 +105,25 @@ class PrintController extends Controller
         $preHemodialysis = PreHemodialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
         $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
         $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
+        $transHemodialysis = TransHemodialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->get();
+        $timeFirst = $transHemodialysis->first()->time;
+        $transHemodialysisWithOutHash = $transHemodialysis->filter(function ($item) {
+            return strpos($item->observations, '#') === false;
+        });
+        $timeLast = $transHemodialysisWithOutHash->last()->time;
+
+        $totalTime = strtotime($timeLast) - strtotime($timeFirst);
+        $hours = floor($totalTime / 3600);
+        $minutes = floor(($totalTime % 3600) / 60);
+        $seconds = $totalTime % 60;
+        $totalTime = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
         $medicNote = MedicNote::where(['patient_id' => $id , 'history' => 0])->whereDate('date', $date)->first();
         $medicineAdministration = MedicationAdministration::where(['patient_id' => $id, 'history' =>  1])
             ->whereDate('created_at', $date)
             ->orderBy('created_at','DESC')
             ->get();
         $user = Auth::user();
-        $pdf = Pdf::loadView('print.note', compact('date','patient', 'dialysisMonitoring', 'preHemodialysis', 'dialysisPrescription', 'postHemoDialysis', 'medicNote','user','medicineAdministration'));
+        $pdf = Pdf::loadView('print.note', compact('date','patient', 'dialysisMonitoring', 'preHemodialysis', 'dialysisPrescription', 'postHemoDialysis', 'medicNote','user','medicineAdministration','totalTime'));
         return $pdf->stream('Nota Medica '.$date.'-'.substr($patient->expedient_number, -4) . '.pdf');
     }
 
@@ -105,6 +132,7 @@ class PrintController extends Controller
         $validator = $request->validate([
             'patient_id' => 'required|exists:patient,id',
             'date' => 'required|date',
+            'note_type' => 'required|string|max:500',
             'patient' => 'required|string|max:500',
             'subjective' => 'required|string|max:500',
             'objective' => 'required|string|max:500',
@@ -112,10 +140,13 @@ class PrintController extends Controller
             'plan' => 'required|string|max:500',
         ]);
         $validator['date'] = date('Y-m-d', strtotime($validator['date']));
+        $medicNote = MedicNote::where(['patient_id' => $validator['patient_id'], 'date' => $validator['date'], 'history' => 0])->first();
         $medicNote = MedicNote::updateOrCreate(
             ['patient_id' => $validator['patient_id'], 'date' => $validator['date'], 'history' => 0],
             [
+            'user_id' => $medicNote ? $medicNote->user_id : Auth::id(),
             'patient' => $validator['patient'],
+            'note_type' => $validator['note_type'],
             'subjective' => $validator['subjective'],
             'objective' => $validator['objective'],
             'prognosis' => $validator['prognosis'],
@@ -159,24 +190,24 @@ class PrintController extends Controller
         }
         $preHemodialysis = PreHemodialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
         if ($preHemodialysis == null) {
-            $error = ValidationException::withMessages(['Error' => 'No se ha encontrado los datos de pre hemodialisis']);
+            $error = ValidationException::withMessages(['Error' => 'No se ha encontrado los datos de pre hemodiálisis']);
             throw $error;
         }
         $transHemodialysis = TransHemodialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->get();
         if ($transHemodialysis->isEmpty()) {
-            $error = ValidationException::withMessages(['Error' => 'No se ha encontrado los datos de trans hemodialisis']);
+            $error = ValidationException::withMessages(['Error' => 'No se ha encontrado los datos de trans hemodiálisis']);
             throw $error;
         }
         $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
         if ($postHemoDialysis == null) {
-            $error = ValidationException::withMessages(['Error' => 'No se ha encontrado los datos de post hemodialisis']);
+            $error = ValidationException::withMessages(['Error' => 'No se ha encontrado los datos de post hemodiálisis']);
             throw $error;
         }
         $activePatient = ActivePatient::where(['patient_id' => $id , 'date' => $date])->first();
         $user = NursePatient::where(['active_patient_id' => $activePatient->id , 'date' => $date])->first()->user;
         $evaluationRisk = EvaluationRisk::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->get();
         if ($evaluationRisk->isEmpty()) {
-            $error = ValidationException::withMessages(['Error' => 'No se ha encontrado la evaluación de caidas']);
+            $error = ValidationException::withMessages(['Error' => 'No se ha encontrado la evaluación de caídas']);
             throw $error;
         }
         $oxygenTherapy = OxygenTherapy::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
