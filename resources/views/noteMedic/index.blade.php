@@ -58,6 +58,9 @@
                         <td>{{ $activePatient->date ? \Carbon\Carbon::parse($activePatient->date)->format('d-m-Y') : 'Sin fecha de entrada' }}</td>
                         @php
                             $note = $activePatient->patient->medicNote;
+                            if($note){
+                                $note = $note->where('date', $activePatient->date)->first();
+                            }
                         @endphp
                         <td>
                         <div >

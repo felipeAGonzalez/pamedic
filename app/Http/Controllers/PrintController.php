@@ -76,6 +76,10 @@ class PrintController extends Controller
         $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
         $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
         $transHemodialysis = TransHemodialysis::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->get();
+        if ($transHemodialysis->isEmpty()) {
+            $error = ValidationException::withMessages(['Error' => 'No se han encontrado tratamientos finalizados']);
+            throw $error;
+        }
         $timeFirst = $transHemodialysis->first()->time;
         $transHemodialysisWithOutHash = $transHemodialysis->filter(function ($item) {
             return strpos($item->observations, '#') === false;
@@ -87,10 +91,16 @@ class PrintController extends Controller
         $minutes = floor(($totalTime % 3600) / 60);
         $seconds = $totalTime % 60;
         $totalTime = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-        $medicNote = MedicNote::where(['patient_id' => $id , 'history' => 0])->orderby('date','desc')->first();
-        $medicNoteNew = $medicNote->replicate();
-        $medicNoteNew->save();
-        $medicNote = $medicNoteNew;
+        $medicNote = MedicNote::where(['patient_id' => $id , 'history' => 0])->whereDate('date',$date)->first();
+        if (!$medicNote) {
+            $medicNote = MedicNote::where(['patient_id' => $id , 'history' => 0])->orderby('date','desc')->first();
+            if($medicNote){
+                $medicNoteNew = $medicNote->replicate();
+                $medicNoteNew->prognosis = '';
+                $medicNoteNew->save();
+                $medicNote = $medicNoteNew;
+            }
+        }
         $medicineAdministration = MedicationAdministration::where(['patient_id' => $id, 'history' =>  1])
             ->whereDate('created_at', $date)
             ->orderBy('created_at','DESC')

@@ -35,6 +35,7 @@
                         <br>
                         <label for="date"><strong>
                             <select name="note_type" class="form-control" style="display: inline-block; width: auto;">
+                                <option value="input" {{ (isset($medicNote) && $medicNote->note_type == 'input') ? 'selected' : '' }}>Nota de Ingreso</option>
                                 <option value="output" {{ (isset($medicNote) && $medicNote->note_type == 'output') ? 'selected' : '' }}>Nota de Egreso</option>
                                 <option value="evolution" {{ (isset($medicNote) && $medicNote->note_type == 'evolution') ? 'selected' : '' }}>Nota de Evolución</option>
                             </select>
@@ -121,8 +122,8 @@
                 <textarea class="form-control" id="plan" name="plan" rows="4">{{ $medicNote->plan ?? '' }}</textarea>
             </div>
             <div class="form-group">
-                <button type="submit" class="btn btn-primary">Guardar</button>
-                <a href="{{ route('print.medicNote') }}" class="btn btn-info">Volver</a>
+                <button type="submit" class="btn btn-primary" onclick="window.close();">Guardar</button>
+                <a href="{{ route('print.medicNote') }}" class="btn btn-info" onclick="window.close();">Volver</a>
 
             </div>
         </form>
