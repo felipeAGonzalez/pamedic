@@ -14,7 +14,6 @@
                 <label for="initial_weight">Peso Inicial</label>
                 <input type="text" class="form-control" id="initial_weight" name="initial_weight" value="{{ old('initial_weight', $preHemodialysis->initial_weight ?? '') }}">
             </div>
-            @if(isset($preHemodialysis))
                 <div class="form-group">
                     <label for="previous_initial_weight">Peso Inicial Anterior</label>
                     <input type="text" class="form-control" id="previous_initial_weight" name="previous_initial_weight" value="{{ old('previous_initial_weight', $preHemodialysis->previous_initial_weight ?? '') }}">
@@ -35,9 +34,8 @@
                     <label for="weight_gain">Peso Ganado</label>
                     <input type="text" class="form-control" id="weight_gain" name="weight_gain" value="{{ old('weight_gain', $preHemodialysis->weight_gain ?? '') }}">
                 </div>
-                @endif
 
-            @if ($noReuse == 1)
+            @if ($noReuse != 1)
                 <div class="form-group">
                     <label for="reuse_number">Número de Reutilización</label>
                     <input type="text" class="form-control" id="reuse_number" name="reuse_number" value="{{ old('reuse_number', $preHemodialysis->reuse_number ?? '') }}">

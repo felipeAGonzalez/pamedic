@@ -25,8 +25,8 @@
                     <th scope="col">Foto</th>
                     <th scope="col">Nombre</th>
                     <th scope="col">Género</th>
-                <th scope="col">{{ $user->position != 'NURSE' ? 'Asignación' : 'Acciones' }}</th>
-                <th scope="col">{{ $user->position != 'NURSE' ? 'Acciones': '' }}</th>
+                <th scope="col">{{ $user->position != 'NURSE' && $user->position != 'MANAGER' ? 'Asignación' : 'Acciones' }}</th>
+                <th scope="col">{{ $user->position != 'NURSE' && $user->position != 'MANAGER' ? 'Acciones': '' }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -41,7 +41,7 @@
                         <td>{{ $patient->name . ' ' . $patient->last_name . ' ' . $patient->last_name_two }}</td>
                         <td>{{ $patient->gender}}</td>
                         <td>
-                            @if($user->position != 'NURSE')
+                            @if($user->position != 'NURSE' && $user->position != 'MANAGER')
                             <label>{{ $patient->activePatient->nursePatient->user->name }}</label>
                             @else
                         <div >

@@ -339,7 +339,7 @@ class TreatmentController extends Controller
             'blood_flux' => 'required|string',
             'flux_dialyzer' => 'required|string',
             'heparin' => 'required|string',
-            'schedule_ultrafilter' => 'required|string',
+            'schedule_ultrafilter' => 'required|numeric',
             'profile_ultrafilter' => 'nullable|string',
             'sodium_profile' => 'nullable|string',
             'machine_temperature' => 'required|string',
@@ -456,16 +456,16 @@ class TreatmentController extends Controller
     }
     public function fillPostHemo(Request $request){
         $validator = $request->validate([
-            'final_ultrafiltration' => 'required|numeric',
-            'treated_blood' => 'required|numeric',
-            'ktv' => 'required|numeric',
-            'patient_temperature' => 'required|numeric',
-            'blood_pressure_stand' => 'required|string',
-            'blood_pressure_sit' => 'required|string',
-            'respiratory_rate' => 'required|numeric',
-            'heart_rate' => 'required|numeric',
-            'weight_out' => 'required|numeric',
-            'fall_risk' => 'required|string',
+            'final_ultrafiltration' => 'nullable|numeric',
+            'treated_blood' => 'nullable|numeric',
+            'ktv' => 'nullable|numeric',
+            'patient_temperature' => 'nullable|numeric',
+            'blood_pressure_stand' => 'nullable|string',
+            'blood_pressure_sit' => 'nullable|string',
+            'respiratory_rate' => 'nullable|numeric',
+            'heart_rate' => 'nullable|numeric',
+            'weight_out' => 'nullable|numeric',
+            'fall_risk' => 'nullable|string',
         ]);
 
         $postHemoDialysis = PostHemoDialysis::updateOrCreate(

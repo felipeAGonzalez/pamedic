@@ -45,8 +45,7 @@ class AttendanceController extends Controller
         if($existingTodayPatient){
             $assignedPatient = NursePatient::where(['active_patient_id' => $existingTodayPatient->id,'history' => 0])->first();
             if($assignedPatient)
-                $message = ValidationException::withMessages(['Error' => 'El paciente ya esta en tratamiento']);
-                throw $message;
+                throw ValidationException::withMessages(['Error' => 'El paciente ya esta en tratamiento']);
         }
         if (! $existingPatient && ! $existingTodayPatient) {
             $activePatient = new ActivePatient();
@@ -56,8 +55,7 @@ class AttendanceController extends Controller
             $activePatient->save();
             return redirect()->route('attendance.index')->with('message', 'Asistencia registrada correctamente');
         }
-        $message = ValidationException::withMessages(['Error' => 'El paciente ya tiene asistencia registrada']);
-            throw $message;
+            throw ValidationException::withMessages(['Error' => 'El paciente ya tiene asistencia registrada']);;
 
         $patients=[];
         return view('attendance.index',compact('patients'));

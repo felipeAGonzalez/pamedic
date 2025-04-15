@@ -28,6 +28,8 @@ return [
 'low' => 'Bajo',
 'N/A' => 'N/A',
 'N/P' => 'N/P',
+'na' => 'N/A',
+'np' => 'N/P',
 'evolution' => 'Nota de Evolución',
 'input' => 'Nota de Ingreso',
 'output' => 'Nota de Egreso',
