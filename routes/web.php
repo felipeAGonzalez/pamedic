@@ -94,6 +94,7 @@ Route::group(['middleware'=>['auth']],function () {
     Route::get('/edit/create/medicine/{id}/fecha/{date}', [EditController::class, 'createMedicineAdmin'])->name('edit.createMedicineAdmin');
     Route::get('/edit/finalice/{id}/fecha/{date}', [EditController::class, 'finaliceTreatment'])->name('edit.finaliceTreatment');
     Route::delete('/edit/fill/{id}', [EditController::class, 'destroy'])->name('edit.destroy');
+    Route::delete('/edit/fill/{id}', [EditController::class, 'destroyTreatmentPast'])->name('edit.destroyTreatmentPast');
 
     Route::post('/edit/fill', [EditController::class, 'fill'])->name('edit.fill');
     Route::post('/edit/fillPres', [EditController::class, 'fillPres'])->name('edit.fillPres');
@@ -128,6 +129,7 @@ Route::group(['middleware'=>['auth']],function () {
     Route::get('/treatment/create/evaluationN/{id}', [TreatmentController::class, 'createEvaluationNurse'])->name('treatment.createEvaluationNurse');
     Route::get('/treatment/create/medicine/{id}', [TreatmentController::class, 'createMedicineAdmin'])->name('treatment.createMedicineAdmin');
     Route::get('/treatment/create/oxygen/{id}', [TreatmentController::class, 'createOxygenTherapy'])->name('treatment.createOxygen');
+    Route::get('/treatment/create/weight/{id}', [TreatmentController::class, 'createWeight'])->name('treatment.createWeight');
     Route::get('/treatment/finalice/{id}', [TreatmentController::class, 'finaliceTreatment'])->name('treatment.finaliceTreatment');
     Route::delete('/treatment/fill/{id}', [TreatmentController::class, 'destroy'])->name('treatment.destroy');
 
@@ -139,6 +141,7 @@ Route::group(['middleware'=>['auth']],function () {
     Route::post('/treatment/fill/evaluation', [TreatmentController::class, 'fillEvaluation'])->name('treatment.fillEvaluation');
     Route::post('/treatment/fill/evaluationN', [TreatmentController::class, 'fillNurseEvaluation'])->name('treatment.fillNurseEvaluation');
     Route::post('/treatment/fill/medicine', [TreatmentController::class, 'fillMedicineAdmin'])->name('treatment.fillMedicineAdmin');
+    Route::post('/treatment/fillWeight', [TreatmentController::class, 'fill'])->name('treatment.fill');
     Route::post('/treatment/fill/oxygen', [TreatmentController::class, 'fillOxygenTherapy'])->name('treatment.fillOxygen');
 
     Route::match(['get', 'post'],'password/view', [LoginController::class, 'password'])->name('password.view');

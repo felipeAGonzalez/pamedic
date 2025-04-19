@@ -68,6 +68,21 @@ class TreatmentController extends Controller
         });
         return view('treatment.index', compact('patients','user'));
     }
+    public function createWeight(Request $request,$id)
+    {
+        $patient = Patient::where('id',$id)->first();
+        $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  0])->first();
+        if ($preHemodialysis) {
+            return view('treatment.formWeight', compact('preHemodialysis','patient'));
+        }else{
+            $prevPreHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
+            $prevPostHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('created_at','DESC')->first();
+            if ($prevPreHemodialysis) {
+                return view('treatment.formWeight', compact('prevPreHemodialysis','prevPostHemoDialysis','patient'));
+            }
+        return view('treatment.formWeight', compact('id','patient'));
+    }
+}
     public function create(Request $request,$id)
     {
         $patient = Patient::where('id',$id)->first();
@@ -121,30 +136,6 @@ class TreatmentController extends Controller
         }
         if ($preHemodialysis) {
             return view('treatment.formPreH', compact('preHemodialysis','noReuse','patient'));
-        }else{
-            $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
-            $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('created_at','DESC')->first();
-            if ($preHemodialysis) {
-                $newPreHemodialysis = $preHemodialysis->replicate();
-                $newPreHemodialysis->previous_initial_weight = $preHemodialysis->initial_weight;
-                $newPreHemodialysis->previous_final_weight = $postHemoDialysis->weight_out;
-                $newPreHemodialysis->previous_weight_gain = (double) $preHemodialysis->initial_weight - (double) $postHemoDialysis->weight_out;
-                $newPreHemodialysis->sitting_blood_pressure = 0;
-                $newPreHemodialysis->reuse_number = $preHemodialysis->reuse_number + 1;
-                $newPreHemodialysis->standing_blood_pressure = 0;
-                $newPreHemodialysis->body_temperature = 0;
-                $newPreHemodialysis->heart_rate = 0;
-                $newPreHemodialysis->respiratory_rate = 0;
-                $newPreHemodialysis->oxygen_saturation = 0;
-                $newPreHemodialysis->conductivity = 0;
-                $newPreHemodialysis->dextrostix = 0;
-                $newPreHemodialysis->vascular_access_conditions = '';
-                $newPreHemodialysis->observations = '';
-                $newPreHemodialysis->history = 0;
-                $newPreHemodialysis->save();
-                $preHemodialysis = $newPreHemodialysis;
-                return view('treatment.formPreH', compact('preHemodialysis','noReuse','patient'));
-            }
         }
         return view('treatment.formPreH', compact('id','noReuse','patient'));
     }
@@ -366,23 +357,23 @@ class TreatmentController extends Controller
             'previous_initial_weight' => 'numeric',
             'previous_final_weight' => 'numeric',
             'previous_weight_gain' => 'numeric',
-            'initial_weight' => 'required|numeric',
+            'initial_weight' => 'nullable|numeric',
             'dry_weight' => 'numeric',
             'weight_gain' => 'numeric',
             'reuse_number' => 'nullable|numeric',
-            'sitting_blood_pressure' => 'required|string',
-            'standing_blood_pressure' => 'required|string',
-            'body_temperature' => 'required|numeric',
-            'heart_rate' => 'required|numeric',
-            'respiratory_rate' => 'required|numeric',
-            'oxygen_saturation' => 'required|numeric',
-            'conductivity' => 'required|numeric',
+            'sitting_blood_pressure' => 'nullable|string',
+            'standing_blood_pressure' => 'nullable|string',
+            'body_temperature' => 'nullable|numeric',
+            'heart_rate' => 'nullable|numeric',
+            'respiratory_rate' => 'nullable|numeric',
+            'oxygen_saturation' => 'nullable|numeric',
+            'conductivity' => 'nullable|numeric',
             'destrostix' => '|numeric',
-            'pallor_skin' => 'required|in:low,medium,high,N/A,N/P',
-            'itchiness' => 'required|in:low,medium,high,N/A,N/P',
-            'edema' => 'required|in:low,medium,high,N/A,N/P',
-            'vascular_access_conditions' => 'required|string',
-            'fall_risk' => 'required|in:low,medium,high',
+            'pallor_skin' => 'nullable|in:low,medium,high,N/A,N/P',
+            'itchiness' => 'nullable|in:low,medium,high,N/A,N/P',
+            'edema' => 'nullable|in:low,medium,high,N/A,N/P',
+            'vascular_access_conditions' => 'nullable|string',
+            'fall_risk' => 'nullable|in:low,medium,high',
             'observations' => 'nullable|string',
         ]);
         $preHemodialysis = PreHemodialysis::updateOrCreate(

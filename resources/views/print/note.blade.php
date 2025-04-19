@@ -6,7 +6,7 @@
     <title>{{$date.'-'.substr($patient->expedient_number, -4)}}</title>
     <style>
         body {
-            font-size: 14px;
+            font-size: 11px;
         }
     </style>
 </head>
@@ -65,7 +65,7 @@
                 <tr>
                     <td style="text-align: justify; font-size: 14px;"><strong>A: VITALES A SU INGRESO:</strong>
                         PESO FINAL ANTERIOR <strong>{{$preHemodialysis['previous_final_weight']}}</strong> KG,
-                        GANANCIA INTERDALICA: <strong>{{$preHemodialysis['initial_weight'] - $preHemodialysis['previous_final_weight']}}</strong> KG,
+                        GANANCIA INTERDALICA: <strong>{{ number_format($preHemodialysis['initial_weight'] - $preHemodialysis['previous_final_weight'], 2) }}</strong> KG,
                         PESO INICIAL: <strong>{{$preHemodialysis['initial_weight']}}</strong> KG,
                         PESO SECO: <strong>{{$preHemodialysis['dry_weight']}}</strong> KG
                         A PESO SECO: <strong>{{$preHemodialysis['weight_gain']}}</strong> KG
@@ -148,14 +148,14 @@
             <table style="width: 100%; text-align: right;">
                 <tr>
                     <td>
-                        Dr.{{$medicNote->user->name . ' ' . $medicNote->user->last_name . ' ' . $medicNote->user->last_name_two}}
+                        Dra.Leticia Paramo Fiscal
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        {{__('web.'.$medicNote->user->position) }}
+                    NEFROLOGO
                         <br>
-                        {{$medicNote->user->position == 'NEPHROLOGIST' ? "C.P. Nefrología. ".$medicNote->user->profesional_id: "Ced. Prof. ".$medicNote->user->profesional_id}}
+                        C.P. Nefrología. 14274267
                     </td>
                 </tr>
             </table>

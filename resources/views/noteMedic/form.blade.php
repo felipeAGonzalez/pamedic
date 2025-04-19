@@ -55,7 +55,7 @@
 
             <div class="col-md-12">
                 <div class="form-group">
-                    <label for="date"><strong>VITALES A SU INGRESO:</strong> PESO FINAL ANTERIOR <strong>{{$preHemodialysis['previous_final_weight']}}</strong> KG, GANANCIA INTERDALICA: <strong>{{$preHemodialysis['initial_weight'] - $preHemodialysis['previous_final_weight']}}</strong> KG,
+                    <label for="date"><strong>VITALES A SU INGRESO:</strong> PESO FINAL ANTERIOR <strong>{{$preHemodialysis['previous_final_weight']}}</strong> KG, GANANCIA INTERDALICA: <strong>{{number_format($preHemodialysis['initial_weight'] - $preHemodialysis['previous_final_weight'], 2)}}</strong> KG,
                         PESO INICIAL: <strong>{{$preHemodialysis['initial_weight']}}</strong> KG, PESO SECO: <strong>{{$preHemodialysis['dry_weight']}}</strong> KG A PESO SECO: <strong>{{$preHemodialysis['weight_gain']}}</strong> KG TA: <strong>{{$preHemodialysis['standing_blood_pressure']}}</strong> MMHG, TEMPERATURA: <strong>{{$preHemodialysis['body_temperature']}}</strong> °</label><br>
                 </div>
             </div>
@@ -122,7 +122,7 @@
                 <textarea class="form-control" id="plan" name="plan" rows="4">{{ $medicNote->plan ?? '' }}</textarea>
             </div>
             <div class="form-group">
-                <button type="submit" class="btn btn-primary" onclick="window.close();">Guardar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
                 <a href="{{ route('print.medicNote') }}" class="btn btn-info" onclick="window.close();">Volver</a>
 
             </div>

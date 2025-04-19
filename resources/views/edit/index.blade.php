@@ -39,6 +39,10 @@
                     <th scope="col">Fecha de nacimiento</th>
                     <th scope="col">Fecha de ultima sesión</th>
                     <th scope="col">Acciones</th>
+                    @if(in_array($user->position, ['ROOT', 'DIRECTIVE', 'QUALITY']))
+                    <th scope="col">Eliminar</th>
+                    @endif
+
                 </tr>
             </thead>
             <tbody>
@@ -68,6 +72,15 @@
                                     <a href="{{ route('treatment.createOxygen', ['id' => $activePatient->id]) }}" class="btn btn-danger">Oxigeno Terapia</a>
                                 </div>
                         </div>
+                        </td>
+                        <td>
+                        @if(in_array($user->position, ['ROOT', 'DIRECTIVE', 'QUALITY']))
+                                        <form action="{{ route('edit.destroyTreatmentPast', ['id' => $activePatient->patient->id]) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger">Eliminar tratamiento</button>
+                                        </form>
+                        @endif
                         </td>
                         </td>
                     </tr>

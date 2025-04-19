@@ -142,12 +142,12 @@ class PrintController extends Controller
         $validator = $request->validate([
             'patient_id' => 'required|exists:patient,id',
             'date' => 'required|date',
-            'note_type' => 'required|string|max:500',
-            'patient' => 'required|string|max:500',
-            'subjective' => 'required|string|max:500',
-            'objective' => 'required|string|max:500',
-            'prognosis' => 'required|string|max:500',
-            'plan' => 'required|string|max:500',
+            'note_type' => 'required|string|max:1000',
+            'patient' => 'required|string|max:1000',
+            'subjective' => 'required|string|max:1000',
+            'objective' => 'required|string|max:1000',
+            'prognosis' => 'required|string|max:1000',
+            'plan' => 'required|string|max:1000',
         ]);
         $validator['date'] = date('Y-m-d', strtotime($validator['date']));
         $medicNote = MedicNote::where(['patient_id' => $validator['patient_id'], 'date' => $validator['date'], 'history' => 0])->first();

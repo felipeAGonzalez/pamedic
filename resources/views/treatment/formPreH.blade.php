@@ -10,30 +10,6 @@
             <div class="form-group">
                 <input type="hidden" class="form-control" id="patient_id" name="patient_id" value="{{ $id ?? $preHemodialysis->patient_id }}">
             </div>
-            <div class="form-group">
-                <label for="initial_weight">Peso Inicial</label>
-                <input type="text" class="form-control" id="initial_weight" name="initial_weight" value="{{ old('initial_weight', $preHemodialysis->initial_weight ?? '') }}">
-            </div>
-                <div class="form-group">
-                    <label for="previous_initial_weight">Peso Inicial Anterior</label>
-                    <input type="text" class="form-control" id="previous_initial_weight" name="previous_initial_weight" value="{{ old('previous_initial_weight', $preHemodialysis->previous_initial_weight ?? '') }}">
-                </div>
-                <div class="form-group">
-                    <label for="previous_final_weight">Peso Final Anterior</label>
-                    <input type="text" class="form-control" id="previous_final_weight" name="previous_final_weight" value="{{ old('previous_final_weight', $preHemodialysis->previous_final_weight ?? '') }}">
-                </div>
-                <div class="form-group">
-                    <label for="previous_weight_gain">Peso Ganado Anterior</label>
-                    <input type="text" class="form-control" id="previous_weight_gain" name="previous_weight_gain" value="{{ old('previous_weight_gain', $preHemodialysis->previous_weight_gain ?? '') }}">
-                </div>
-                <div class="form-group">
-                    <label for="dry_weight">Peso Seco</label>
-                    <input type="text" class="form-control" id="dry_weight" name="dry_weight" value="{{ old('dry_weight', $preHemodialysis->dry_weight ?? '') }}">
-                </div>
-                <div class="form-group">
-                    <label for="weight_gain">Peso Ganado</label>
-                    <input type="text" class="form-control" id="weight_gain" name="weight_gain" value="{{ old('weight_gain', $preHemodialysis->weight_gain ?? '') }}">
-                </div>
 
             @if ($noReuse != 1)
                 <div class="form-group">
@@ -53,8 +29,6 @@
                 <label for="body_temperature">Temperatura Corporal</label>
                 <input type="text" class="form-control" id="body_temperature" name="body_temperature" value="{{ old('body_temperature', $preHemodialysis->body_temperature ?? '') }}" onclick="this.value=''">
             </div>
-        </div>
-        <div class="col-md-6">
             <div class="form-group">
                 <label for="heart_rate">Frecuencia Cardíaca</label>
                 <input type="text" class="form-control" id="heart_rate" name="heart_rate" value="{{ old('heart_rate', $preHemodialysis->heart_rate ?? '') }}" onclick="this.value=''">
@@ -71,10 +45,8 @@
                 <label for="conductivity">Conductividad</label>
                 <input type="text" class="form-control" id="conductivity" name="conductivity" value="{{ old('conductivity', $preHemodialysis->conductivity ?? '') }}" onclick="this.value=''">
             </div>
-            <div class="form-group">
-                <label for="dextrostix">Glucemia Capilar</label>
-                <input type="text" class="form-control" id="dextrostix" name="dextrostix" value="{{ old('dextrostix', $preHemodialysis->dextrostix ?? '') }}" onclick="this.value=''">
-            </div>
+        </div>
+        <div class="col-md-6">
             <div class="form-group">
                 <label for="itchiness">Prurito</label>
                 <select class="form-control" id="itchiness" name="itchiness">

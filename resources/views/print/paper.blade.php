@@ -209,6 +209,8 @@
                         <td style="font-size: 15px;">{{ $item->heparin ?: '-' }}</td>
                         <td style="font-size: 15px;">{{ $item->observations ?: '-' }}</td>
                     </tr>
+                @else
+                    @break
                 @endif
             @endforeach
             </tbody>

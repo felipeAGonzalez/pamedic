@@ -45,6 +45,7 @@
                             <label>{{ $patient->activePatient->nursePatient->user->name }}</label>
                             @else
                         <div >
+                                    <a href="{{ route('treatment.createWeight', ['id' => $patient->id]) }}" class="btn btn-dark">Pesos</a>
                                     <a href="{{ route('treatment.create', ['id' => $patient->id]) }}" class="btn btn-info">Pre-dialisis</a>
                                     <a href="{{ route('treatment.createPres', ['id' => $patient->id]) }}" class="btn btn-primary">Prescripción</a>
                                     <a href="{{ route('treatment.createPreHemo', ['id' => $patient->id]) }}" class="btn btn-success">Pre-Hemodiálisis</a>
@@ -58,7 +59,6 @@
                                     <br>
                                     <br>
                                     <a href="{{ route('treatment.finaliceTreatment', ['id' => $patient->id]) }}" class="btn btn-success">Finalizar Tratamiento</a>
-
                         </div>
                         @endif
                         </td>

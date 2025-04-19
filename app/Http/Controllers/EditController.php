@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\NursePatient;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Patient;
 use App\Models\User;
 use App\Models\Medicine;
@@ -49,11 +50,12 @@ class EditController extends Controller
 
     public function index()
     {
+        $user = Auth::user();
         $nursePatients = NursePatient::where(['date' => date('Y-m-d'),'history'=>1])->get();
         $activePatients = $nursePatients->map(function ($nursePatients) {
             return $nursePatients->active_patient;
         });
-        return view('edit.index', compact('activePatients'));
+        return view('edit.index', compact('activePatients', 'user'));
     }
 
     public function search(Request $request){
@@ -303,6 +305,7 @@ class EditController extends Controller
             'heparin.*' => 'nullable|numeric',
             'observations.*' => 'nullable|string',
         ]);
+        \Log::info($request->all());
         foreach ($request->input('time') as $key => $value) {
             TransHemodialysis::updateOrCreate(
             ['patient_id' => $request->input('patient_id'),
@@ -513,5 +516,57 @@ class EditController extends Controller
         }
 
         return redirect()->route('treatment.index')->with('success', 'Tratamiento eliminado exitosamente');
+    }
+
+    public function destroyTreatmentPast(Request $request,$id)
+    {
+        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
+        if ($dialysisMonitoring) {
+            $dialysisMonitoring->delete();
+        }
+        $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
+        if ($dialysisPrescription) {
+            $dialysisPrescription->delete();
+        }
+
+        $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
+        if ($preHemodialysis) {
+            $preHemodialysis->delete();
+        }
+
+        $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('time','ASC')->get();
+        foreach ($transHemodialysis as $trans) {
+            $trans->delete();
+        }
+
+        $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
+        if ($postHemoDialysis) {
+            $postHemoDialysis->delete();
+        }
+        $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  1])->orderBy('hour','ASC')->get();
+        foreach ($evaluationRisk as $eval) {
+            $eval->delete();
+        }
+
+        $nurseValo = NurseEvaluation::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','ASC')->get();
+        foreach ($nurseValo as $nurse) {
+            $nurse->delete();
+        }
+
+        $medicineAdministration = MedicationAdministration::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','ASC')->get();
+        foreach ($medicineAdministration as $medicine) {
+            $medicine->delete();
+        }
+
+        $activePatient = ActivePatient::where(['patient_id' => $id, 'active' => 0])->orderBy('date','DESC')->first();
+        if ($activePatient) {
+            $nursePatients = NursePatient::where(['active_patient_id' => $activePatient->id,'history' => 1])->first();
+            if ($nursePatients) {
+                $nursePatients->delete();
+            }
+            $activePatient->delete();
+        }
+
+        return redirect()->route('edit.index')->with('success', 'Tratamiento eliminado exitosamente');
     }
 }
