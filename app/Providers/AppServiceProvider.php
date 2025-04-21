@@ -5,7 +5,9 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 use App\Observers\DialysisPrescriptionObserver;
+use App\Observers\DialysisMonitoringObserver;
 use App\Models\DialysisPrescription;
+use App\Models\DialysisMonitoring;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,5 +26,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrap();
         DialysisPrescription::observe(new DialysisPrescriptionObserver());
+        DialysisMonitoring::observe(new DialysisMonitoringObserver());
     }
 }

@@ -3,7 +3,7 @@
 @section('content')
 <h1>Pesos</h1>
 <h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
-<form  action="{{ route('treatment.fillPreHemo') }}" method="POST" class="row">
+<form  action="{{ route('treatment.fillWeight') }}" method="POST" class="row">
     <div class="row">
         @csrf
         <div class="col-md-6">

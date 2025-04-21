@@ -354,12 +354,6 @@ class TreatmentController extends Controller
     }
     public function fillPreHemo(Request $request){
         $validator = $request->validate([
-            'previous_initial_weight' => 'numeric',
-            'previous_final_weight' => 'numeric',
-            'previous_weight_gain' => 'numeric',
-            'initial_weight' => 'nullable|numeric',
-            'dry_weight' => 'numeric',
-            'weight_gain' => 'numeric',
             'reuse_number' => 'nullable|numeric',
             'sitting_blood_pressure' => 'nullable|string',
             'standing_blood_pressure' => 'nullable|string',
@@ -379,12 +373,6 @@ class TreatmentController extends Controller
         $preHemodialysis = PreHemodialysis::updateOrCreate(
             ['patient_id' => $request->input('patient_id'), 'history' => 0],
             [
-            'previous_initial_weight' => $request->input('previous_initial_weight', 0),
-            'previous_final_weight' => $request->input('previous_final_weight',0),
-            'previous_weight_gain' => $request->input('previous_weight_gain',0),
-            'initial_weight' => $request->input('initial_weight'),
-            'dry_weight' => $request->input('dry_weight',0),
-            'weight_gain' => $request->input('weight_gain',0),
             'reuse_number' => $request->input('reuse_number'),
             'sitting_blood_pressure' => $request->input('sitting_blood_pressure'),
             'standing_blood_pressure' => $request->input('standing_blood_pressure'),
@@ -400,6 +388,29 @@ class TreatmentController extends Controller
             'vascular_access_conditions' => $request->input('vascular_access_conditions'),
             'fall_risk' => $request->input('fall_risk'),
             'observations' => $request->input('observations'),
+            ]
+        );
+        return redirect()->route('treatment.index')->with('success', 'Datos de la pre-diálisis guardada exitosamente');
+
+    }
+    public function fillWeight(Request $request){
+        $validator = $request->validate([
+            'previous_initial_weight' => 'numeric',
+            'previous_final_weight' => 'numeric',
+            'previous_weight_gain' => 'numeric',
+            'initial_weight' => 'nullable|numeric',
+            'dry_weight' => 'numeric',
+            'weight_gain' => 'numeric',
+        ]);
+        $preHemodialysis = PreHemodialysis::updateOrCreate(
+            ['patient_id' => $request->input('patient_id'), 'history' => 0],
+            [
+            'previous_initial_weight' => $request->input('previous_initial_weight', 0),
+            'previous_final_weight' => $request->input('previous_final_weight',0),
+            'previous_weight_gain' => $request->input('previous_weight_gain',0),
+            'initial_weight' => $request->input('initial_weight'),
+            'dry_weight' => $request->input('dry_weight',0),
+            'weight_gain' => $request->input('weight_gain',0),
             ]
         );
         return redirect()->route('treatment.index')->with('success', 'Datos de la pre-diálisis guardada exitosamente');

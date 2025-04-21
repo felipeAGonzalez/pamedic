@@ -141,7 +141,7 @@ Route::group(['middleware'=>['auth']],function () {
     Route::post('/treatment/fill/evaluation', [TreatmentController::class, 'fillEvaluation'])->name('treatment.fillEvaluation');
     Route::post('/treatment/fill/evaluationN', [TreatmentController::class, 'fillNurseEvaluation'])->name('treatment.fillNurseEvaluation');
     Route::post('/treatment/fill/medicine', [TreatmentController::class, 'fillMedicineAdmin'])->name('treatment.fillMedicineAdmin');
-    Route::post('/treatment/fillWeight', [TreatmentController::class, 'fill'])->name('treatment.fill');
+    Route::post('/treatment/fillWeight', [TreatmentController::class, 'fillWeight'])->name('treatment.fillWeight');
     Route::post('/treatment/fill/oxygen', [TreatmentController::class, 'fillOxygenTherapy'])->name('treatment.fillOxygen');
 
     Route::match(['get', 'post'],'password/view', [LoginController::class, 'password'])->name('password.view');
