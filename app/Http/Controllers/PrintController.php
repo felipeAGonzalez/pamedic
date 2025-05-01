@@ -96,7 +96,6 @@ class PrintController extends Controller
             $medicNote = MedicNote::where(['patient_id' => $id , 'history' => 0])->orderby('date','desc')->first();
             if($medicNote){
                 $medicNoteNew = $medicNote->replicate();
-                $medicNoteNew->prognosis = '';
                 $medicNoteNew->save();
                 $medicNote = $medicNoteNew;
             }
@@ -127,7 +126,10 @@ class PrintController extends Controller
         $minutes = floor(($totalTime % 3600) / 60);
         $seconds = $totalTime % 60;
         $totalTime = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-        $medicNote = MedicNote::where(['patient_id' => $id , 'history' => 0])->whereDate('date', $date)->first();
+        setlocale(LC_TIME, 'es_ES.UTF-8');
+        $formattedDate = strftime('%d de %B de %Y', strtotime($date));
+        $date = date('Y-m-d', strtotime($date));
+        $medicNote = MedicNote::where(['patient_id' => $id])->whereDate('date', $date)->first();
         $medicineAdministration = MedicationAdministration::where(['patient_id' => $id, 'history' =>  1])
             ->whereDate('created_at', $date)
             ->orderBy('created_at','DESC')

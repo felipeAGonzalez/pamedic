@@ -59,6 +59,7 @@ class EditController extends Controller
     }
 
     public function search(Request $request){
+        $user = Auth::user();
         $search = $request->query('search');
         $activePatients = [];
         if ($search ?? false) {
@@ -75,7 +76,7 @@ class EditController extends Controller
                 throw $error;
             }
         }
-        return view('edit.index', compact('activePatients'));
+        return view('edit.index', compact('activePatients', 'user'));
     }
     public function create(Request $request,$id,$date)
     {
@@ -143,7 +144,7 @@ class EditController extends Controller
     public function createOxygenTherapy(Request $request,$id)
     {
         $patient = Patient::where('id',$id)->first();
-        $oxygenTherapy = OxygenTherapy::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+        $oxygenTherapy = OxygenTherapy::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
         if ($oxygenTherapy) {
             return view('treatment.formOx', compact('oxygenTherapy','patient'));
         }
@@ -305,7 +306,6 @@ class EditController extends Controller
             'heparin.*' => 'nullable|numeric',
             'observations.*' => 'nullable|string',
         ]);
-        \Log::info($request->all());
         foreach ($request->input('time') as $key => $value) {
             TransHemodialysis::updateOrCreate(
             ['patient_id' => $request->input('patient_id'),
@@ -369,7 +369,8 @@ class EditController extends Controller
 
         foreach ($request->input('hour') as $key => $value) {
             EvaluationRisk::updateOrCreate(
-            ['patient_id' => $request->input('patient_id')[$key],
+            ['patient_id' => $request->input('patient_id'),
+            'created_at' => $request->input('created_at')[$key],
              'hour' => $value, 'history' => 1],
             [
             'fase' => $request->input('fase')[$key],
@@ -389,8 +390,8 @@ class EditController extends Controller
         ]);
         foreach ($request->input('fase') as $key => $value) {
             NurseEvaluation::updateOrCreate(
-            ['patient_id' => $request->input('patient_id')[$key],
-             'fase' => $value],
+            ['patient_id' => $request->input('patient_id'),
+             'fase' => $value,'created_at' => $request->input('created_at')[$key],'history' => 1],
             [
             'nurse_valuation' => $request->input('nurse_valuation')[$key],
             'nurse_intervention' => $request->input('nurse_intervention')[$key],
