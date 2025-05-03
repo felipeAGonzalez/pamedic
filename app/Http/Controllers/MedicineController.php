@@ -22,11 +22,13 @@ class MedicineController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'medicine_controlled' => 'boolean',
             'route_administration' => 'required|string|max:255',
         ]);
 
         $medicine = Medicine::create([
             'name' => $request->name,
+            'medicine_controlled' => $request->medicine_controlled ?? 0,
             'route_administration' => $request->route_administration,
         ]);
 
@@ -47,6 +49,7 @@ class MedicineController extends Controller
     {
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
+            'medicine_controlled' => 'sometimes|required|boolean',
             'route_administration' => 'sometimes|required|string|max:255',
         ]);
 

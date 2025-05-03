@@ -16,6 +16,7 @@ use App\Models\EvaluationRisk;
 use App\Models\NurseEvaluation;
 use App\Models\MedicationAdministration;
 use App\Models\OxygenTherapy;
+use App\Models\DoubleVerification;
 use App\Models\User;
 use App\Models\Medicine;
 use App\Models\Patient;
@@ -272,9 +273,12 @@ class TreatmentController extends Controller
             ->get();
         $patient = Patient::where('id',$id)->first();
         $users = User::where('position','NURSE')->get();
+        $doubleVerification = DoubleVerification::where(['patient_id' =>  $patient->id, 'history' =>  0])
+        ->whereDate('created_at', now())
+        ->first();
         $medicines = Medicine::all();
         if ($medicineAdministration) {
-            return view('treatment.formMedicineA', compact('id','medicineAdministration','users','medicines','patient'))->with('success', 'Medicamento asignado exitosamente');
+            return view('treatment.formMedicineA', compact('id','medicineAdministration','users','medicines','patient','doubleVerification'))->with('success', 'Medicamento asignado exitosamente');
         }
         return view('treatment.formMedicineA', compact('id','users','medicines','patient'));
     }
@@ -495,11 +499,12 @@ class TreatmentController extends Controller
             // 'fall_risk_trans.*' => 'required|string',
         ]);
 
-        foreach ($request->input('hour') as $key => $value) {
+        foreach ($request->input('fase') as $key => $value) {
             EvaluationRisk::updateOrCreate(
             ['patient_id' => $request->input('patient_id')[$key],
-             'hour' => $value,'history' => 0],
+             'fase' => $value,'history' => 0],
             [
+            'hour' =>  $request->input('hour')[$key],
             'fase' => $request->input('fase')[$key],
             'result' => $request->input('score')[$key],
             // 'fall_risk_trans' => $request->input('fall_risk_trans')[$key] ?? null,
@@ -562,6 +567,18 @@ class TreatmentController extends Controller
             'hour' => 'required|date_format:H:i',
             'due_date' => 'required|date_format:Y-m',
         ]);
+
+        $validator = $request->validate([
+            'correct_medication' => 'nullable|boolean',
+            'correct_dosage' => 'nullable|boolean',
+            'correct_dilution' => 'nullable|boolean',
+            'correct_time' => 'nullable|boolean',
+            'expiration_verification' => 'nullable|boolean',
+            'medication_record' => 'nullable|boolean',
+            'patient_education' => 'nullable|boolean',
+            'medication_identification' => 'nullable|boolean',
+            'nurse_id' => 'nullable|integer|exists:users,id',
+        ]);
         $medicineAdministration = MedicationAdministration::updateOrCreate(
             ['patient_id' => $request->input('patient_id'), 'medicine_id' => $request->input('medicine_id'), 'hour' => $request->input('hour'),'history' => 0],
             [
@@ -572,27 +589,63 @@ class TreatmentController extends Controller
             'due_date' => $request->input('due_date') . '-01',
             ]
         );
+        $doubleVerification = null;
+        $medicine = Medicine::where('id',$request->input('medicine_id'))->first();
+            if ($medicine->medicine_controlled ) {
+                $doubleVerification = DoubleVerification::where(['patient_id' => $request->input('patient_id'), 'history' =>  0])
+                ->whereDate('created_at', now())
+                ->first();
+                    if (!$doubleVerification) {
+                        $doubleVerification = DoubleVerification::updateOrCreate(
+                            ['patient_id' => $request->input('patient_id'), 'nurse_id' => $request->input('nurse_id'),'history' => 0],
+                            [
+                                'correct_medication' => $request->input('correct_medication', false),
+                                'correct_dosage' => $request->input('correct_dosage', false),
+                                'correct_dilution' => $request->input('correct_dilution', false),
+                                'correct_time' => $request->input('correct_time', false),
+                                'expiration_verification' => $request->input('expiration_verification', false),
+                                'medication_record' => $request->input('medication_record', false),
+                                'patient_education' => $request->input('patient_education', false),
+                                'medication_identification' => $request->input('medication_identification', false),
+                            ]
+                        );
+                        $doubleVerification = DoubleVerification::where(['patient_id' => $request->input('patient_id'), 'history' =>  0])
+                        ->whereDate('created_at', now())
+                        ->first();
+                }
+            }
         $patient = Patient::where('id',$medicineAdministration->patient_id)->first();
         $medicineAdministration = MedicationAdministration::where(['patient_id' => $request->input('patient_id'), 'history' =>  0])
             ->whereDate('created_at', now())
             ->orderBy('created_at','DESC')
             ->get();
+        $doubleVerification = DoubleVerification::where(['patient_id' => $request->input('patient_id'), 'history' =>  0])
+        ->whereDate('created_at', now())
+        ->first();
         $users = User::where('position','NURSE')->get();
         $medicines = Medicine::all();
-        return view('treatment.formMedicineA', compact('medicineAdministration','users','medicines','patient'))->with('success', 'Medicamento asignado exitosamente');
+        return view('treatment.formMedicineA', compact('medicineAdministration','users','medicines','patient','doubleVerification'))->with('success', 'Medicamento asignado exitosamente');
     }
     public function destroy($id)
     {
         $medicineAdministration = MedicationAdministration::findOrFail($id);
-        $medicineAdministration->delete();
         $patient = Patient::where('id',$medicineAdministration->patient_id)->first();
+        if ($medicineAdministration->medicine->medicine_controlled){
+            $doubleVerification = DoubleVerification::where(['patient_id' =>  $patient->id, 'history' =>  0])
+            ->whereDate('created_at', now())
+            ->first();
+            $doubleVerification->delete();
+        }
+        $doubleVerification = null;
+        $medicineAdministration->delete();
         $users = User::where('position','NURSE')->get();
         $medicines = Medicine::all();
+
         $medicineAdministration = MedicationAdministration::where(['patient_id' => $patient->id, 'history' =>  0])
             ->whereDate('created_at', now())
             ->orderBy('created_at','DESC')
             ->get();
-        return view('treatment.formMedicineA', compact('medicineAdministration','users','medicines','patient'))->with('success', 'Medicamento eliminado exitosamente');
+        return view('treatment.formMedicineA', compact('medicineAdministration','users','medicines','patient','doubleVerification'))->with('success', 'Medicamento eliminado exitosamente');
     }
     public function finaliceTreatment(Request $request,$id)
     {
@@ -661,11 +714,15 @@ class TreatmentController extends Controller
                 $oxygenTherapy->history = 1;
                 $oxygenTherapy->save();
             }
+            $doubleVerification = DoubleVerification::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->first();
+            if ($doubleVerification) {
+                $doubleVerification->history = 1;
+                $doubleVerification->save();
+            }
             $activePatient = ActivePatient::where(['patient_id' => $id, 'active' => 0, 'date' => date('Y-m-d')])->first();
             if (!$activePatient) {
                 throw ValidationException::withMessages(['Error' => 'Paciente no encontrado']);
             }
-
             $nursePatients = NursePatient::where(['active_patient_id' => $activePatient->id,'history' => 0])->first();
             $nursePatients->history = 1;
             $nursePatients->save();

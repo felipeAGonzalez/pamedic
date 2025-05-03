@@ -10,6 +10,7 @@ class Medicine extends Model
 
     protected $fillable = [
         'name',
+        'medicine_controlled',
         'route_administration',
     ];
 

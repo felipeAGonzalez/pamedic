@@ -13,6 +13,7 @@ use App\Models\PostHemoDialysis;
 use App\Models\EvaluationRisk;
 use App\Models\NurseEvaluation;
 use App\Models\MedicNote;
+use App\Models\DoubleVerification;
 use App\Models\ActivePatient;
 use App\Models\OxygenTherapy;
 use App\Models\MedicationAdministration;
@@ -229,7 +230,8 @@ class PrintController extends Controller
             throw $error;
         }
         $medicineAdmin = MedicationAdministration::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->get();
-        $pdf = Pdf::loadView('print.paper', compact('date','patient', 'dialysisMonitoring', 'dialysisPrescription', 'transHemodialysis', 'preHemodialysis', 'postHemoDialysis','user','evaluationRisk','oxygenTherapy','nurseValo','medicineAdmin'));
+        $doubleVerification = DoubleVerification::where(['patient_id' => $id , 'history' => 1])->whereDate('created_at', $date)->first();
+        $pdf = Pdf::loadView('print.paper', compact('date','patient', 'dialysisMonitoring', 'dialysisPrescription', 'transHemodialysis', 'preHemodialysis', 'postHemoDialysis','user','evaluationRisk','oxygenTherapy','nurseValo','medicineAdmin','doubleVerification'));
         return $pdf->stream($date.'-'.substr($patient->expedient_number, -4) . '.pdf');
     }
 }

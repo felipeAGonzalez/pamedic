@@ -271,7 +271,7 @@
                 <td style="text-align: center;">{{ $nurseValo['nurse_intervention'] }}</td>
             </tr>
             @endforeach
-            <td colspan="6" style="background-color: #8db4e3; text-align: center; padding: 5px;">
+            <td colspan="7" style="background-color: #8db4e3; text-align: center; padding: 5px;">
             <h4 style="margin: 0;">MINISTRACIÓN DE MEDICAMENTOS</h4>
         </td>
     </table>
@@ -307,11 +307,74 @@
                     @endforeach
                 @else
                     <tr>
-                        <td colspan="6" style="font-size: 18px; text-align: center;">Sin medicamentos</td>
+                        <td colspan="7" style="font-size: 18px; text-align: center;">Sin medicamentos</td>
                     </tr>
                 @endif
             </tr>
         </table>
+@if(isset($doubleVerification))
+        <table border=1 style="width: 100%;">
+            <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
+                <h4 style="margin: 0;">Doble Verificación De Medicamentos de Alto Riesgo</h4>
+        </td>
+                <thead>
+                    <tr>
+                        <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Medicamento correcto</td>
+                        <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Dosis correcta</td>
+                        <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Dilución correcta</td>
+                        <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Hora Correcta</td>
+                        <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Verificación de caducidad</td>
+                        <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Registro de medicamentos</td>
+                        <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Educación del paciente</td>
+                        <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Identificación del medicamento</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            {{ isset($doubleVerification['correct_medication']) && $doubleVerification['correct_medication'] == 1 ? 'Si' : '-' }}
+                        </td>
+                        <td>
+                            {{ isset($doubleVerification['correct_dosage']) && $doubleVerification['correct_dosage'] == 1 ? 'Si' : '-' }}
+                        </td>
+                        <td>
+                            {{ isset($doubleVerification['correct_dilution']) && $doubleVerification['correct_dilution'] == 1 ? 'Si' : '-' }}
+                        </td>
+                        <td>
+                            {{ isset($doubleVerification['correct_time']) && $doubleVerification['correct_time'] == 1 ? 'Si' : '-' }}
+                        </td>
+                        <td>
+                            {{ isset($doubleVerification['expiration_verification']) && $doubleVerification['expiration_verification'] == 1 ? 'Si' : '-' }}
+                        </td>
+                        <td>
+                            {{ isset($doubleVerification['medication_record']) && $doubleVerification['medication_record'] == 1 ? 'Si' : '-' }}
+                        </td>
+                        <td>
+                            {{ isset($doubleVerification['patient_education']) && $doubleVerification['patient_education'] == 1 ? 'Si' : '-' }}
+                        </td>
+                        <td>
+                            {{ isset($doubleVerification['medication_identification']) && $doubleVerification['medication_identification'] == 1 ? 'Si' : '-' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Enfermero</td>
+                        <td colspan="2">
+                            {{ $doubleVerification->nurse->name}}
+                        </td>
+                        <td colspan="1">
+                        {{$doubleVerification->nurse->last_name_one}}
+                        </td>
+                        <td colspan="1">
+                        {{$doubleVerification->nurse->last_name_two}}
+                        </td>
+                        <td style="background-color: #e6e6e6; width: 20%; font-size: 12px;">Firma</td>
+                        <td colspan="2" style="text-align: center;">
+
+                        </td>
+                    </tr>
+                </tbody>
+    </table>
+    @endif
     <table border=1 style="width: 100%;">
     <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
             <h4 style="margin: 0;">POST-HEMODIÁLISIS</h4>

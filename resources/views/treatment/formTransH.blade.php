@@ -35,7 +35,7 @@
                                     <input type="hidden" name="patient_id[]" value="{{ $item->patient_id }}" class="form-control" required>
                                 </td>
                                 <td>
-                                    <input type="time" name="time[]" value="{{ $item->time }}" class="form-control" required>
+                                    <input type="time" name="time[]" value="{{ $item->time }}" class="form-control" required readonly>
                                 </td>
                                 <td>
                                     <input type="number" name="arterial_pressure_sistolica[]" value="{{ $item->arterial_pressure != '0' ? explode('/', $item->arterial_pressure)[0] : 0 }}" class="form-control" onclick="this.value=''">
@@ -48,11 +48,7 @@
                                 </td>
 
                                 <td>
-                                    <select name="heart_rate[]" class="form-control" required>
-                                        @for ($i = 40; $i <= 150; $i++)
-                                            <option value="{{ $i }}" {{ $item->heart_rate == $i ? 'selected' : '' }}>{{ $i }}</option>
-                                        @endfor
-                                    </select>
+                                    <input type="number" name="heart_rate[]" value="{{ $item->heart_rate }}" class="form-control" onclick="this.value=''">
                                 </td>
                                 <td>
                                     <select name="respiratory_rate[]" class="form-control" required>

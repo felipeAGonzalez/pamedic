@@ -14,6 +14,7 @@
             <tr>
                 <th>Nombre</th>
                 <th>Vía de Administración</th>
+                <th>Medicamento Controlado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -22,6 +23,13 @@
             <tr>
                 <td>{{ $medicine->name }}</td>
                 <td>{{ $medicine->route_administration }}</td>
+                <td>
+                    @if($medicine->medicine_controlled == 1)
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                    @else
+                        <i class="bi bi-dash-circle text-danger"></i>
+                    @endif
+                </td>
                 <td>
                     <a href="{{ route('medicines.edit', $medicine->id) }}" class="btn btn-primary">Edit</a>
                     <form action="{{ route('medicines.destroy', $medicine->id) }}" method="POST" style="display:inline-block;">

@@ -28,6 +28,11 @@
                             <option value="inhalation" {{ isset($medicine) && $medicine->route_administration == 'inhalation' ? 'selected' : '' }}>Inhalatoria</option>
                         </select>
                     </div>
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="medicine_controlled" name="medicine_controlled" value="1" {{ isset($medicine) && $medicine->medicine_controlled ? 'checked' : '' }}>
+                        <label class="form-check-label" for="medicine_controlled">¿Es un medicamento controlado?</label>
+                    </div>
+
                 </div>
         </div>
         <button type="submit" class="btn btn-primary">{{ isset($medicine) ? 'Actualizar' : 'Guardar' }}</button>
