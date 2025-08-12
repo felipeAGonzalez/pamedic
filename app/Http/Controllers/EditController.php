@@ -13,6 +13,8 @@ use App\Models\DialysisPrescription;
 use App\Models\TransHemodialysis;
 use App\Models\PreHemodialysis;
 use App\Models\PostHemoDialysis;
+use App\Models\TimeOut;
+use App\Models\Verification;
 use App\Models\EvaluationRisk;
 use App\Models\NurseEvaluation;
 use App\Models\ActivePatient;
@@ -252,9 +254,9 @@ class EditController extends Controller
             'oxygen_saturation' => 'nullable|numeric',
             'conductivity' => 'nullable|numeric',
             'destrostix' => '|numeric',
-            'pallor_skin' => 'nullable|in:low,medium,high',
-            'itchiness' => 'nullable|in:low,medium,high',
-            'edema' => 'nullable|in:low,medium,high',
+            'pallor_skin' => 'nullable|in:low,medium,high,N/A,N/P',
+            'itchiness' => 'nullable|in:low,medium,high,N/A,N/P',
+            'edema' => 'nullable|in:low,medium,high,N/A,N/P',
             'vascular_access_conditions' => 'nullable|string',
             'fall_risk' => 'nullable|in:low,medium,high',
             'observations' => 'nullable|string',
@@ -425,7 +427,7 @@ class EditController extends Controller
     }
     public function fillMedicineAdmin(Request $request)
     {
-        $validator = $request->validate([
+        $medicine = $request->validate([
             'nurse_prepare_id' => 'nullable|integer',
             'nurse_admin_id' => 'nullable|integer',
             'medicine_id' => 'nullable|integer',
@@ -434,25 +436,67 @@ class EditController extends Controller
             'hour' => 'nullable|date_format:H:i',
             'due_date' => 'nullable|date_format:Y-m',
         ]);
-        $medicineAdministration = MedicationAdministration::updateOrCreate(
-            ['patient_id' => $request->input('patient_id'), 'medicine_id' => $request->input('medicine_id'), 'hour' => $request->input('hour')],
-            [
-            'nurse_prepare_id' => $request->input('nurse_prepare_id'),
-            'nurse_admin_id' => $request->input('nurse_admin_id'),
-            'dilution' => $request->input('dilution'),
-            'velocity' => $request->input('velocity'),
-            'due_date' => $request->input('due_date') . '-01',
-            'history' => 1,
-            ]
-        );
+
+        $validator = $request->validate([
+            'correct_medication' => 'nullable|boolean',
+            'correct_dosage' => 'nullable|boolean',
+            'correct_dilution' => 'nullable|boolean',
+            'correct_time' => 'nullable|boolean',
+            'expiration_verification' => 'nullable|boolean',
+            'medication_record' => 'nullable|boolean',
+            'patient_education' => 'nullable|boolean',
+            'medication_identification' => 'nullable|boolean',
+            'nurse_id' => 'nullable|integer|exists:users,id',
+        ]);
+        if ($medicine){
+
+            $medicineAdministration = MedicationAdministration::updateOrCreate(
+                ['patient_id' => $request->input('patient_id'), 'medicine_id' => $request->input('medicine_id'), 'hour' => $request->input('hour'),'history' => 1],
+                [
+                    'nurse_prepare_id' => $request->input('nurse_prepare_id'),
+                    'nurse_admin_id' => $request->input('nurse_admin_id'),
+                    'dilution' => $request->input('dilution'),
+                    'velocity' => $request->input('velocity'),
+                    'due_date' => $request->input('due_date') . '-01',
+                    ]
+                );
+        }
+        $doubleVerification = null;
+        $medicine = Medicine::where('id',$request->input('medicine_id'))->first();
+            if ($medicine->medicine_controlled ) {
+                $doubleVerification = DoubleVerification::where(['patient_id' => $request->input('patient_id'), 'history' =>  0])
+                ->whereDate('created_at', now())
+                ->first();
+                    if (!$doubleVerification) {
+                        $doubleVerification = DoubleVerification::updateOrCreate(
+                            ['patient_id' => $request->input('patient_id'), 'nurse_id' => $request->input('nurse_id'),'history' => 0],
+                            [
+                                'correct_medication' => $request->input('correct_medication', false),
+                                'correct_dosage' => $request->input('correct_dosage', false),
+                                'correct_dilution' => $request->input('correct_dilution', false),
+                                'correct_time' => $request->input('correct_time', false),
+                                'expiration_verification' => $request->input('expiration_verification', false),
+                                'medication_record' => $request->input('medication_record', false),
+                                'patient_education' => $request->input('patient_education', false),
+                                'medication_identification' => $request->input('medication_identification', false),
+                            ]
+                        );
+                        $doubleVerification = DoubleVerification::where(['patient_id' => $request->input('patient_id'), 'history' =>  0])
+                        ->whereDate('created_at', now())
+                        ->first();
+                }
+            }
         $patient = Patient::where('id',$medicineAdministration->patient_id)->first();
-        $medicineAdministration = MedicationAdministration::where(['patient_id' => $request->input('patient_id'), 'history' =>  1])
+        $medicineAdministration = MedicationAdministration::where(['patient_id' => $request->input('patient_id'), 'history' =>  0])
             ->whereDate('created_at', now())
             ->orderBy('created_at','DESC')
             ->get();
+        $doubleVerification = DoubleVerification::where(['patient_id' => $request->input('patient_id'), 'history' =>  0])
+        ->whereDate('created_at', now())
+        ->first();
         $users = User::where('position','NURSE')->get();
         $medicines = Medicine::all();
-        return view('edit.formMedicineA', compact('medicineAdministration','users','medicines','patient'))->with('success', 'Medicamento asignado exitosamente');
+        return view('edit.formMedicineA', compact('medicineAdministration','users','medicines','patient','doubleVerification'))->with('success', 'Medicamento asignado exitosamente');
     }
     public function destroy($id)
     {
@@ -481,6 +525,14 @@ class EditController extends Controller
         $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
         if ($preHemodialysis) {
             $preHemodialysis->delete();
+        }
+        $verification = Verification::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+        if ($verification) {
+            $verification->delete();
+        }
+        $timeOut = TimeOut::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+        if ($timeOut) {
+            $timeOut->delete();
         }
 
         $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('time','ASC')->get();
@@ -519,52 +571,72 @@ class EditController extends Controller
         return redirect()->route('treatment.index')->with('success', 'Tratamiento eliminado exitosamente');
     }
 
-    public function destroyTreatmentPast(Request $request,$id)
+    public function destroyTreatmentPast(Request $request,$id,$date)
     {
-        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
+        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  1])
+            ->whereDate('created_at', $date)
+            ->first();
         if ($dialysisMonitoring) {
             $dialysisMonitoring->delete();
         }
-        $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
+
+        $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  1])
+            ->whereDate('created_at', $date)
+            ->first();
         if ($dialysisPrescription) {
             $dialysisPrescription->delete();
         }
 
-        $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
+        $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  1])
+            ->whereDate('created_at', $date)
+            ->first();
         if ($preHemodialysis) {
             $preHemodialysis->delete();
         }
 
-        $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('time','ASC')->get();
+        $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  1])
+            ->whereDate('created_at', $date)
+            ->get();
         foreach ($transHemodialysis as $trans) {
             $trans->delete();
         }
 
-        $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
+        $postHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  1])
+            ->whereDate('created_at', $date)
+            ->first();
         if ($postHemoDialysis) {
             $postHemoDialysis->delete();
         }
-        $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  1])->orderBy('hour','ASC')->get();
+
+        $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  1])
+            ->whereDate('created_at', $date)
+            ->get();
         foreach ($evaluationRisk as $eval) {
             $eval->delete();
         }
 
-        $nurseValo = NurseEvaluation::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','ASC')->get();
+        $nurseValo = NurseEvaluation::where(['patient_id' => $id, 'history' =>  1])
+            ->whereDate('created_at', $date)
+            ->get();
         foreach ($nurseValo as $nurse) {
             $nurse->delete();
         }
 
-        $medicineAdministration = MedicationAdministration::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','ASC')->get();
+        $medicineAdministration = MedicationAdministration::where(['patient_id' => $id, 'history' =>  1])
+            ->whereDate('created_at', $date)
+            ->get();
         foreach ($medicineAdministration as $medicine) {
             $medicine->delete();
         }
 
-        $activePatient = ActivePatient::where(['patient_id' => $id, 'active' => 0])->orderBy('date','DESC')->first();
+        $activePatient = ActivePatient::where(['patient_id' => $id, 'active' => 0])
+            ->whereDate('date', $date)
+            ->first();
+        $nursePatients = NursePatient::where(['active_patient_id' => $activePatient->id,'history' => 1])->first();
+        if ($nursePatients) {
+            $nursePatients->delete();
+        }
         if ($activePatient) {
-            $nursePatients = NursePatient::where(['active_patient_id' => $activePatient->id,'history' => 1])->first();
-            if ($nursePatients) {
-                $nursePatients->delete();
-            }
             $activePatient->delete();
         }
 

@@ -2,8 +2,8 @@
 
 @section('content')
 
-<h1>Imprimir Hoja de Enfermería</h1>
-<h3>Se muestran por defecto los pacientes atendidos el día de hoy</h3>
+<h1>Imprimir Hoja de validación/Tiempo Fuera</h1>
+<h3>Se muestran por defecto las sesiones del mes actual</h3>
 <div class="container">
         @if ($errors->any())
                 <div class="alert2 alert2-danger">
@@ -22,9 +22,10 @@
         <div class="row">
             <div class="col-md-6">
                 <form action="{{ route('print.search') }}" method="GET" class="mb-3">
-                    <div class="input-group mb-6">
+                    <div class="input-group mt-12">
                         <input type="text" name="search" class="form-control" placeholder="Buscar por nombre o numero de expediente">
-                        <input type="date" name="date" class="form-control" placeholder="Buscar por fecha">
+                        <input type="date" name="dateInitial" class="form-control" placeholder="Fecha Inicial">
+                        <input type="date" name="dateFinal" class="form-control" placeholder="Fecha Final">
                             <button type="submit" class="btn btn-primary">Buscar</button>
                     </div>
                 </form>
@@ -58,7 +59,7 @@
                         <td>{{ \Carbon\Carbon::parse($activePatient->date)->format('d-m-Y')}}</td>
                         <td>
                         <div >
-                            <a href="{{ route('print.printNurseExpedientDate', ['id' => $activePatient->patient->id, 'date' => $activePatient->date]) }}" class="btn btn-info" target="_blank">Imprimir Hoja</a>
+                            <a href="{{ route('print.printTimeOut', ['id' => $activePatient->patient->id, 'date' => $activePatient->date]) }}" class="btn btn-info" target="_blank">Imprimir Time Out</a>
                         </div>
                         </td>
                         </td>

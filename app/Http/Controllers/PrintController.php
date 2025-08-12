@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use App\Models\NursePatient;
 use App\Models\Patient;
 use App\Models\DialysisMonitoring;
@@ -13,6 +14,8 @@ use App\Models\PostHemoDialysis;
 use App\Models\EvaluationRisk;
 use App\Models\NurseEvaluation;
 use App\Models\MedicNote;
+use App\Models\TimeOut;
+use App\Models\Verification;
 use App\Models\DoubleVerification;
 use App\Models\ActivePatient;
 use App\Models\OxygenTherapy;
@@ -40,8 +43,22 @@ class PrintController extends Controller
         return view('print.index', compact('activePatients'));
     }
 
+     public function indexTimeOut()
+    {
+        $startOfMonth = Carbon::now()->startOfMonth()->toDateString();
+        $endOfMonth = Carbon::now()->endOfMonth()->toDateString();
+
+        $nursePatients = NursePatient::whereBetween('date', [$startOfMonth, $endOfMonth])
+        ->where('history', 1)->get();
+        $activePatients = $nursePatients->map(function ($nursePatients) {
+            return $nursePatients->active_patient;
+        });
+        return view('print.timeOut', compact('activePatients'));
+    }
+
     public function search(Request $request){
         $search = $request->query('search');
+        $date = $request->query('date');
         $activePatients = [];
         if ($search ?? false) {
             $patients = Patient::where('expedient_number','LIKE','%'.$search.'%')->orWhere('name','LIKE','%'.$search.'%')->orWhere('last_name','LIKE','%'.$search.'%')->orWhere('last_name_two','LIKE','%'.$search.'%');
@@ -54,6 +71,14 @@ class PrintController extends Controller
             $activePatients = $activePatients->whereIn('patient_id', $patients->pluck('id'))->orderBy('date','desc')->get();
             if ($activePatients->isEmpty()) {
                 $error = ValidationException::withMessages(['Error' => 'Paciente sin tratamientos']);
+                throw $error;
+            }
+        }
+         if ($date ?? false) {
+            $activePatients = ActivePatient::query();
+            $activePatients = $activePatients->where('date', $date)->get();
+            if ($activePatients->isEmpty()) {
+                $error = ValidationException::withMessages(['Error' => 'Fecha sin tratamientos']);
                 throw $error;
             }
         }
@@ -97,6 +122,7 @@ class PrintController extends Controller
             $medicNote = MedicNote::where(['patient_id' => $id , 'history' => 0])->orderby('date','desc')->first();
             if($medicNote){
                 $medicNoteNew = $medicNote->replicate();
+                $medicNoteNew->date = $date;
                 $medicNoteNew->save();
                 $medicNote = $medicNoteNew;
             }
@@ -186,6 +212,28 @@ class PrintController extends Controller
             }
         }
         return view('noteMedic.index', compact('activePatients'));
+    }
+
+    public function printTimeOut($id,$date){
+        $startOfMonth = Carbon::parse($date)->startOfMonth()->toDateString();
+        $endOfMonth = Carbon::parse($date)->endOfMonth()->toDateString();
+        $patient = Patient::findOrFail($id);
+
+        $timeOut = TimeOut::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+        ->where(['patient_id' => $patient->id, 'history' => 1])->orderBy('created_at','asc')->get();
+        $verification = Verification::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+        ->where(['patient_id' => $patient->id, 'history' => 1])->orderBy('created_at','asc')->get();
+         $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $patient->id, 'history' =>  1])->first();
+         if (!$dialysisMonitoring) {
+            return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar el monitoreo de diálisis');
+        }
+        $dialysisPrescription = DialysisPrescription::where(['patient_id' => $patient->id, 'history' =>  1])->orderBy('id','DESC')->first();
+         if (!$dialysisPrescription) {
+            return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar la prescripción de diálisis');
+        }
+        $pdf = Pdf::loadView('print.paperTimeOut', compact('timeOut','patient','verification','dialysisMonitoring','dialysisPrescription'))->setPaper('letter', 'landscape');;
+        return $pdf->stream($date.'-'.substr($patient->expedient_number, -4).'Verificación-Time Out'. '.pdf');
+          return view('print.paperTimeOut', compact());
     }
 
     public function printNurseExpedient($id,$date = null){

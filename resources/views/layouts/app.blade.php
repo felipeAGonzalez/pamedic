@@ -49,6 +49,7 @@
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{{url('/print') }}">Nota de enfermería</a>
                         <a class="dropdown-item" href="{{url('/print/medic/note') }}">Nota Medica</a>
+                        <a class="dropdown-item" href="{{url('/print/timeOut/validation') }}">Tiempo Fuera</a>
                     </div>
         </li>
         <li class="nav-item dropdown">
@@ -62,18 +63,12 @@
                         <a class="dropdown-item" href="{{ url('/medicines') }}">Medicamentos</a>
                     </div>
         </li>
-            <!-- <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Reportes</a>
-                <div class="dropdown-menu" aria-labelledby="dropdown03">
-                    <a class="dropdown-item" href="#">Reporte de Ventas</a>
-                    <a class="dropdown-item" href="#">Reporte por Sucursal</a>
-                    <a class="dropdown-item" href="#">Reporte por Turno</a>
-                </div> -->
+
                 <li class="nav-item">
                    <a class="nav-link" href="{{ url('/logout') }}">Cerrar Sesión</a>
                 </li>
     </div>
-    @endauth <!-- Correct Blade directive -->
+    @endauth
 </div>
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>

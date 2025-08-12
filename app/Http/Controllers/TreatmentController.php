@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Validator;
 use App\Models\NursePatient;
 use App\Models\ActivePatient;
 use App\Models\DialysisMonitoring;
@@ -15,6 +16,8 @@ use App\Models\PostHemoDialysis;
 use App\Models\EvaluationRisk;
 use App\Models\NurseEvaluation;
 use App\Models\MedicationAdministration;
+use App\Models\TimeOut;
+use App\Models\Verification;
 use App\Models\OxygenTherapy;
 use App\Models\DoubleVerification;
 use App\Models\User;
@@ -190,6 +193,26 @@ class TreatmentController extends Controller
             return view('treatment.formPostH', compact('postHemoDialysis','patient'));
         }
         return view('treatment.formPostH', compact('id','patient'));
+    }
+
+     public function createTimeOut(Request $request,$id)
+    {
+        $patient = Patient::where('id',$id)->first();
+
+        $timeOut = TimeOut::where(['patient_id' => $id,'history' =>  0])->orderBy('created_at','DESC')->first();
+        $verification = Verification::where(['patient_id' => $id, 'history' =>  0])->orderBy('created_at','DESC')->first();
+        $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $patient->id, 'history' =>  0])->first();
+         if (!$dialysisMonitoring) {
+            return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar el monitoreo de diálisis');
+        }
+        $dialysisPrescription = DialysisPrescription::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+         if (!$dialysisPrescription) {
+            return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar la prescripción de diálisis');
+        }
+        if ($timeOut || $verification) {
+            return view('treatment.formTimeOut', compact('timeOut','patient','verification','dialysisMonitoring','dialysisPrescription'));
+        }
+        return view('treatment.formTimeOut', compact('id','patient','dialysisMonitoring','dialysisPrescription'));
     }
 
     public function createOxygenTherapy(Request $request,$id)
@@ -626,6 +649,70 @@ class TreatmentController extends Controller
         $medicines = Medicine::all();
         return view('treatment.formMedicineA', compact('medicineAdministration','users','medicines','patient','doubleVerification'))->with('success', 'Medicamento asignado exitosamente');
     }
+
+public function fillTimeOut(Request $request)
+{
+    $patientId = $request->input('patient_id');
+
+
+$validator = $request->validate([
+            'patient_name' => 'nullable|boolean',
+            'date_of_birth' => 'nullable|boolean',
+            'scheduled_procedure_2' => 'nullable|boolean',
+            'patient_id_badge' => 'nullable|boolean',
+            'nurse_sheet_identified' => 'nullable|boolean',
+            'hep_b_c_serology_m_4_months' => 'nullable|boolean',
+            'serology_m_6_months' => 'nullable|boolean',
+            'hd_machine_test_passed' => 'nullable|boolean',
+            'kit_per_vascular_access' => 'nullable|boolean',
+            'allergies' => 'nullable|boolean',
+            'dialyzer_per_prescription' => 'nullable|boolean',
+            'reprocessed_dialyzer_label' => 'nullable|boolean',
+            'vascular_access' => 'nullable|boolean',
+        ]);
+   $validator = $request->validate([
+            'patient_id_check' => 'nullable|boolean',
+            'scheduled_procedure' => 'nullable|boolean',
+            'dialysis_prescription' => 'nullable|boolean',
+            'dialyzer_check' => 'nullable|boolean',
+            'bleeding_check' => 'nullable|boolean',
+            'vascular_access_check' => 'nullable|boolean',
+        ]);
+
+    Verification::updateOrCreate(
+        ['patient_id' => $patientId],
+        [
+            'patient_name' => $request->boolean('patient_name'),
+            'date_of_birth' => $request->boolean('date_of_birth'),
+            'scheduled_procedure' => $request->boolean('scheduled_procedure_2'),
+            'patient_id_badge' => $request->boolean('patient_id_badge'),
+            'nurse_sheet_identified' => $request->boolean('nurse_sheet_identified'),
+            'hep_b_c_serology_m_4_months' => $request->boolean('hep_b_c_serology_m_4_months'),
+            'serology_m_6_months' => $request->boolean('serology_m_6_months'),
+            'hd_machine_test_passed' => $request->boolean('hd_machine_test_passed'),
+            'kit_per_vascular_access' => $request->boolean('kit_per_vascular_access'),
+            'allergies' => $request->boolean('allergies'),
+            'dialyzer_per_prescription' => $request->boolean('dialyzer_per_prescription'),
+            'reprocessed_dialyzer_label' => $request->boolean('reprocessed_dialyzer_label'),
+            'vascular_access' => $request->boolean('vascular_access'),
+        ]
+    );
+
+    TimeOut::updateOrCreate(
+        ['patient_id' => $patientId],
+        [
+            'patient_identification' => $request->boolean('patient_id_check'),
+            'scheduled_procedure' => $request->boolean('scheduled_procedure'),
+            'dialysis_prescription' => $request->boolean('dialysis_prescription'),
+            'dialyzer_check' => $request->boolean('dialyzer_check'),
+            'bleeding_check' => $request->boolean('bleeding_check'),
+            'vascular_access_check' => $request->boolean('vascular_access_check'),
+        ]
+    );
+
+    return redirect()->route('treatment.index')->with('success', 'Verificación guardada correctamente.');
+}
+
     public function destroy($id)
     {
         $medicineAdministration = MedicationAdministration::findOrFail($id);
@@ -703,6 +790,19 @@ class TreatmentController extends Controller
                 $nurse->history = 1;
                 $nurse->save();
             }
+             $timeOut = TimeOut::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+            if (!$timeOut) {
+                throw ValidationException::withMessages(['Error' => 'Primero debe llenar la post-diálisis']);
+            }
+            $timeOut->history = 1;
+            $timeOut->save();
+
+             $verification = Verification::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
+            if (!$verification) {
+                throw ValidationException::withMessages(['Error' => 'Primero debe llenar la post-diálisis']);
+            }
+            $verification->history = 1;
+            $verification->save();
 
             $medicineAdministration = MedicationAdministration::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
             foreach ($medicineAdministration as $medicine) {

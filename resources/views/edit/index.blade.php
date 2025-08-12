@@ -75,7 +75,7 @@
                         </td>
                         <td>
                         @if(in_array($user->position, ['ROOT', 'DIRECTIVE', 'QUALITY']))
-                                        <form action="{{ route('edit.destroyTreatmentPast', ['id' => $activePatient->patient->id]) }}" method="POST" style="display:inline;">
+                                        <form action="{{ route('edit.destroyTreatmentPast', ['id' => $activePatient->patient->id,'date' => $activePatient->date]) }}" method="POST" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger">Eliminar tratamiento</button>

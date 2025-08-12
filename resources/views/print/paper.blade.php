@@ -39,12 +39,12 @@
         </tr>
         <tr>
             <td colspan="8" style="background-color: #8db4e3; text-align: center; padding: 5px;">
-            <h4 style="margin: 0;">MONITOREO PRE-TRANS Y POST DIÁLISIS</h4>
+            <h4 style="margin: 0; font-size: 12px;">MONITOREO PRE-TRANS Y POST DIÁLISIS</h4>
             </td>
         </tr>
 
     </table>
-    <table border=1 style="width: 100%;">
+    <table border=1 style="width: 100%; font-size: 12px;">
     <tr>
         <td style="background-color: #e6e6e6; width: 14.3%; font-size: 12px;">FECHA</td>
         <td style="background-color: #e6e6e6; width: 14.3%; font-size: 12px;">HORA</td>
@@ -70,7 +70,7 @@
         <td>{{ date('d-m-y', strtotime($dialysisMonitoring['collocation_date'])) }}</td>
     </tr>
 </table>
-<table border=1 style="width: 100%;">
+<table border=1 style="width: 100%; font-size: 12px;">
     <tr>
         <td style="background-color: #e6e6e6; width: 30%; font-size: 13px;">DIAGNOSTICO (CIE 10)</td>
         <td style="background-color: #e6e6e6; width: 20%; font-size: 13px;">ALERGIAS</td>
@@ -85,11 +85,11 @@
     </tr>
     <tr>
         <td colspan="6" style="background-color: #8db4e3; text-align: center; padding: 5px;">
-            <h4 style="margin: 0;">PRESCRIPCIÓN DE HEMODIÁLISIS</h4>
+            <h4 style="margin: 0; font-size: 12px;">PRESCRIPCIÓN DE HEMODIÁLISIS</h4>
         </td>
     </tr>
 </table>
-<table border=1 style="width: 100%;">
+<table border=1 style="width: 100%; font-size: 12px;">
     <tr>
         <td style="background-color: #e6e6e6; width: 11%; font-size: 10px;">BCM</td>
         <td style="background-color: #e6e6e6; width: 11%; font-size: 10px;">TIPO DIALIZADOR</td>
@@ -115,7 +115,7 @@
         <td style='font-size: 12px'>{{ $dialysisPrescription['machine_temperature'] }}</td>
     </tr>
     <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
-            <h4 style="margin: 0;">PRE-HEMODIÁLISIS</h4>
+            <h4 style="margin: 0; font-size: 12px;">PRE-HEMODIÁLISIS</h4>
     </td>
 </table>
 <table border=1 style="width: 100%;">
@@ -155,7 +155,6 @@
     <td style="background-color: #e6e6e6; width: 20%; font-size: 9px;">EDEMA</td>
     <td style="background-color: #e6e6e6; width: 20%; font-size: 9px;">CONDICIONES DEL ACCESO VASCULAR</td>
     <td style="background-color: #e6e6e6; width: 20%; font-size: 9px;">RIESGO DE CAÍDA</td>
-    <td style="background-color: #e6e6e6; width: 20%; font-size: 9px;">OBSERVACIONES</td>
 </tr>
 <tr>
     <td style="font-size: 8px;">{{ $preHemodialysis['respiratory_rate'] }}</td>
@@ -167,10 +166,15 @@
     <td style="width: 20%; font-size: 12px;">{{ __('web.'.$preHemodialysis['edema']) }}</td>
     <td style="width: 20%; font-size: 12px;">{{ $preHemodialysis['vascular_access_conditions'] }}</td>
     <td style="width: 20%; font-size: 12px;">{{ __('web.'.$preHemodialysis['fall_risk']) }}</td>
-    <td style="width: 20%; font-size: 12px;">{{ $preHemodialysis['observations'] }}</td>
+</tr>
+<tr>
+    <td colspan="15" style="background-color: #e6e6e6; width: 20%; font-size: 9px; text-align: center;">OBSERVACIONES</td>
+</tr>
+<tr>
+    <td colspan="15" style="width: 20%; font-size: 12px;">{{ $preHemodialysis['observations'] }}</td>
 </tr>
 <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
-        <h4 style="margin: 0;">TRANS-HEMODIÁLISIS</h4>
+        <h4 style="margin: 0; font-size: 10px;">TRANS-HEMODIÁLISIS</h4>
 </td>
 </table>
 <table class="table table-responsive" style="width: 100%">
@@ -222,7 +226,7 @@
             <td>
                 <table border=1 style="width: 100%;">
                 <td colspan="25" style="background-color: #8db4e3; text-align: center; padding: 0px;">
-                    <h4 style="margin: 0;"><PRE>       EVALUACIÓN DE DOLOR       </PRE></h4>
+                    <h4 style="margin: 0; font-size: 12px;"><PRE>       EVALUACIÓN DE DOLOR       </PRE></h4>
                  </td>
                 </table>
                 <table  style="font-size: 9px;">
@@ -246,7 +250,7 @@
                 </table>
                 <table border=1 style="width: 100%;">
                 <td colspan="25" style="background-color: #8db4e3; text-align: center; padding: 0px;">
-                    <h4 style="margin: 0;">       EVALUACIÓN DE RIESGO DE CAÍDAS       </h4>
+                    <h4 style="margin: 0; font-size: 12px;">       EVALUACIÓN DE RIESGO DE CAÍDAS       </h4>
                     </td>
                 </table>
                 <table border=1 style="width: 100%;">
@@ -258,7 +262,7 @@
             </td>
         </table>
 
-        <table border=1 style="width: 100%;">
+        <table border=1 style="width: 100%; font-size: 12px;">
             <tr>
                 <td style="background-color: #8db4e3; width: 40%; text-align: center;">VALORACIÓN DE ENFERMERÍA</td>
                 <td style="background-color: #8db4e3; width: 20%; text-align: center;">FASE</td>
@@ -272,37 +276,37 @@
             </tr>
             @endforeach
             <td colspan="7" style="background-color: #8db4e3; text-align: center; padding: 5px;">
-            <h4 style="margin: 0;">MINISTRACIÓN DE MEDICAMENTOS</h4>
+            <h4 style="margin: 0; font-size: 12px;">MINISTRACIÓN DE MEDICAMENTOS</h4>
         </td>
     </table>
         <table border=1 style="width: 100%;">
             <tr>
-            <td colspan=3 style="background-color: #e6e6e6; width: 100%; font-size: 18px;">Enfermero que prepara</td>
-            <td colspan=3 style="background-color: #e6e6e6; width: 100%; font-size: 18px;">Enfermero que administra</td>
+            <td colspan=3 style="background-color: #e6e6e6; width: 100%; font-size: 12px;">Enfermero que prepara</td>
+            <td colspan=3 style="background-color: #e6e6e6; width: 100%; font-size: 12px;">Enfermero que administra</td>
             </tr>
                 <tr>
-                <td colspan=3 style="font-size: 18px;">{{ !empty($medicineAdmin) && isset($medicineAdmin[0]) ? $medicineAdmin[0]->nurse_prepare->name : 'Sin medicamentos' }}</td>
-                <td colspan=3 style="font-size: 18px;">{{ !empty($medicineAdmin) && isset($medicineAdmin[0]) ? $medicineAdmin[0]->nurse_admin->name : 'Sin medicamentos'}}</td>
+                <td colspan=3 style="font-size: 12px;">{{ !empty($medicineAdmin) && isset($medicineAdmin[0]) ? $medicineAdmin[0]->nurse_prepare->name : 'Sin medicamentos' }}</td>
+                <td colspan=3 style="font-size: 12px;">{{ !empty($medicineAdmin) && isset($medicineAdmin[0]) ? $medicineAdmin[0]->nurse_admin->name : 'Sin medicamentos'}}</td>
                 </tr>
             <tr>
-                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Medicamento</td>
-                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Via de administración</td>
-                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Dilución</td>
-                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Velocidad</td>
-                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Hora</td>
-                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 18px;">Fecha de Vencimiento</td>
+                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 12px;">Medicamento</td>
+                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 12px;">Via de administración</td>
+                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 12px;">Dilución</td>
+                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 12px;">Velocidad</td>
+                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 12px;">Hora</td>
+                <td style="background-color: #e6e6e6; width: 14.28%; font-size: 12px;">Fecha de Vencimiento</td>
             </tr>
             <tr>
 
                 @if(count($medicineAdmin)>0)
                 @foreach($medicineAdmin as $medication)
                         <tr>
-                            <td style="font-size: 18px;">{{ $medication->medicine->name }}</td>
-                            <td style="font-size: 18px;">{{ $medication->medicine->route_administration }}</td>
-                            <td style="font-size: 18px;">{{ $medication['dilution'] }}</td>
-                            <td style="font-size: 18px;">{{ $medication['velocity'] }}</td>
-                            <td style="font-size: 18px;">{{ date('H:i', strtotime($medication['hour'])) }}</td>
-                            <td style="font-size: 18px;">{{ date('m-Y', $medication['dueDate']) }}</td>
+                            <td style="font-size: 12px;">{{ $medication->medicine->name }}</td>
+                            <td style="font-size: 12px;">{{ $medication->medicine->route_administration }}</td>
+                            <td style="font-size: 12px;">{{ $medication['dilution'] }}</td>
+                            <td style="font-size: 12px;">{{ $medication['velocity'] }}</td>
+                            <td style="font-size: 12px;">{{ date('H:i', strtotime($medication['hour'])) }}</td>
+                            <td style="font-size: 12px;">{{ date('m-Y', $medication['dueDate']) }}</td>
                         </tr>
                     @endforeach
                 @else
@@ -315,7 +319,7 @@
 @if(isset($doubleVerification))
         <table border=1 style="width: 100%;">
             <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
-                <h4 style="margin: 0;">Doble Verificación De Medicamentos de Alto Riesgo</h4>
+                <h4 style="margin: 0; font-size: 12px;">DOBLE VERIFICACIÓN DE MEDICAMENTOS DE ALTO RIESGO</h4>
         </td>
                 <thead>
                     <tr>
@@ -331,29 +335,29 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>
-                            {{ isset($doubleVerification['correct_medication']) && $doubleVerification['correct_medication'] == 1 ? 'Si' : '-' }}
+                        <td style="text-align: center;">
+                            <strong>{{ isset($doubleVerification['correct_medication']) && $doubleVerification['correct_medication'] == 1 ? '/' : '-' }}</strong>
                         </td>
-                        <td>
-                            {{ isset($doubleVerification['correct_dosage']) && $doubleVerification['correct_dosage'] == 1 ? 'Si' : '-' }}
+                        <td style="text-align: center;">
+                             <strong>{{ isset($doubleVerification['correct_dosage']) && $doubleVerification['correct_dosage'] == 1 ? '/' : '-' }}</strong>
                         </td>
-                        <td>
-                            {{ isset($doubleVerification['correct_dilution']) && $doubleVerification['correct_dilution'] == 1 ? 'Si' : '-' }}
+                        <td style="text-align: center;">
+                             <strong>{{ isset($doubleVerification['correct_dilution']) && $doubleVerification['correct_dilution'] == 1 ? '/' : '-' }}</strong>
                         </td>
-                        <td>
-                            {{ isset($doubleVerification['correct_time']) && $doubleVerification['correct_time'] == 1 ? 'Si' : '-' }}
+                        <td style="text-align: center;">
+                             <strong>{{ isset($doubleVerification['correct_time']) && $doubleVerification['correct_time'] == 1 ? '/' : '-' }}</strong>
                         </td>
-                        <td>
-                            {{ isset($doubleVerification['expiration_verification']) && $doubleVerification['expiration_verification'] == 1 ? 'Si' : '-' }}
+                        <td style="text-align: center;">
+                             <strong>{{ isset($doubleVerification['expiration_verification']) && $doubleVerification['expiration_verification'] == 1 ? '/' : '-' }}</strong>
                         </td>
-                        <td>
-                            {{ isset($doubleVerification['medication_record']) && $doubleVerification['medication_record'] == 1 ? 'Si' : '-' }}
+                        <td style="text-align: center;">
+                             <strong>{{ isset($doubleVerification['medication_record']) && $doubleVerification['medication_record'] == 1 ? '/' : '-' }}</strong>
                         </td>
-                        <td>
-                            {{ isset($doubleVerification['patient_education']) && $doubleVerification['patient_education'] == 1 ? 'Si' : '-' }}
+                        <td style="text-align: center;">
+                             <strong>{{ isset($doubleVerification['patient_education']) && $doubleVerification['patient_education'] == 1 ? '/' : '-' }}</strong>
                         </td>
-                        <td>
-                            {{ isset($doubleVerification['medication_identification']) && $doubleVerification['medication_identification'] == 1 ? 'Si' : '-' }}
+                        <td style="text-align: center;">
+                             <strong>{{ isset($doubleVerification['medication_identification']) && $doubleVerification['medication_identification'] == 1 ? '/' : '-' }}</strong>
                         </td>
                     </tr>
                     <tr>
@@ -377,7 +381,7 @@
     @endif
     <table border=1 style="width: 100%;">
     <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
-            <h4 style="margin: 0;">POST-HEMODIÁLISIS</h4>
+            <h4 style="margin: 0; font-size: 12px;">POST-HEMODIÁLISIS</h4>
     </td>
         <tr>
             <td style="background-color: #e6e6e6; width: 10%; font-size: 10px;">ULTRAFILTRACIÓN FINAL</td>
@@ -404,7 +408,7 @@
             <td style="width: 20%; font-size: 12px;">{{ __('web.'.$postHemoDialysis['fall_risk']) }}</td>
         </tr>
         <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
-                <h4 style="margin: 0;">Oxigenoterapia</h4>
+                <h4 style="margin: 0; font-size: 12px;">OXIGENOTERAPIA</h4>
         </td>
     </table>
     <table border=1 style="width: 100%;">
@@ -431,7 +435,7 @@
             @endif
         </tr>
         <td colspan="15" style="background-color: #8db4e3; text-align: center; padding: 5px;">
-                <h4 style="margin: 0;">ENFERMERO RESPONSABLE</h4>
+                <h4 style="margin: 0; font-size: 12px;">ENFERMERO RESPONSABLE</h4>
         </td>
     </table>
     <table border=1 style="width: 100%;">

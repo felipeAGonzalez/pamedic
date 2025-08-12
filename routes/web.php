@@ -70,9 +70,11 @@ Route::group(['middleware'=>['auth']],function () {
         Route::get('/print', [PrintController::class, 'index'])->name('print.index');
         Route::get('/print/search', [PrintController::class,'search'])->name('print.search');
         Route::get('/print/expedient/{id}', [PrintController::class,'printNurseExpedient'])->name('print.printNurseExpedient');
+        Route::get('/print/timeOut/{id}/date/{date}', [PrintController::class,'printTimeOut'])->name('print.printTimeOut');
         Route::get('/print/expedient/{id}/date/{date}', [PrintController::class,'printNurseExpedient'])->name('print.printNurseExpedientDate');
 
         Route::get('/print/medic/note', [PrintController::class, 'indexMedicNote'])->name('print.medicNote');
+        Route::get('/print/timeOut/validation', [PrintController::class, 'indexTimeOut'])->name('print.timeOut');
         Route::get('/print/medic/form/{id}/{date}', [PrintController::class, 'createMedicNote'])->name('print.note');
         Route::get('/print/search/note', [PrintController::class,'searchMedicNote'])->name('noteMedic.search');
         Route::post('/print/medic/store', [PrintController::class, 'store'])->name('noteMedic.store');
@@ -94,7 +96,6 @@ Route::group(['middleware'=>['auth']],function () {
     Route::get('/edit/create/medicine/{id}/fecha/{date}', [EditController::class, 'createMedicineAdmin'])->name('edit.createMedicineAdmin');
     Route::get('/edit/finalice/{id}/fecha/{date}', [EditController::class, 'finaliceTreatment'])->name('edit.finaliceTreatment');
     Route::delete('/edit/fill/{id}', [EditController::class, 'destroy'])->name('edit.destroy');
-    Route::delete('/edit/fill/{id}', [EditController::class, 'destroyTreatmentPast'])->name('edit.destroyTreatmentPast');
 
     Route::post('/edit/fill', [EditController::class, 'fill'])->name('edit.fill');
     Route::post('/edit/fillPres', [EditController::class, 'fillPres'])->name('edit.fillPres');
@@ -104,6 +105,7 @@ Route::group(['middleware'=>['auth']],function () {
     Route::post('/edit/fill/evaluation', [EditController::class, 'fillEvaluation'])->name('edit.fillEvaluation');
     Route::post('/edit/fill/evaluationN', [EditController::class, 'fillNurseEvaluation'])->name('edit.fillNurseEvaluation');
     Route::post('/edit/fill/medicine', [EditController::class, 'fillMedicineAdmin'])->name('edit.fillMedicineAdmin');
+    Route::delete('/edit/fill/{id}/{date}', [EditController::class, 'destroyTreatmentPast'])->name('edit.destroyTreatmentPast');
 
     Route::get('/patients/search', [PatientController::class,'search'])->name('patients.search');
     Route::get('/patients/create', [PatientController::class, 'create'])->name('patients.create');
@@ -130,6 +132,7 @@ Route::group(['middleware'=>['auth']],function () {
     Route::get('/treatment/create/medicine/{id}', [TreatmentController::class, 'createMedicineAdmin'])->name('treatment.createMedicineAdmin');
     Route::get('/treatment/create/oxygen/{id}', [TreatmentController::class, 'createOxygenTherapy'])->name('treatment.createOxygen');
     Route::get('/treatment/create/weight/{id}', [TreatmentController::class, 'createWeight'])->name('treatment.createWeight');
+    Route::get('/treatment/create/timeout/{id}', [TreatmentController::class, 'createTimeOut'])->name('treatment.createTimeOut');
     Route::get('/treatment/finalice/{id}', [TreatmentController::class, 'finaliceTreatment'])->name('treatment.finaliceTreatment');
     Route::delete('/treatment/fill/{id}', [TreatmentController::class, 'destroy'])->name('treatment.destroy');
 
@@ -143,6 +146,7 @@ Route::group(['middleware'=>['auth']],function () {
     Route::post('/treatment/fill/medicine', [TreatmentController::class, 'fillMedicineAdmin'])->name('treatment.fillMedicineAdmin');
     Route::post('/treatment/fillWeight', [TreatmentController::class, 'fillWeight'])->name('treatment.fillWeight');
     Route::post('/treatment/fill/oxygen', [TreatmentController::class, 'fillOxygenTherapy'])->name('treatment.fillOxygen');
+    Route::post('/treatment/fill/timeout', [TreatmentController::class, 'fillTimeOut'])->name('treatment.fillTimeOut');
 
     Route::match(['get', 'post'],'password/view', [LoginController::class, 'password'])->name('password.view');
     Route::post('password/reset', [UserController::class, 'changePassword'])->name('password.update');

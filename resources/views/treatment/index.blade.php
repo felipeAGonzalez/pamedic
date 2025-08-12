@@ -53,6 +53,7 @@
                                     <a href="{{ route('treatment.createEvaluation', ['id' => $patient->id]) }}" class="btn btn-secondary">Evaluación</a>
                                     <a href="{{ route('treatment.createEvaluationNurse', ['id' => $patient->id]) }}" class="btn btn-secondary">Valoración de enfermería</a>
                                     <a href="{{ route('treatment.createMedicineAdmin', ['id' => $patient->id]) }}" class="btn btn-info">Ministración de medicamentos</a>
+                                    <a href="{{ route('treatment.createTimeOut', ['id' => $patient->id]) }}" class="btn btn-primary">Verificación/Tiempo Fuera</a>
                                     <a href="{{ route('treatment.createPostHemo', ['id' => $patient->id]) }}" class="btn btn-warning">Post-Hemodialisis</a>
                                     <a href="{{ route('treatment.createOxygen', ['id' => $patient->id]) }}" class="btn btn-danger">Oxigeno Terapia</a>
                                     <br>

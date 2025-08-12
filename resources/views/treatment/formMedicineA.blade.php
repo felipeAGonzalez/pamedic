@@ -167,19 +167,25 @@
     </div>
 
     <script>
+        function setRequiredOnControlledSection(required) {
+            const checkboxes = document.querySelectorAll('#controlledMedicineSection input[type="checkbox"]');
+            const nurseSelect = document.getElementById('nurse_id');
+            checkboxes.forEach(cb => cb.required = required);
+            nurseSelect.required = required;
+        }
+
         document.getElementById('medicine_id').addEventListener('change', function () {
             const selectedMedicineId = this.value;
             const controlledMedicineSection = document.getElementById('controlledMedicineSection');
-
-            // Assuming you have a JavaScript object `medicines` with medicine data
             const medicines = @json($medicines);
-
             const selectedMedicine = medicines.find(medicine => medicine.id == selectedMedicineId);
 
             if ((selectedMedicine && selectedMedicine.medicine_controlled == 1)) {
-            controlledMedicineSection.style.display = 'block';
+                controlledMedicineSection.style.display = 'block';
+                setRequiredOnControlledSection(true);
             } else {
-            controlledMedicineSection.style.display = 'none';
+                controlledMedicineSection.style.display = 'none';
+                setRequiredOnControlledSection(false);
             }
         });
 
@@ -188,9 +194,13 @@
             const doubleVerification = @json($doubleVerification);
 
             if (doubleVerification !== null) {
-            controlledMedicineSection.style.display = 'block';
+                controlledMedicineSection.style.display = 'block';
+                setRequiredOnControlledSection(true);
+            } else {
+                setRequiredOnControlledSection(false);
             }
         });
+    </script>
     </script>
     </div>
     <div class="col-md-6">
