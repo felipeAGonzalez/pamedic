@@ -680,7 +680,7 @@ $validator = $request->validate([
         ]);
 
     Verification::updateOrCreate(
-        ['patient_id' => $patientId],
+        ['patient_id' => $patientId, 'history' => 0],
         [
             'patient_name' => $request->boolean('patient_name'),
             'date_of_birth' => $request->boolean('date_of_birth'),
@@ -699,7 +699,7 @@ $validator = $request->validate([
     );
 
     TimeOut::updateOrCreate(
-        ['patient_id' => $patientId],
+        ['patient_id' => $patientId, 'history' => 0],
         [
             'patient_identification' => $request->boolean('patient_id_check'),
             'scheduled_procedure' => $request->boolean('scheduled_procedure'),
@@ -792,14 +792,14 @@ $validator = $request->validate([
             }
              $timeOut = TimeOut::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
             if (!$timeOut) {
-                throw ValidationException::withMessages(['Error' => 'Primero debe llenar la post-diálisis']);
+                throw ValidationException::withMessages(['Error' => 'Primero debe llenar tiempo fuera']);
             }
             $timeOut->history = 1;
             $timeOut->save();
 
              $verification = Verification::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
             if (!$verification) {
-                throw ValidationException::withMessages(['Error' => 'Primero debe llenar la post-diálisis']);
+                throw ValidationException::withMessages(['Error' => 'Primero debe llenar verificación pre procedimiento']);
             }
             $verification->history = 1;
             $verification->save();

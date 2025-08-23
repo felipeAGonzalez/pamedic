@@ -75,6 +75,7 @@
                                     <option value="10ml">10ml</option>
                                     <option value="20ml">20ml</option>
                                     <option value="50ml">50ml</option>
+                                    <option value="500ml">500ml</option>
                                 </select>
                             </td>
                             <td><input type="month" class="form-control" id="due_date" name="due_date"></td>

@@ -18,7 +18,7 @@
             <td colspan="3">FLUJO DE DIÁLISIS</td>
         </tr>
         <tr>
-            <td colspan="6" class="text-start">FECHA DE NACIMIENTO:  <strong>{{$patient->birth_date->format('d/m/Y')}}</strong></td>
+            <td colspan="6" class="text-start">FECHA DE NACIMIENTO:  <strong>{{ $patient->birth_date ? $patient->birth_date->format('d/m/Y') : 'Sin fecha de nacimiento' }}</strong></td>
             <td colspan="3"><strong>{{$dialysisPrescription->schedule_ultrafilter}}</strong></td>
             <td colspan="3"><strong>{{$dialysisPrescription->blood_flux}}</strong></td>
             <td colspan="3"><strong>{{$dialysisPrescription->flux_dialyzer}}</strong></td>
