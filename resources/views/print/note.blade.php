@@ -145,6 +145,25 @@
             <br>
             <br>
             <br>
+            @if ($user->name != 'Melisa')
+            <table style="width: 100%; text-align: right;">
+                <tr>
+                    <td>
+                        Dr.{{$user->name . ' ' . $user->last_name_one . ' ' . $user->last_name_two}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {{__('web.'.$user->position)}}
+                    </td>
+                </tr>
+                    <tr>
+                    <td>
+                        Cédula Profesional: {{$user->profesional_id}}
+                    </td>
+                </tr>
+            </table>
+            @else
             <table style="width: 100%; text-align: right;">
                 <tr>
                     <td>
@@ -159,6 +178,7 @@
                     </td>
                 </tr>
             </table>
+            @endif
 
     </div>
 </body>
