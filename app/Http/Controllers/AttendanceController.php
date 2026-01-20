@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Patient;
 use App\Models\ActivePatient;
 use App\Models\NursePatient;
+use App\Models\Schedule;
 use Illuminate\Validation\ValidationException;
 use DateTime;
 use DateTimeZone;
@@ -22,7 +23,7 @@ class AttendanceController extends Controller
         $search = $request->query('search');
 
         $patients = Patient::query();
-
+        $schedules = Schedule::query();
         if ($search ?? false) {
             $patients = Patient::where('expedient_number','LIKE','%'.$search.'%')->orWhere('name','LIKE','%'.$search.'%')->orWhere('last_name','LIKE','%'.$search.'%')->orWhere('last_name_two','LIKE','%'.$search.'%');
         }
@@ -32,7 +33,8 @@ class AttendanceController extends Controller
             $error = ValidationException::withMessages(['Error' => 'Paciente no encontrado']);
             throw $error;
         }
-        return view('attendance.index', compact('patients'));
+        $schedules = $schedules->get();
+        return view('attendance.index', compact('patients','schedules'));
 
     }
 
@@ -50,7 +52,7 @@ class AttendanceController extends Controller
         if (! $existingPatient && ! $existingTodayPatient) {
             $activePatient = new ActivePatient();
             $activePatient->patient_id = $id;
-            $activePatient->date = $date->format('Y-m-d');
+            $activePatient->date = $date ->format('Y-m-d');
             $activePatient->active = 1;
             $activePatient->save();
             return redirect()->route('attendance.index')->with('message', 'Asistencia registrada correctamente');

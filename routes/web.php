@@ -10,6 +10,7 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\PrintController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\EditController;
 
 
@@ -45,7 +46,7 @@ Route::group(['middleware'=>['auth']],function () {
                         })->name('welcome');
 
 
-    Route::group(['middleware' => 'position:ROOT,DIRECTIVE,QUALITY,MANAGER,NEPHROLOGIST'], function () {
+    Route::group(['middleware' => 'position:ROOT,DIRECTIVE,QUALITY,MANAGER,NEPHROLOGIST,RECEPCIONIST,WHAREHOUSE'], function () {
 
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
@@ -54,6 +55,15 @@ Route::group(['middleware'=>['auth']],function () {
         Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+
+        Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule.index');
+        Route::get('/schedule/create', [ScheduleController::class, 'create'])->name('schedule.create');
+        Route::get('/schedule/search', [AttendanceController::class, 'search'])->name('schedule.search');
+        Route::post('/schedule', [ScheduleController::class, 'store'])->name('schedule.store');
+        Route::get('/schedule/{id}', [ScheduleController::class, 'show'])->name('schedule.show');
+        Route::get('/schedule/{id}/edit', [ScheduleController::class, 'edit'])->name('schedule.edit');
+        Route::put('/schedule/{id}', [ScheduleController::class, 'update'])->name('schedule.update');
+        Route::delete('/schedule/{id}', [ScheduleController::class, 'destroy'])->name('schedule.destroy');
 
         Route::get('/patients/{id}/edit', [PatientController::class, 'edit'])->name('patients.edit');
         Route::put('/patients/{id}', [PatientController::class, 'update'])->name('patients.update');

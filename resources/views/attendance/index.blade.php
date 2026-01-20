@@ -14,7 +14,6 @@
                 </form>
             </div>
         </div>
-
         <table class="table">
              <thead class="table-dark">
                 <tr>
@@ -24,9 +23,9 @@
                     <th>Fecha de nacimiento</th>
                     <th>Genero</th>
                     @if($patients)
-                        <th>Acci®Æn</th>
+                        <th>Acci√≥n</th>
                     @endif
-                    
+
                 </tr>
             </thead>
             <tbody>
@@ -41,6 +40,7 @@
                     <td>{{ '' }}</td>
                 </tr>
                 @else
+
                 @foreach($patients as $patient)
                     <tr>
                         <td>
@@ -54,6 +54,14 @@
                             <form action="{{ route('attendance.register', $patient->id) }}" method="POST">
                                 @csrf
                                 @method('PATCH')
+                                <select name="schedule_id" class="form-select mb-2" >
+                                    <option value="">Seleccionar horario</option>
+                                    @foreach($schedules as $schedule)
+                                        <option value="{{ $schedule->id }}">
+                                            {{ $schedule->schedule }} - {{ __('web.'.$schedule->schedule_type) }}
+                                        </option>
+                                    @endforeach
+                                </select>
                                 <button type="submit" class="btn btn-primary">Registrar Asistencia</button>
                             </form>
                         </td>

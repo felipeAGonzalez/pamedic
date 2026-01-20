@@ -31,7 +31,9 @@
         <a class="nav-link" href="{{ url('/') }}"><span style="color: #f8f9fa">{{ Auth::user()->name .' '. Auth::user()->last_name_one }}</span></a>
     </div>
     <div class="collapse navbar-collapse" id="menu">
-        <ul class="navbar-nav ms-auto">
+        <ul class="navbar-nav ms-auto">  <li class="nav-item">
+                <a class="nav-link" href="{{ url('/schedule') }}"><span style="color: #f8f9fa">Horario de paciente</span></a>
+            </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url('/attendance') }}"><span style="color: #f8f9fa">Asistencia</span></a>
             </li>
