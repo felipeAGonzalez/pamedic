@@ -129,7 +129,7 @@ Route::group(['middleware'=>['auth']],function () {
     Route::get('/attendance/search', [AttendanceController::class, 'search'])->name('attendance.search');
     Route::patch('/attendance/register/{id}', [AttendanceController::class, 'register'])->name('attendance.register');
     Route::get('/attendance/list', [AttendanceController::class, 'list'])->name('attendance.list');
-    Route::get('/attendance/nurseAsigne/{id}', [AttendanceController::class, 'asigne'])->name('attendance.asigne');
+    Route::post('/attendance/nurseAsigne/{id}', [AttendanceController::class, 'asigne'])->name('attendance.asigne');
 
     Route::get('/treatment', [TreatmentController::class, 'index'])->name('treatment.index');
     Route::get('/treatment/create/{id}', [TreatmentController::class, 'create'])->name('treatment.create');

@@ -8,6 +8,7 @@ use App\Models\ActivePatient;
 use App\Models\NursePatient;
 use App\Models\Schedule;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 use DateTime;
 use DateTimeZone;
 
@@ -73,24 +74,36 @@ class AttendanceController extends Controller
         return view('attendance.treatment', compact('patients','nursePatients'));
     }
 
-    public function asigne(Request $request,$id){
-        $activePatient = ActivePatient::where('patient_id', $id)->where('active', 1)->first();
-        if ($activePatient) {
-            $nursePatients = NursePatient::create([
-                'active_patient_id' => $activePatient->id,
-                'user_id' => $request->user()->id,
-                'date' => date('Y-m-d'),
-            ]);
-            $activePatient->active = 0;
-            $activePatient->save();
-        } else {
-            $message = ValidationException::withMessages(['Error' => 'No se encontró el paciente']);
-            throw $message;
-        }
+    public function asigne(Request $request, $id)
+    {
+        return DB::transaction(function () use ($request, $id) {
+
+            $activePatient = ActivePatient::where('patient_id', $id)
+                ->where('active', 1)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $activePatient) {
+                throw ValidationException::withMessages([
+                    'error' => 'No se encontró el paciente activo'
+                ]);
+            }
+            NursePatient::firstOrCreate(
+                [
+                    'active_patient_id' => $activePatient->id,
+                    'date' => today(),
+                ],
+                [
+                    'user_id' => $request->user()->id,
+                ]
+            );
+            $activePatient->update(['active' => 0]);
+
         $activePatients = ActivePatient::where('active', 1)->get();
-        $patients = $activePatients->map(function ($activePatients) {
-            return $activePatients->patient;
+            $patients = $activePatients->map(function ($activePatients) {
+                return $activePatients->patient;
+            });
+            return view('attendance.treatment', compact('patients'));
         });
-        return view('attendance.treatment', compact('patients'));
     }
 }
