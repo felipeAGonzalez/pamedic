@@ -84,9 +84,9 @@ class TreatmentController extends Controller
             if ($prevPreHemodialysis) {
                 return view('treatment.formWeight', compact('prevPreHemodialysis','prevPostHemoDialysis','patient'));
             }
-        return view('treatment.formWeight', compact('id','patient'));
+            return view('treatment.formWeight', compact('id','patient'));
+        }
     }
-}
     public function create(Request $request,$id)
     {
         $patient = Patient::where('id',$id)->first();
@@ -107,6 +107,8 @@ class TreatmentController extends Controller
             $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $patient->id, 'history' =>  1])->orderBy('date_hour','DESC')->first();
             if ($dialysisMonitoring) {
                 $dialysisMonitoring = $dialysisMonitoring->replicate();
+                $dialysisMonitoring->created_at = now();
+                $dialysisMonitoring->updated_at = now();
                 $dialysisMonitoring->date_hour = date('Y-m-d H:i');
                 $dialysisMonitoring->machine_number = "";
                 $dialysisMonitoring->session_number = $dialysisMonitoring->session_number + 1;
@@ -194,8 +196,7 @@ class TreatmentController extends Controller
         }
         return view('treatment.formPostH', compact('id','patient'));
     }
-
-     public function createTimeOut(Request $request,$id)
+    public function createTimeOut(Request $request,$id)
     {
         $patient = Patient::where('id',$id)->first();
 
@@ -214,7 +215,6 @@ class TreatmentController extends Controller
         }
         return view('treatment.formTimeOut', compact('id','patient','dialysisMonitoring','dialysisPrescription'));
     }
-
     public function createOxygenTherapy(Request $request,$id)
     {
         $patient = Patient::where('id',$id)->first();
@@ -536,7 +536,6 @@ class TreatmentController extends Controller
         }
         return redirect()->route('treatment.index')->with('success', 'Datos de guardados exitosamente');
     }
-
     public function fillNurseEvaluation(Request $request){
         $validator = $request->validate([
             'fase.*' => 'required|string',
@@ -649,70 +648,68 @@ class TreatmentController extends Controller
         $medicines = Medicine::all();
         return view('treatment.formMedicineA', compact('medicineAdministration','users','medicines','patient','doubleVerification'))->with('success', 'Medicamento asignado exitosamente');
     }
+    public function fillTimeOut(Request $request)
+    {
+        $patientId = $request->input('patient_id');
 
-public function fillTimeOut(Request $request)
-{
-    $patientId = $request->input('patient_id');
 
+        $validator = $request->validate([
+                    'patient_name' => 'nullable|boolean',
+                    'date_of_birth' => 'nullable|boolean',
+                    'scheduled_procedure_2' => 'nullable|boolean',
+                    'patient_id_badge' => 'nullable|boolean',
+                    'nurse_sheet_identified' => 'nullable|boolean',
+                    'hep_b_c_serology_m_4_months' => 'nullable|boolean',
+                    'serology_m_6_months' => 'nullable|boolean',
+                    'hd_machine_test_passed' => 'nullable|boolean',
+                    'kit_per_vascular_access' => 'nullable|boolean',
+                    'allergies' => 'nullable|boolean',
+                    'dialyzer_per_prescription' => 'nullable|boolean',
+                    'reprocessed_dialyzer_label' => 'nullable|boolean',
+                    'vascular_access' => 'nullable|boolean',
+                ]);
+        $validator = $request->validate([
+                    'patient_id_check' => 'nullable|boolean',
+                    'scheduled_procedure' => 'nullable|boolean',
+                    'dialysis_prescription' => 'nullable|boolean',
+                    'dialyzer_check' => 'nullable|boolean',
+                    'bleeding_check' => 'nullable|boolean',
+                    'vascular_access_check' => 'nullable|boolean',
+                ]);
 
-$validator = $request->validate([
-            'patient_name' => 'nullable|boolean',
-            'date_of_birth' => 'nullable|boolean',
-            'scheduled_procedure_2' => 'nullable|boolean',
-            'patient_id_badge' => 'nullable|boolean',
-            'nurse_sheet_identified' => 'nullable|boolean',
-            'hep_b_c_serology_m_4_months' => 'nullable|boolean',
-            'serology_m_6_months' => 'nullable|boolean',
-            'hd_machine_test_passed' => 'nullable|boolean',
-            'kit_per_vascular_access' => 'nullable|boolean',
-            'allergies' => 'nullable|boolean',
-            'dialyzer_per_prescription' => 'nullable|boolean',
-            'reprocessed_dialyzer_label' => 'nullable|boolean',
-            'vascular_access' => 'nullable|boolean',
-        ]);
-   $validator = $request->validate([
-            'patient_id_check' => 'nullable|boolean',
-            'scheduled_procedure' => 'nullable|boolean',
-            'dialysis_prescription' => 'nullable|boolean',
-            'dialyzer_check' => 'nullable|boolean',
-            'bleeding_check' => 'nullable|boolean',
-            'vascular_access_check' => 'nullable|boolean',
-        ]);
+        Verification::updateOrCreate(
+            ['patient_id' => $patientId, 'history' => 0],
+            [
+                'patient_name' => $request->boolean('patient_name'),
+                'date_of_birth' => $request->boolean('date_of_birth'),
+                'scheduled_procedure' => $request->boolean('scheduled_procedure_2'),
+                'patient_id_badge' => $request->boolean('patient_id_badge'),
+                'nurse_sheet_identified' => $request->boolean('nurse_sheet_identified'),
+                'hep_b_c_serology_m_4_months' => $request->boolean('hep_b_c_serology_m_4_months'),
+                'serology_m_6_months' => $request->boolean('serology_m_6_months'),
+                'hd_machine_test_passed' => $request->boolean('hd_machine_test_passed'),
+                'kit_per_vascular_access' => $request->boolean('kit_per_vascular_access'),
+                'allergies' => $request->boolean('allergies'),
+                'dialyzer_per_prescription' => $request->boolean('dialyzer_per_prescription'),
+                'reprocessed_dialyzer_label' => $request->boolean('reprocessed_dialyzer_label'),
+                'vascular_access' => $request->boolean('vascular_access'),
+            ]
+        );
 
-    Verification::updateOrCreate(
-        ['patient_id' => $patientId, 'history' => 0],
-        [
-            'patient_name' => $request->boolean('patient_name'),
-            'date_of_birth' => $request->boolean('date_of_birth'),
-            'scheduled_procedure' => $request->boolean('scheduled_procedure_2'),
-            'patient_id_badge' => $request->boolean('patient_id_badge'),
-            'nurse_sheet_identified' => $request->boolean('nurse_sheet_identified'),
-            'hep_b_c_serology_m_4_months' => $request->boolean('hep_b_c_serology_m_4_months'),
-            'serology_m_6_months' => $request->boolean('serology_m_6_months'),
-            'hd_machine_test_passed' => $request->boolean('hd_machine_test_passed'),
-            'kit_per_vascular_access' => $request->boolean('kit_per_vascular_access'),
-            'allergies' => $request->boolean('allergies'),
-            'dialyzer_per_prescription' => $request->boolean('dialyzer_per_prescription'),
-            'reprocessed_dialyzer_label' => $request->boolean('reprocessed_dialyzer_label'),
-            'vascular_access' => $request->boolean('vascular_access'),
-        ]
-    );
+        TimeOut::updateOrCreate(
+            ['patient_id' => $patientId, 'history' => 0],
+            [
+                'patient_identification' => $request->boolean('patient_id_check'),
+                'scheduled_procedure' => $request->boolean('scheduled_procedure'),
+                'dialysis_prescription' => $request->boolean('dialysis_prescription'),
+                'dialyzer_check' => $request->boolean('dialyzer_check'),
+                'bleeding_check' => $request->boolean('bleeding_check'),
+                'vascular_access_check' => $request->boolean('vascular_access_check'),
+            ]
+        );
 
-    TimeOut::updateOrCreate(
-        ['patient_id' => $patientId, 'history' => 0],
-        [
-            'patient_identification' => $request->boolean('patient_id_check'),
-            'scheduled_procedure' => $request->boolean('scheduled_procedure'),
-            'dialysis_prescription' => $request->boolean('dialysis_prescription'),
-            'dialyzer_check' => $request->boolean('dialyzer_check'),
-            'bleeding_check' => $request->boolean('bleeding_check'),
-            'vascular_access_check' => $request->boolean('vascular_access_check'),
-        ]
-    );
-
-    return redirect()->route('treatment.index')->with('success', 'Verificación guardada correctamente.');
-}
-
+        return redirect()->route('treatment.index')->with('success', 'Verificación guardada correctamente.');
+    }
     public function destroy($id)
     {
         $medicineAdministration = MedicationAdministration::findOrFail($id);
