@@ -145,7 +145,6 @@
             <br>
             <br>
             <br>
-            @if ($user->name != 'Melisa')
             <table style="width: 100%; text-align: right;">
                 <tr>
                     <td>
@@ -163,23 +162,6 @@
                     </td>
                 </tr>
             </table>
-            @else
-            <table style="width: 100%; text-align: right;">
-                <tr>
-                    <td>
-                        Dra.Leticia Paramo Fiscal
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                    NEFROLOGO
-                        <br>
-                        C.P. Nefrología. 14274267
-                    </td>
-                </tr>
-            </table>
-            @endif
-
     </div>
 </body>
 </html>
