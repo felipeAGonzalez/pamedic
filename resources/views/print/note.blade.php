@@ -148,7 +148,7 @@
             <table style="width: 100%; text-align: right;">
                 <tr>
                     <td>
-                        Dr.{{$user->name . ' ' . $user->last_name_one . ' ' . $user->last_name_two}}
+                        {{ $user->name == 'Melisa' ? 'Dra. ' : 'Dr. ' }}{{ $user->name . ' ' . $user->last_name_one . ' ' . $user->last_name_two }}
                     </td>
                 </tr>
                 <tr>
