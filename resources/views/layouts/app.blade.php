@@ -35,6 +35,9 @@
                 <a class="nav-link" href="{{ url('/schedule') }}"><span style="color: #f8f9fa">Horario de paciente</span></a>
             </li>
             <li class="nav-item">
+               <a class="nav-link" href="{{ url('/attendance/schedule') }}"><span style="color: #f8f9fa">A. Programada</span></a>
+           </li>
+            <li class="nav-item">
                 <a class="nav-link" href="{{ url('/attendance') }}"><span style="color: #f8f9fa">Asistencia</span></a>
             </li>
             <li class="nav-item">

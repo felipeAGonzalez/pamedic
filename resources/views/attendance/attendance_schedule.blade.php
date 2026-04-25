@@ -2,11 +2,11 @@
 
 @section('content')
     <div class="container">
-        <h1>Asistencia</h1>
+        <h1>Asistencia programada</h1>
 
         <div class="row">
             <div class="col-md-6">
-                <form action="{{ route('attendance.search') }}" method="GET" class="mb-3">
+                <form action="{{ route('attendance.searchSchedule') }}" method="GET" class="mb-3">
                     <div class="input-group mb-6">
                         <input type="text" name="search" class="form-control" placeholder="Buscar por nombre o numero de expediente">
                             <button type="submit" class="btn btn-primary">Buscar</button>
@@ -14,7 +14,6 @@
                 </form>
             </div>
         </div>
-
         <table class="table">
              <thead class="table-dark">
                 <tr>
@@ -41,6 +40,7 @@
                     <td>{{ '' }}</td>
                 </tr>
                 @else
+
                 @foreach($patients as $patient)
                     <tr>
                         <td>
@@ -54,6 +54,24 @@
                             <form action="{{ route('attendance.register', $patient->id) }}" method="POST">
                                 @csrf
                                 @method('PATCH')
+                                <select name="schedule_id" class="form-select mb-2" >
+                                    <option value="">Seleccionar horario</option>
+                                    @foreach($schedules as $schedule)
+                                        <option value="{{ $schedule->id }}">
+                                            {{ $schedule->schedule }} - {{ __('web.'.$schedule->schedule_type) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                               <div class="mb-3">
+                                    <label for="date" class="form-label">Fecha de asistencia</label>
+                                    <input type="date" name="date" id="date" class="form-control"
+                                        value="Fecha de asistencia">
+                                </div>
+                                <div>
+                                    <label for="numM">Numero de maquina</label>
+                                    <input type="text" name="numM" id="numM" class="form-control" placeholder="Numero de maquina">
+                                </div>
+                                <br>
                                 <button type="submit" class="btn btn-primary">Registrar Asistencia</button>
                             </form>
                         </td>
@@ -92,4 +110,6 @@
             </ul>
         </div>
     @endif
+
+</div>
 @endsection

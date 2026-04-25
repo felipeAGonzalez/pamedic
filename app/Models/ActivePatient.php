@@ -9,7 +9,7 @@ class ActivePatient extends Model
 
     protected $fillable = [
         'patient_id',
-        'fecha',
+        'date',
         'active',
         'created_at',
         'updated_at'

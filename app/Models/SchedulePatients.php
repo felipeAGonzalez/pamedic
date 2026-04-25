@@ -8,9 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class SchedulePatients extends Model
 {
     use HasFactory;
-
     protected $table = 'schedules_patient';
-    protected $fillable = ['schedule_id', 'patient_id'];
+    protected $fillable = ['schedules_id', 'patient_id', 'date', 'machine_number', 'created_at', 'updated_at'];
 
     /**
      * Relación con el modelo Schedule

@@ -35,4 +35,5 @@ return [
 'output' => 'Nota de Egreso',
 'morning' => 'Turno Matutino',
 'afternoon' => 'Turno Vespertino',
+'emergency' => 'Emergencia',
 ];

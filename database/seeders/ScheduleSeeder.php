@@ -38,5 +38,11 @@ class ScheduleSeeder extends Seeder
             'created_at' => date('Y-m-d H:m:s'),
             'updated_at' => date('Y-m-d H:m:s'),
         ]);
+        DB::table('schedules')->insert([
+            'schedule' => '00:00:00',
+            'schedule_type' => 'emergency',
+            'created_at' => date('Y-m-d H:m:s'),
+            'updated_at' => date('Y-m-d H:m:s'),
+        ]);
     }
 }
