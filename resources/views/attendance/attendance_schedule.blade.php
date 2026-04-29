@@ -67,9 +67,16 @@
                                     <input type="date" name="date" id="date" class="form-control"
                                         value="Fecha de asistencia">
                                 </div>
-                                <div>
-                                    <label for="numM">Numero de maquina</label>
-                                    <input type="text" name="numM" id="numM" class="form-control" placeholder="Numero de maquina">
+                                <div class="mb-3">
+                                    <label>Machine</label>
+                                    <select name="machine_id" class="form-select" required>
+                                        <option value="">Select machine</option>
+                                        @foreach($machines as $machine)
+                                            <option value="{{ $machine->id }}">
+                                                Machine {{ $machine->machine_number }} — SN: {{ $machine->serial_number }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <br>
                                 <button type="submit" class="btn btn-primary">Registrar Asistencia</button>

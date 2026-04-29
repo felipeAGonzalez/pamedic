@@ -1,44 +1,59 @@
-@props(['titulo','turnoData'])
+@props(['title','shiftData'])
 
 @php
-$dias = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-$nombresDias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+$days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+$daysES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 
-$maxBloques = 0;
-foreach ($turnoData as $dia) {
-    $maxBloques = max($maxBloques, $dia->count());
+// calculate max blocks (chunks of 15)
+$maxBlocks = 0;
+foreach ($shiftData as $dayData) {
+    $maxBlocks = max($maxBlocks, $dayData->count());
 }
 @endphp
 
-<h5 class="text-center bg-light p-2 mt-4">{{ $titulo }}</h5>
+<h5 class="text-center bg-light p-2 mt-4">{{ $title }}</h5>
 
-@for($bloque=0; $bloque < $maxBloques; $bloque++)
+@for($block = 0; $block < $maxBlocks; $block++)
 <div class="table-responsive mb-4">
     <table class="table table-bordered table-sm">
 
         <thead class="table-secondary text-center">
             <tr>
                 <th width="40">#</th>
-                @foreach($nombresDias as $d)
-                    <th>{{ $d }}</th>
+                @foreach($daysES as $dayName)
+                    <th>{{ $dayName }}</th>
                 @endforeach
             </tr>
         </thead>
 
         <tbody>
-            @for($i=0; $i<15; $i++)
+            @for($i = 0; $i < 15; $i++)
             <tr>
-                <td><strong>{{ $i+1 }}</strong></td>
+                <td><strong>{{ $i + 1 }}</strong></td>
 
-                @foreach($dias as $dia)
+                @foreach($days as $day)
                     <td style="font-size:12px;">
                         @php
-                            $paciente = $turnoData[$dia][$bloque][$i] ?? null;
+                            $record = $shiftData[$day][$block][$i] ?? null;
                         @endphp
 
-                        @if($paciente)
-                            <strong>{{ $paciente->expedient_number }}</strong><br>
-                            {{ $paciente->name }}
+                        @if($record)
+                        <div class="d-flex justify-content-between align-items-start">
+
+                            <div>
+                                <strong>{{ $record->patient->expedient_number }}</strong><br>
+                                {{ $record->patient->name }}
+                            </div>
+
+                            <form method="POST"
+                                  action="{{ route('schedule.destroy', $record->id) }}"
+                                  onsubmit="return confirm('Remove patient from schedule?')">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-danger btn-sm px-2 py-0">✖</button>
+                            </form>
+
+                        </div>
                         @endif
                     </td>
                 @endforeach

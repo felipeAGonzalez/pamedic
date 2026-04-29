@@ -5,52 +5,68 @@ namespace App\Http\Controllers;
 use App\Models\Schedule;
 use App\Models\Patient;
 use App\Models\SchedulePatients;
+use App\Models\ActivePatient;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Illuminate\Validation\ValidationException;
+
 
 class ScheduleController extends Controller
 {
+    private function emptyWeek()
+    {
+        return [
+            'Monday'    => collect(),
+            'Tuesday'   => collect(),
+            'Wednesday' => collect(),
+            'Thursday'  => collect(),
+            'Friday'    => collect(),
+            'Saturday'  => collect(),
+        ];
+    }
+
     public function index()
     {
-            $registros = SchedulePatients::with('patient')->get();
+        $weekStart = Carbon::now()->startOfWeek(Carbon::MONDAY);
+        $weekEnd   = Carbon::now()->endOfWeek(Carbon::SATURDAY);
 
-            // Turnos base
-            $agenda = [
-                1 => $this->semanaVacia(),
-                2 => $this->semanaVacia(),
-                3 => $this->semanaVacia(),
-                4 => $this->semanaVacia(),
-            ];
+        $weekNumber = $weekStart->weekOfYear;
+        $range = $weekStart->format('d M') . ' - ' . $weekEnd->format('d M');
 
-            // Llenar agenda por turno y día
-            foreach ($registros as $registro) {
-                $dia = \Carbon\Carbon::parse($registro->date)->format('l');
-                $agenda[$registro->schedules_id][$dia][] = $registro->patient;
+        $records = SchedulePatients::with('patient')
+            ->whereBetween('date', [$weekStart, $weekEnd])
+            ->get();
+
+        $agenda = [
+            1 => $this->emptyWeek(),
+            2 => $this->emptyWeek(),
+            3 => $this->emptyWeek(),
+            4 => $this->emptyWeek(),
+        ];
+
+        foreach ($records as $record) {
+            $day = Carbon::parse($record->date)->format('l');
+            $agenda[$record->schedules_id][$day][] = $record;
+        }
+
+        foreach ($agenda as $shift => $days) {
+            foreach ($days as $day => $patients) {
+                $agenda[$shift][$day] = collect($patients)->chunk(15);
             }
+        }
 
-            // 🔥 dividir cada día en bloques de 15 pacientes
-            foreach ($agenda as $turno => $dias) {
-                foreach ($dias as $dia => $pacientes) {
-                    $agenda[$turno][$dia] = collect($pacientes)->chunk(15);
-                }
-            }
-
-            $semanaNumero = now()->weekOfYear;
-            $rango = now()->startOfWeek()->format('d M') . ' - ' . now()->endOfWeek()->format('d M');
-
-
-            return view('schedule.index', compact('agenda','semanaNumero','rango'));
+        return view('schedule.index', compact('agenda','weekNumber','range'));
     }
 
-    private function semanaVacia()
-        {
-            return [
-                'Monday'=>collect(),
-                'Tuesday'=>collect(),
-                'Wednesday'=>collect(),
-                'Thursday'=>collect(),
-                'Friday'=>collect(),
-                'Saturday'=>collect(),
-            ];
-    }
 
+    public function destroy($id)
+    {
+       $schedulePatient = SchedulePatients::findOrFail($id);
+
+        $schedulePatient->delete();
+        $activePatient = ActivePatient::where('patient_id', $schedulePatient->patient_id)
+            ->where('date', $schedulePatient->date)
+            ->first()->delete();
+        return back()->with('success','Paciente eliminado de la agenda');
+    }
 }

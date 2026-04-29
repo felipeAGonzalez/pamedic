@@ -12,6 +12,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\EditController;
+use App\Http\Controllers\MachineController;
 
 
 
@@ -47,6 +48,15 @@ Route::group(['middleware'=>['auth']],function () {
 
 
     Route::group(['middleware' => 'position:ROOT,DIRECTIVE,QUALITY,MANAGER,NEPHROLOGIST,RECEPCIONIST,WHAREHOUSE'], function () {
+
+        Route::resource('machines', MachineController::class);
+
+        Route::get('/machines', [MachineController::class, 'index'])->name('machines.index');
+        Route::get('/machines/create', [MachineController::class, 'create'])->name('machines.create');
+        Route::post('/machines', [MachineController::class, 'store'])->name('machines.store');
+        Route::get('/machines/{id}', [MachineController::class, 'show'])->name('machines.show');
+        Route::get('/machines/{id}/edit', [MachineController::class, 'edit'])->name('machines.edit');
+
 
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');

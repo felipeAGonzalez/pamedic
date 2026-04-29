@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('schedules_id')->nullable()->comment('El ID del horario asociado el paciente');
             $table->foreign('schedules_id')->references('id')->on('schedules');
             $table->date('date')->comment('Fecha de la asistencia');
-            $table->string('machine_number')->comment('Numero de maquina');
+            $table->string('machine_id')->comment('Numero de maquina');
             $table->timestamps();
         });
     }

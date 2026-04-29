@@ -8,6 +8,7 @@ use App\Models\ActivePatient;
 use App\Models\NursePatient;
 use App\Models\Schedule;
 use App\Models\SchedulePatients;
+use App\Models\Machine;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use DateTime;
@@ -40,7 +41,8 @@ class AttendanceController extends Controller
             throw $error;
         }
         $schedules = $schedules->get();
-        return view('attendance.attendance_schedule', compact('patients','schedules'));
+        $machines = Machine::orderBy('id')->get();
+        return view('attendance.attendance_schedule', compact('patients','schedules','machines'));
 
     }
     public function search(Request $request){
@@ -57,8 +59,9 @@ class AttendanceController extends Controller
             $error = ValidationException::withMessages(['Error' => 'Paciente no encontrado']);
             throw $error;
         }
+        $machines = Machine::orderBy('id')->get();
         $schedules = $schedules->get();
-        return view('attendance.index', compact('patients','schedules'));
+        return view('attendance.index', compact('patients','schedules','machines'));
 
     }
 
@@ -72,12 +75,23 @@ class AttendanceController extends Controller
     $timezone = new DateTimeZone('America/Mexico_City');
     $date = new DateTime('now', $timezone);
     $today = $date->format('Y-m-d');
-    // si no viene horario → emergencia
-    $scheduleId = $request->schedule_id ?? Schedule::where('schedule','EMERGENCY')->value('id');
-    // verificar si ya tiene asistencia hoy
+    $sessionDate = $request->date ?? $today;
+    $scheduleId = $request->schedule_id
+        ?? Schedule::where('schedule','EMERGENCY')->value('id');
+    $alreadyScheduled = SchedulePatients::where('patient_id', $id)
+        ->whereDate('date', $sessionDate)
+        ->exists();
+
+    if ($alreadyScheduled) {
+        throw ValidationException::withMessages([
+            'Error' => 'El paciente ya está programado en un turno este día'
+        ]);
+    }
+
     $existingTodayPatient = ActivePatient::where('patient_id',$id)
-        ->where('date',$today)
+        ->where('date',$sessionDate)
         ->first();
+
     if ($existingTodayPatient) {
         $assignedPatient = NursePatient::where([
             'active_patient_id' => $existingTodayPatient->id,
@@ -93,26 +107,28 @@ class AttendanceController extends Controller
         ]);
     }
     try {
+        SchedulePatients::create([
+            'schedules_id' => $scheduleId,
+            'patient_id' => $id,
+            'date' => $sessionDate,
+            'machine_id' => $request->machine_id
+        ]);
+        ActivePatient::create([
+            'patient_id' => $id,
+            'date' => $sessionDate,
+            'active' => 1
+        ]);
 
-    SchedulePatients::create([
-        'schedules_id' => $scheduleId,
-        'patient_id' => $id,
-        'date' => $request->date ?? today(),
-        'machine_number' => $request->numM
-    ]);
-    ActivePatient::create([
-        'patient_id' => $id,
-        'date' => $request->date ?? today(),
-        'active' => 1
-    ]);
     } catch (\Illuminate\Database\QueryException $e) {
-        if ($e->getCode() === '23000') { // Código de error para violación de restricción de unicidad
+
+        if ($e->getCode() === '23000') {
             throw ValidationException::withMessages([
                 'Error' => 'El paciente ya tiene asistencia registrada para esta fecha'
             ]);
         }
-        throw $e; // Re-lanzar la excepción si no es una violación de unicidad
-    }
+
+        throw $e;
+}
 
     return redirect()->route('attendance.attendanceSchedule')
         ->with('message','Asistencia registrada correctamente');
@@ -134,6 +150,7 @@ class AttendanceController extends Controller
 
             $activePatient = ActivePatient::where('patient_id', $id)
                 ->where('active', 1)
+                ->where('date', date('Y-m-d'))
                 ->lockForUpdate()
                 ->first();
 

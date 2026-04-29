@@ -66,6 +66,7 @@
                         <a class="dropdown-item" href="{{ url('/edit') }}">Editar Nota de enfermería</a>
                         <a class="dropdown-item" href="{{ url('/patients') }}">Pacientes</a>
                         <a class="dropdown-item" href="{{ url('/medicines') }}">Medicamentos</a>
+                        <a class="dropdown-item" href="{{ url('/machines') }}">Máquinas</a>
                     </div>
         </li>
 
