@@ -15,9 +15,9 @@ class Machine extends Model
     ];
 
 
-public function machine()
-{
-    return $this->belongsTo(Machine::class);
-}
 
+  public function schedules()
+{
+    return $this->hasMany(SchedulePatients::class);
+}
 }

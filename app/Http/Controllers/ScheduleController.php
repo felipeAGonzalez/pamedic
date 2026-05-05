@@ -6,6 +6,7 @@ use App\Models\Schedule;
 use App\Models\Patient;
 use App\Models\SchedulePatients;
 use App\Models\ActivePatient;
+use App\Models\Machine;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -25,16 +26,25 @@ class ScheduleController extends Controller
         ];
     }
 
-    public function index()
+    public function index($year = null, $week = null)
     {
-        $weekStart = Carbon::now()->startOfWeek(Carbon::MONDAY);
-        $weekEnd   = Carbon::now()->endOfWeek(Carbon::SATURDAY);
+        $week = $week ?? now()->weekOfYear;
+        $year = $year ?? now()->year;
 
-        $weekNumber = $weekStart->weekOfYear;
-        $range = $weekStart->format('d M') . ' - ' . $weekEnd->format('d M');
+        $inicioSemana = Carbon::now()
+            ->setISODate($year, $week)
+            ->startOfWeek(Carbon::MONDAY);
 
-        $records = SchedulePatients::with('patient')
-            ->whereBetween('date', [$weekStart, $weekEnd])
+        $finSemana = Carbon::now()
+            ->setISODate($year, $week)
+            ->endOfWeek(Carbon::SATURDAY);
+
+        $range = $inicioSemana->format('d M') . ' - ' . $finSemana->format('d M');
+
+        $machines = Machine::orderBy('id')->get();
+
+        $registros = SchedulePatients::with(['patient','machine'])
+            ->whereBetween('date', [$inicioSemana, $finSemana])
             ->get();
 
         $agenda = [
@@ -44,18 +54,23 @@ class ScheduleController extends Controller
             4 => $this->emptyWeek(),
         ];
 
-        foreach ($records as $record) {
-            $day = Carbon::parse($record->date)->format('l');
-            $agenda[$record->schedules_id][$day][] = $record;
+        foreach ($registros as $registro) {
+            $dia = Carbon::parse($registro->date)->format('l');
+            $agenda[$registro->schedules_id][$dia][] = $registro;
         }
 
-        foreach ($agenda as $shift => $days) {
-            foreach ($days as $day => $patients) {
-                $agenda[$shift][$day] = collect($patients)->chunk(15);
-            }
-        }
+        $prevWeek = Carbon::now()->setISODate($year,$week)->subWeek();
+        $nextWeek = Carbon::now()->setISODate($year,$week)->addWeek();
 
-        return view('schedule.index', compact('agenda','weekNumber','range'));
+        return view('schedule.index', [
+            'agenda'    => $agenda,
+            'machines'  => $machines,
+            'week'      => $week,
+            'year'      => $year,
+            'range'     => $range,
+            'prevWeek'  => $prevWeek,
+            'nextWeek'  => $nextWeek
+        ]);
     }
 
 
@@ -69,4 +84,33 @@ class ScheduleController extends Controller
             ->first()->delete();
         return back()->with('success','Paciente eliminado de la agenda');
     }
+
+    public function cloneWeek(Request $request)
+{
+    $week = $request->week;
+    $year = $request->year;
+
+    $startWeek = Carbon::now()->setISODate($year,$week)->startOfWeek();
+    $endWeek   = Carbon::now()->setISODate($year,$week)->endOfWeek();
+
+    $nextWeekStart = $startWeek->copy()->addWeek();
+
+    $records = SchedulePatients::whereBetween('date',[$startWeek,$endWeek])->get();
+
+    foreach($records as $record){
+        SchedulePatients::create([
+            'schedules_id' => $record->schedules_id,
+            'patient_id'   => $record->patient_id,
+            'machine_id'   => $record->machine_id,
+            'date'         => Carbon::parse($record->date)->addWeek(),
+        ]);
+        ActivePatient::create([
+            'patient_id' => $record->patient_id,
+            'date' => Carbon::parse($record->date)->addWeek(),
+            'active' => 1
+        ]);
+    }
+
+    return back()->with('success','Week cloned successfully');
+}
 }

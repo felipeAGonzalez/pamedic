@@ -11,24 +11,20 @@ class SchedulePatients extends Model
     protected $table = 'schedules_patient';
     protected $fillable = ['schedules_id', 'patient_id', 'date', 'machine_id', 'created_at', 'updated_at'];
 
-    /**
-     * Relación con el modelo Schedule
-     */
+
     public function schedule()
     {
         return $this->belongsTo(Schedule::class);
     }
 
-    /**
-     * Relación con el modelo Patient
-     */
+
     public function patient()
     {
         return $this->belongsTo(Patient::class);
     }
 
-    public function schedules()
-{
-    return $this->hasMany(SchedulePatients::class);
-}
+    public function machine()
+    {
+        return $this->belongsTo(Machine::class);
+    }
 }

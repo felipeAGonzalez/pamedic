@@ -12,12 +12,8 @@ return new class extends Migration
     public function up()
 {
     Schema::table('schedules_patient', function (Blueprint $table) {
-        if (!Schema::hasColumn('schedules_patient', 'machine_id')) {
-            $table->foreignId('machine_id')
-                ->nullable()
-                ->constrained('machines')
-                ->nullOnDelete();
-        }
+        $table->unsignedBigInteger('machine_id')->after('date')->comment('El ID de la maquina asociado con el paciente y horario');
+        $table->foreign('machine_id')->references('id')->on('machines')->onDelete('cascade');
     });
 }
 

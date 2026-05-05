@@ -1,67 +1,63 @@
-@props(['title','shiftData'])
+@props(['title','shiftData','machines'])
 
 @php
-$days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-$daysES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-
-// calculate max blocks (chunks of 15)
-$maxBlocks = 0;
-foreach ($shiftData as $dayData) {
-    $maxBlocks = max($maxBlocks, $dayData->count());
-}
+$dias = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+$nombresDias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 @endphp
 
 <h5 class="text-center bg-light p-2 mt-4">{{ $title }}</h5>
 
-@for($block = 0; $block < $maxBlocks; $block++)
 <div class="table-responsive mb-4">
-    <table class="table table-bordered table-sm">
+<table class="table table-bordered table-sm">
 
-        <thead class="table-secondary text-center">
-            <tr>
-                <th width="40">#</th>
-                @foreach($daysES as $dayName)
-                    <th>{{ $dayName }}</th>
-                @endforeach
-            </tr>
-        </thead>
+    <thead class="table-secondary text-center">
+        <tr>
+            <th width="80">Máquina</th>
+            @foreach($nombresDias as $d)
+                <th>{{ $d }}</th>
+            @endforeach
+        </tr>
+    </thead>
 
-        <tbody>
-            @for($i = 0; $i < 15; $i++)
-            <tr>
-                <td><strong>{{ $i + 1 }}</strong></td>
+    <tbody>
 
-                @foreach($days as $day)
-                    <td style="font-size:12px;">
-                        @php
-                            $record = $shiftData[$day][$block][$i] ?? null;
-                        @endphp
+@foreach($machines as $machine)
+<tr>
+    <td class="text-center">
+        <strong>{{ $machine->machine_number }}</strong>
+    </td>
 
-                        @if($record)
-                        <div class="d-flex justify-content-between align-items-start">
+    @foreach($dias as $dia)
+<td class="p-0" style="font-size:12px;">
+    @php
+        $patients = collect($shiftData[$dia] ?? []);
+        $record = $patients->firstWhere('machine_id', $machine->id);
+    @endphp
 
-                            <div>
-                                <strong>{{ $record->patient->expedient_number }}</strong><br>
-                                {{ $record->patient->name }}
-                            </div>
+    @if($record)
+        <div class="d-flex align-items-start justify-content-between px-1 py-1">
 
-                            <form method="POST"
-                                  action="{{ route('schedule.destroy', $record->id) }}"
-                                  onsubmit="return confirm('Remove patient from schedule?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-danger btn-sm px-2 py-0">✖</button>
-                            </form>
+            <div class="lh-sm">
+                <strong>{{ $record->patient->expedient_number }}</strong><br>
+                {{ $record->patient->name . ' '. $record->patient->last_name }}
+            </div>
 
-                        </div>
-                        @endif
-                    </td>
-                @endforeach
+            <form method="POST"
+                  action="{{ route('schedule.destroy',$record->id) }}"
+                  onsubmit="return confirm('Remove patient from schedule?')">
+                @csrf
+                @method('DELETE')
+                <button class="btn btn-danger btn-sm px-2 py-0">✖</button>
+            </form>
 
-            </tr>
-            @endfor
-        </tbody>
+        </div>
+    @endif
+</td>
+@endforeach
 
-    </table>
+</tr>
+@endforeach
+
+    </tbody>
+</table>
 </div>
-@endfor

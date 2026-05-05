@@ -13,6 +13,7 @@ use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\EditController;
 use App\Http\Controllers\MachineController;
+use App\Http\Controllers\SupplyController;
 
 
 
@@ -66,7 +67,7 @@ Route::group(['middleware'=>['auth']],function () {
         Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 
-        Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule.index');
+        Route::get('/schedule/{year?}/{week?}', [ScheduleController::class,'index'])->name('schedule.index');
         Route::get('/schedule/create', [ScheduleController::class, 'create'])->name('schedule.create');
         Route::get('/schedule/search', [AttendanceController::class, 'search'])->name('schedule.search');
         Route::post('/schedule', [ScheduleController::class, 'store'])->name('schedule.store');
@@ -74,6 +75,7 @@ Route::group(['middleware'=>['auth']],function () {
         Route::get('/schedule/{id}/edit', [ScheduleController::class, 'edit'])->name('schedule.edit');
         Route::put('/schedule/{id}', [ScheduleController::class, 'update'])->name('schedule.update');
         Route::delete('/schedule/{id}', [ScheduleController::class, 'destroy'])->name('schedule.destroy');
+        Route::post('/schedule/clone-week',[ScheduleController::class,'cloneWeek'])->name('schedule.cloneWeek');
 
         Route::get('/patients/{id}/edit', [PatientController::class, 'edit'])->name('patients.edit');
         Route::put('/patients/{id}', [PatientController::class, 'update'])->name('patients.update');
@@ -173,6 +175,8 @@ Route::group(['middleware'=>['auth']],function () {
     Route::post('/treatment/fillWeight', [TreatmentController::class, 'fillWeight'])->name('treatment.fillWeight');
     Route::post('/treatment/fill/oxygen', [TreatmentController::class, 'fillOxygenTherapy'])->name('treatment.fillOxygen');
     Route::post('/treatment/fill/timeout', [TreatmentController::class, 'fillTimeOut'])->name('treatment.fillTimeOut');
+
+    Route::get('/supplies', [SupplyController::class, 'index'])->name('supplies.index');
 
     Route::match(['get', 'post'],'password/view', [LoginController::class, 'password'])->name('password.view');
     Route::post('password/reset', [UserController::class, 'changePassword'])->name('password.update');

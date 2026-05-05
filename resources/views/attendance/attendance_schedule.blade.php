@@ -1,6 +1,30 @@
 @extends('layouts.app')
 
 @section('content')
+
+@if(Session::has('success'))
+    <div class="alert2 alert2-success">
+        <ul>
+            <li>{!! Session::get('success') !!}<br></li>
+        </ul>
+    </div>
+    @endif
+    @if(Session::has('message'))
+    <div class="alert2 alert-success">
+        <ul>
+            <li style="color: green;">{!! Session::get('message') !!}<br></li>
+        </ul>
+    </div>
+    @endif
+    @if ($errors->any())
+        <div class="alert2 alert2-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ __($error) }}<br></li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
     <div class="container">
         <h1>Asistencia programada</h1>
 
@@ -68,12 +92,12 @@
                                         value="Fecha de asistencia">
                                 </div>
                                 <div class="mb-3">
-                                    <label>Machine</label>
-                                    <select name="machine_id" class="form-select" required>
-                                        <option value="">Select machine</option>
+                                    <label>Maquina</label>
+                                    <select name="machine_id" class="form-select">
+                                        <option value="">Selecciona Maquina</option>
                                         @foreach($machines as $machine)
                                             <option value="{{ $machine->id }}">
-                                                Machine {{ $machine->machine_number }} — SN: {{ $machine->serial_number }}
+                                                Maquina {{ $machine->machine_number }} — SN: {{ $machine->serial_number }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -90,33 +114,11 @@
         </table>
             <div class="input-group">
                 <div class="input-group-append">
-                    <a href="{{ route('attendance.index') }}" class="btn btn-info">Limpiar</a>
+                    <a href="{{ route('attendance.attendanceSchedule') }}" class="btn btn-info">Limpiar</a>
                 </div>
             </div>
     </div>
-    @if(Session::has('success'))
-    <div class="alert2 alert2-success">
-        <ul>
-            <li>{!! Session::get('success') !!}<br></li>
-        </ul>
-    </div>
-    @endif
-    @if(Session::has('message'))
-    <div class="alert2 alert-success">
-        <ul>
-            <li style="color: green;">{!! Session::get('message') !!}<br></li>
-        </ul>
-    </div>
-    @endif
-    @if ($errors->any())
-        <div class="alert2 alert2-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ __($error) }}<br></li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+
 
 </div>
 @endsection

@@ -35,11 +35,11 @@
                 <a class="nav-link" href="{{ url('/schedule') }}"><span style="color: #f8f9fa">Horario de paciente</span></a>
             </li>
             <li class="nav-item">
-               <a class="nav-link" href="{{ url('/attendance/schedule') }}"><span style="color: #f8f9fa">A. Programada</span></a>
+               <a class="nav-link" href="{{ url('/attendance/schedule') }}"><span style="color: #f8f9fa">Asistencia</span></a>
            </li>
-            <li class="nav-item">
+            <!-- <li class="nav-item">
                 <a class="nav-link" href="{{ url('/attendance') }}"><span style="color: #f8f9fa">Asistencia</span></a>
-            </li>
+            </li> -->
             <li class="nav-item">
                 <a class="nav-link" href="{{ url('/attendance/list') }}"><span style="color: #f8f9fa">Asignación</span></a>
             </li>
@@ -66,6 +66,7 @@
                         <a class="dropdown-item" href="{{ url('/edit') }}">Editar Nota de enfermería</a>
                         <a class="dropdown-item" href="{{ url('/patients') }}">Pacientes</a>
                         <a class="dropdown-item" href="{{ url('/medicines') }}">Medicamentos</a>
+                        <a class="dropdown-item" href="{{ url('/supplies') }}">Insumos</a>
                         <a class="dropdown-item" href="{{ url('/machines') }}">Máquinas</a>
                     </div>
         </li>
