@@ -176,7 +176,8 @@ Route::group(['middleware'=>['auth']],function () {
     Route::post('/treatment/fill/oxygen', [TreatmentController::class, 'fillOxygenTherapy'])->name('treatment.fillOxygen');
     Route::post('/treatment/fill/timeout', [TreatmentController::class, 'fillTimeOut'])->name('treatment.fillTimeOut');
 
-    Route::get('/supplies', [SupplyController::class, 'index'])->name('supplies.index');
+    Route::get('/supplies/calculate', [SupplyController::class, 'suppliesCalculate'])->name('supplies.calculate');
+    Route::resource('supplies', SupplyController::class);
 
     Route::match(['get', 'post'],'password/view', [LoginController::class, 'password'])->name('password.view');
     Route::post('password/reset', [UserController::class, 'changePassword'])->name('password.update');
