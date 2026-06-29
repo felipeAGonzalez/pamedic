@@ -16,6 +16,8 @@
         <thead class="table-dark">
             <tr>
                 <th>Material</th>
+                <th>Tipo</th>
+                <th>Acceso Vascular</th>
                 <th>Existencias</th>
                 <th width="150">Acciones</th>
             </tr>
@@ -24,6 +26,14 @@
             @forelse($supplies as $supply)
                 <tr>
                     <td>{{ $supply->material }}</td>
+                    <td>{{ $supply->type }}</td>
+                    <td>
+                        @if($supply->for_vascular_access == 'catheter') Catéter
+                        @elseif($supply->for_vascular_access == 'fistula') Fístula
+                        @elseif($supply->for_vascular_access == 'both') Ambos
+                        @else No Aplica
+                        @endif
+                    </td>
                     <td>{{ $supply->existencias }}</td>
                     <td>
                         <a href="{{ route('supplies.edit', $supply) }}" class="btn btn-warning btn-sm">Editar</a>
@@ -39,11 +49,17 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="3" class="text-center">No hay insumos registrados</td>
+                    <td colspan="5" class="text-center">No hay insumos registrados</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-end">
+            {!! $supplies->links() !!}
+        </ul>
+    </nav>
 
 </div>
 @endsection

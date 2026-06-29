@@ -61,14 +61,18 @@ class TreatmentController extends Controller
         $user = Auth::user();
         if ($user->position == 'NURSE' || $user->position == 'MANAGER') {
             $nursePatients = NursePatient::where(['user_id' => Auth::user()->id,'history' => 0])->get();
-            $patients = $nursePatients->map(function ($nursePatients) {
-                return $nursePatients->active_patient->patient;
+            $patients = $nursePatients->map(function ($nursePatient) {
+                $patient = $nursePatient->active_patient->patient;
+                $patient->setRelation('activePatient', $nursePatient->active_patient);
+                return $patient;
             });
             return view('treatment.index', compact('patients','user'));
         }
-        $nursePatients = NursePatient::where(['history' => 0])->get();
-        $patients = $nursePatients->map(function ($nursePatients) {
-            return $nursePatients->active_patient->patient;
+        $nursePatients = NursePatient::where(['history' => 0])->whereNotNull('user_id')->get();
+        $patients = $nursePatients->map(function ($nursePatient) {
+            $patient = $nursePatient->active_patient->patient;
+            $patient->setRelation('activePatient', $nursePatient->active_patient);
+            return $patient;
         });
         return view('treatment.index', compact('patients','user'));
     }

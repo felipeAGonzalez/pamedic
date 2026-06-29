@@ -177,6 +177,7 @@ Route::group(['middleware'=>['auth']],function () {
     Route::post('/treatment/fill/timeout', [TreatmentController::class, 'fillTimeOut'])->name('treatment.fillTimeOut');
 
     Route::get('/supplies/calculate', [SupplyController::class, 'suppliesCalculate'])->name('supplies.calculate');
+    Route::get('/supplies/pdf', [SupplyController::class, 'printSupplies'])->name('supplies.pdf');
     Route::resource('supplies', SupplyController::class);
 
     Route::match(['get', 'post'],'password/view', [LoginController::class, 'password'])->name('password.view');

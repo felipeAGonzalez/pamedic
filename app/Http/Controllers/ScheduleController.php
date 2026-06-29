@@ -58,7 +58,6 @@ class ScheduleController extends Controller
             $dia = Carbon::parse($registro->date)->format('l');
             $agenda[$registro->schedules_id][$dia][] = $registro;
         }
-
         $prevWeek = Carbon::now()->setISODate($year,$week)->subWeek();
         $nextWeek = Carbon::now()->setISODate($year,$week)->addWeek();
 
@@ -76,13 +75,17 @@ class ScheduleController extends Controller
 
     public function destroy($id)
     {
-       $schedulePatient = SchedulePatients::findOrFail($id);
+        $schedulePatient = SchedulePatients::findOrFail($id);
 
-        $schedulePatient->delete();
-        $activePatient = ActivePatient::where('patient_id', $schedulePatient->patient_id)
-            ->where('date', $schedulePatient->date)
-            ->first()->delete();
-        return back()->with('success','Paciente eliminado de la agenda');
+        \DB::transaction(function () use ($schedulePatient) {
+            ActivePatient::where('patient_id', $schedulePatient->patient_id)
+                ->where('date', $schedulePatient->date)
+                ->first()?->delete();
+
+            $schedulePatient->delete();
+        });
+
+        return back()->with('success', 'Paciente eliminado de la agenda');
     }
 
     public function cloneWeek(Request $request)
@@ -90,27 +93,40 @@ class ScheduleController extends Controller
     $week = $request->week;
     $year = $request->year;
 
-    $startWeek = Carbon::now()->setISODate($year,$week)->startOfWeek();
-    $endWeek   = Carbon::now()->setISODate($year,$week)->endOfWeek();
-
+    $startWeek     = Carbon::now()->setISODate($year,$week)->startOfWeek();
+    $endWeek       = Carbon::now()->setISODate($year,$week)->endOfWeek();
     $nextWeekStart = $startWeek->copy()->addWeek();
+    $nextWeekEnd   = $endWeek->copy()->addWeek();
 
-    $records = SchedulePatients::whereBetween('date',[$startWeek,$endWeek])->get();
+    $alreadyCloned = SchedulePatients::whereBetween('date', [$nextWeekStart, $nextWeekEnd])
+        ->where('schedules_id', '!=', 5)
+        ->exists();
+
+    if ($alreadyCloned) {
+        return back()->with('error', 'Esta semana ya fue clonada');
+    }
+
+    $records = SchedulePatients::whereBetween('date',[$startWeek,$endWeek])->where('schedules_id','!=',5)->get();
 
     foreach($records as $record){
-        SchedulePatients::create([
+        $newDate = Carbon::parse($record->date)->addWeek();
+
+        SchedulePatients::firstOrCreate([
             'schedules_id' => $record->schedules_id,
             'patient_id'   => $record->patient_id,
-            'machine_id'   => $record->machine_id,
-            'date'         => Carbon::parse($record->date)->addWeek(),
+            'date'         => $newDate,
+        ], [
+            'machine_id' => $record->machine_id,
         ]);
-        ActivePatient::create([
+
+        ActivePatient::firstOrCreate([
             'patient_id' => $record->patient_id,
-            'date' => Carbon::parse($record->date)->addWeek(),
-            'active' => 1
+            'date'       => $newDate,
+        ], [
+            'active' => 1,
         ]);
     }
 
-    return back()->with('success','Week cloned successfully');
+    return back()->with('success', 'Semana clonada correctamente');
 }
 }

@@ -1,6 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
+
+@if(Session::has('success'))
+    <div class="alert2 alert2-success">
+        <ul>
+            <li>{!! Session::get('success') !!}<br></li>
+        </ul>
+    </div>
+@endif
+@if(Session::has('error'))
+    <div class="alert2 alert2-danger">
+        <ul>
+            <li>{!! Session::get('error') !!}<br></li>
+        </ul>
+    </div>
+@endif
+
 <form method="POST" action="{{ route('schedule.cloneWeek') }}">
     @csrf
     <input type="hidden" name="week" value="{{ $week }}">

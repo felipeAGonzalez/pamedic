@@ -10,6 +10,14 @@ class Supply extends Model
 
     protected $fillable = [
         'material',
+        'type',
+        'for_vascular_access',
         'existencias',
+    ];
+
+    const TYPES = [
+        'filter' => 'Filtro',
+        'supply' => 'Insumo',
+        'kits' => 'Kits',
     ];
 }
