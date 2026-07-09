@@ -33,6 +33,12 @@
         ← Semana {{ $prevWeek->weekOfYear }}
     </a>
 
+    <a href="{{ route('schedule.pdf', [$year, $week]) }}"
+       target="_blank"
+       class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-printer"></i> Imprimir PDF
+    </a>
+
     <a href="{{ route('schedule.index', [$nextWeek->year, $nextWeek->weekOfYear]) }}"
        class="btn btn-outline-primary">
         Semana {{ $nextWeek->weekOfYear }} →

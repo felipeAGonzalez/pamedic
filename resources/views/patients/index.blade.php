@@ -22,6 +22,7 @@
                     <th scope="col">Foto</th>
                     <th scope="col">Nombre</th>
                     <th scope="col">Género</th>
+                    <th scope="col">Derechohabiencia</th>
                     <th scope="col">Fecha de nacimiento</th>
                     <th scope="col">Fecha de ingreso</th>
                     <th scope="col">Acciones</th>
@@ -41,6 +42,7 @@
                         </td>
                         <td>{{ $patient->name . ' ' . $patient->last_name . ' ' . $patient->last_name_two }}</td>
                         <td>{{ $patient->gender}}</td>
+                        <td>{{ $patient->insurance == 'NONE' ? 'Privado' : $patient->insurance }}</td>
                         <td>{{ $patient->birth_date ? $patient->birth_date->format('d-m-Y') : 'Sin fecha de nacimiento' }}</td>
                         <td>{{ $patient->date_entry ? $patient->date_entry->format('d-m-Y') : 'Sin Fecha de ingreso' }}</td>
                         <td>

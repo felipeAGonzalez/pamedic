@@ -76,6 +76,7 @@ Route::group(['middleware'=>['auth']],function () {
         Route::put('/schedule/{id}', [ScheduleController::class, 'update'])->name('schedule.update');
         Route::delete('/schedule/{id}', [ScheduleController::class, 'destroy'])->name('schedule.destroy');
         Route::post('/schedule/clone-week',[ScheduleController::class,'cloneWeek'])->name('schedule.cloneWeek');
+        Route::get('/schedule/{year}/{week}/pdf', [ScheduleController::class, 'printPdf'])->name('schedule.pdf');
 
         Route::get('/patients/{id}/edit', [PatientController::class, 'edit'])->name('patients.edit');
         Route::put('/patients/{id}', [PatientController::class, 'update'])->name('patients.update');
