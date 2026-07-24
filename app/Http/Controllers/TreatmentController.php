@@ -61,14 +61,18 @@ class TreatmentController extends Controller
         $user = Auth::user();
         if ($user->position == 'NURSE' || $user->position == 'MANAGER') {
             $nursePatients = NursePatient::where(['user_id' => Auth::user()->id,'history' => 0])->get();
-            $patients = $nursePatients->map(function ($nursePatients) {
-                return $nursePatients->active_patient->patient;
+            $patients = $nursePatients->map(function ($nursePatient) {
+                $patient = $nursePatient->active_patient->patient;
+                $patient->setRelation('activePatient', $nursePatient->active_patient);
+                return $patient;
             });
             return view('treatment.index', compact('patients','user'));
         }
-        $nursePatients = NursePatient::where(['history' => 0])->get();
-        $patients = $nursePatients->map(function ($nursePatients) {
-            return $nursePatients->active_patient->patient;
+        $nursePatients = NursePatient::where(['history' => 0])->whereNotNull('user_id')->get();
+        $patients = $nursePatients->map(function ($nursePatient) {
+            $patient = $nursePatient->active_patient->patient;
+            $patient->setRelation('activePatient', $nursePatient->active_patient);
+            return $patient;
         });
         return view('treatment.index', compact('patients','user'));
     }
@@ -171,11 +175,11 @@ class TreatmentController extends Controller
                     'arterial_pressure' => 0,
                     'mean_pressure' => 0,
                     'heart_rate' => 0,
-                    'respiratory_rate' => 0,
-                    'temperature' => 35.5,
-                    'arterial_pressure_monitor' => 0,
-                    'venous_pressure_monitor' => 0,
-                    'transmembrane_pressure_monitor' => 0,
+                    'respiratory_rate' => 18,
+                    'temperature' => 36.5,
+                    'arterial_pressure_monitor' => -200,
+                    'venous_pressure_monitor' => 100,
+                    'transmembrane_pressure_monitor' => 100,
                     'blood_flow' => 0,
                     'ultrafiltration' => $i * $scheduleUltrafilter,
                     'heparin' => 0,

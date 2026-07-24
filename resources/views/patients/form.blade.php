@@ -45,6 +45,14 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label for="insurance">Derechohabiencia:</label>
+                        <select class="form-control" id="insurance" name="insurance">
+                            <option value="NONE"   {{ (isset($patient) ? $patient->insurance : old('insurance', 'NONE')) == 'NONE'   ? 'selected' : '' }}>Ninguna (privado)</option>
+                            <option value="IMSS"   {{ (isset($patient) ? $patient->insurance : old('insurance', 'NONE')) == 'IMSS'   ? 'selected' : '' }}>IMSS</option>
+                            <option value="ISAPEG" {{ (isset($patient) ? $patient->insurance : old('insurance', 'NONE')) == 'ISAPEG' ? 'selected' : '' }}>ISAPEG</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label for="birth_date">Fecha de Nacimiento:</label>
                         <input type="date" class="form-control" id="birth_date" name="birth_date" value="{{ isset($patient) && $patient->birth_date ? $patient->birth_date->format('Y-m-d') : old('birth_date') }}">
                     </div>

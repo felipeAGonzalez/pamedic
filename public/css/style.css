@@ -24,6 +24,12 @@ body {
     border-radius: 4px;
 }
 
+.alert2-success {
+    color: #1a4731;
+    background-color: #6aab85;
+    border-color: #4e9470;
+}
+
 .alert2-danger {
     color: #721c24;
     background-color: #e31515;

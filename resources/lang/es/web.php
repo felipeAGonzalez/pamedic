@@ -33,4 +33,7 @@ return [
 'evolution' => 'Nota de Evolución',
 'input' => 'Nota de Ingreso',
 'output' => 'Nota de Egreso',
+'morning' => 'Turno Matutino',
+'afternoon' => 'Turno Vespertino',
+'emergency' => 'Emergencia',
 ];

@@ -14,6 +14,9 @@ return new class extends Migration
        Schema::table('nurse_patient', function (Blueprint $table) {
             $table->unique(['active_patient_id', 'date']);
         });
+        Schema::table('schedules_patient', function (Blueprint $table) {
+             $table->unique(['patient_id', 'date']);
+        });
     }
 
     /**
@@ -22,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('nurse_patient', function (Blueprint $table) {
-            //
+            $table->dropUnique(['active_patient_id', 'date']);
         });
     }
 };

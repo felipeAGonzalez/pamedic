@@ -10,7 +10,10 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\PrintController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\EditController;
+use App\Http\Controllers\MachineController;
+use App\Http\Controllers\SupplyController;
 
 
 
@@ -45,7 +48,16 @@ Route::group(['middleware'=>['auth']],function () {
                         })->name('welcome');
 
 
-    Route::group(['middleware' => 'position:ROOT,DIRECTIVE,QUALITY,MANAGER,NEPHROLOGIST'], function () {
+    Route::group(['middleware' => 'position:ROOT,DIRECTIVE,QUALITY,MANAGER,NEPHROLOGIST,RECEPCIONIST,WHAREHOUSE'], function () {
+
+        Route::resource('machines', MachineController::class);
+
+        Route::get('/machines', [MachineController::class, 'index'])->name('machines.index');
+        Route::get('/machines/create', [MachineController::class, 'create'])->name('machines.create');
+        Route::post('/machines', [MachineController::class, 'store'])->name('machines.store');
+        Route::get('/machines/{id}', [MachineController::class, 'show'])->name('machines.show');
+        Route::get('/machines/{id}/edit', [MachineController::class, 'edit'])->name('machines.edit');
+
 
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
@@ -54,6 +66,17 @@ Route::group(['middleware'=>['auth']],function () {
         Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+
+        Route::get('/schedule/{year?}/{week?}', [ScheduleController::class,'index'])->name('schedule.index');
+        Route::get('/schedule/create', [ScheduleController::class, 'create'])->name('schedule.create');
+        Route::get('/schedule/search', [AttendanceController::class, 'search'])->name('schedule.search');
+        Route::post('/schedule', [ScheduleController::class, 'store'])->name('schedule.store');
+        Route::get('/schedule/{id}', [ScheduleController::class, 'show'])->name('schedule.show');
+        Route::get('/schedule/{id}/edit', [ScheduleController::class, 'edit'])->name('schedule.edit');
+        Route::put('/schedule/{id}', [ScheduleController::class, 'update'])->name('schedule.update');
+        Route::delete('/schedule/{id}', [ScheduleController::class, 'destroy'])->name('schedule.destroy');
+        Route::post('/schedule/clone-week',[ScheduleController::class,'cloneWeek'])->name('schedule.cloneWeek');
+        Route::get('/schedule/{year}/{week}/pdf', [ScheduleController::class, 'printPdf'])->name('schedule.pdf');
 
         Route::get('/patients/{id}/edit', [PatientController::class, 'edit'])->name('patients.edit');
         Route::put('/patients/{id}', [PatientController::class, 'update'])->name('patients.update');
@@ -121,6 +144,12 @@ Route::group(['middleware'=>['auth']],function () {
     Route::get('/attendance/list', [AttendanceController::class, 'list'])->name('attendance.list');
     Route::post('/attendance/nurseAsigne/{id}', [AttendanceController::class, 'asigne'])->name('attendance.asigne');
 
+    Route::get('/attendance/schedule', [AttendanceController::class, 'attendanceSchedule'])->name('attendance.attendanceSchedule');
+    Route::get('/attendance/schedule/search', [AttendanceController::class, 'searchSchedule'])->name('attendance.searchSchedule');
+    Route::patch('/attendance/schedule/register/{id}', [AttendanceController::class, 'register'])->name('attendance.register');
+    Route::get('/attendance/schedule/list', [AttendanceController::class, 'list'])->name('attendance.list');
+    Route::post('/attendance/schedule/nurseAsigne/{id}', [AttendanceController::class, 'asigne'])->name('attendance.asigne');
+
     Route::get('/treatment', [TreatmentController::class, 'index'])->name('treatment.index');
     Route::get('/treatment/create/{id}', [TreatmentController::class, 'create'])->name('treatment.create');
     Route::get('/treatment/createPres/{id}', [TreatmentController::class, 'createPres'])->name('treatment.createPres');
@@ -147,6 +176,10 @@ Route::group(['middleware'=>['auth']],function () {
     Route::post('/treatment/fillWeight', [TreatmentController::class, 'fillWeight'])->name('treatment.fillWeight');
     Route::post('/treatment/fill/oxygen', [TreatmentController::class, 'fillOxygenTherapy'])->name('treatment.fillOxygen');
     Route::post('/treatment/fill/timeout', [TreatmentController::class, 'fillTimeOut'])->name('treatment.fillTimeOut');
+
+    Route::get('/supplies/calculate', [SupplyController::class, 'suppliesCalculate'])->name('supplies.calculate');
+    Route::get('/supplies/pdf', [SupplyController::class, 'printSupplies'])->name('supplies.pdf');
+    Route::resource('supplies', SupplyController::class);
 
     Route::match(['get', 'post'],'password/view', [LoginController::class, 'password'])->name('password.view');
     Route::post('password/reset', [UserController::class, 'changePassword'])->name('password.update');
