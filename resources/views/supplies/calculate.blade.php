@@ -63,7 +63,8 @@
                     <thead class="table-dark">
                         <tr>
                             <th>Tipo</th>
-                            <th>Pacientes</th>
+                            <th>Activos</th>
+                            <th class="text-danger">Bajas</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -71,9 +72,10 @@
                             <tr>
                                 <td>{{ $type }}</td>
                                 <td>{{ $total }}</td>
+                                <td class="text-danger">{{ $vascularCountsBajas[$type] ?? 0 }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="2" class="text-center">Sin datos</td></tr>
+                            <tr><td colspan="3" class="text-center">Sin datos</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -85,7 +87,8 @@
                     <thead class="table-dark">
                         <tr>
                             <th>Tipo</th>
-                            <th>Pacientes</th>
+                            <th>Activos</th>
+                            <th class="text-danger">Bajas</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -93,14 +96,43 @@
                             <tr>
                                 <td>{{ $type }}</td>
                                 <td>{{ $total }}</td>
+                                <td class="text-danger">{{ $dialyzerCountsBajas[$type] ?? 0 }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="2" class="text-center">Sin datos</td></tr>
+                            <tr><td colspan="3" class="text-center">Sin datos</td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
+
+        <h5 class="mt-4">Insumos Calculados</h5>
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Material</th>
+                    <th>Cantidad Calculada</th>
+                    <th class="text-danger">Bajas</th>
+                    <th>Total a Solicitar</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($supplies as $supply)
+                    @php
+                        $baja  = $supply->baja_quantity ?? 0;
+                        $total = $supply->requested_quantity ?? 0;
+                    @endphp
+                    <tr>
+                        <td>{{ $supply->material }}</td>
+                        <td>{{ $total + $baja }}</td>
+                        <td class="{{ $baja > 0 ? 'text-danger fw-bold' : '' }}">
+                            {{ $baja > 0 ? '-' . $baja : '—' }}
+                        </td>
+                        <td><strong>{{ $total }}</strong></td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     @endif
 
 </div>

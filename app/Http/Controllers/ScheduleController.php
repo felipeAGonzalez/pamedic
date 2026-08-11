@@ -7,7 +7,10 @@ use App\Models\Patient;
 use App\Models\SchedulePatients;
 use App\Models\ActivePatient;
 use App\Models\DialysisPrescription;
+use App\Models\DialysisMonitoring;
 use App\Models\Machine;
+use App\Models\Supply;
+use App\Models\SupplyOrder;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -161,14 +164,59 @@ class ScheduleController extends Controller
         $schedulePatient = SchedulePatients::findOrFail($id);
 
         \DB::transaction(function () use ($schedulePatient) {
-            ActivePatient::where('patient_id', $schedulePatient->patient_id)
-                ->where('date', $schedulePatient->date)
+            $fecha     = $schedulePatient->date;
+            $patientId = $schedulePatient->patient_id;
+
+            // Hard delete en active_patient
+            ActivePatient::where('patient_id', $patientId)
+                ->where('date', $fecha)
                 ->first()?->delete();
 
+            // Soft delete en schedules_patient
             $schedulePatient->delete();
+
+            // Si ya existe un pedido generado que cubre esta fecha,
+            // sumar los insumos del paciente a existencias
+            $order = SupplyOrder::where('period_start', '<=', $fecha)
+                ->where('period_end', '>=', $fecha)
+                ->latest('generated_at')
+                ->first();
+
+            if ($order) {
+                $vascularAccess = DialysisMonitoring::where('patient_id', $patientId)
+                    ->where('history', 1)
+                    ->latest('id')
+                    ->value('vascular_access');
+
+                $typeDialyzer = DialysisPrescription::where('patient_id', $patientId)
+                    ->where('history', 1)
+                    ->latest('id')
+                    ->value('type_dialyzer');
+
+                $isElisio = in_array($typeDialyzer, ['F6ELISIO21H', 'F6ELISIO19H']);
+
+                Supply::all()->each(function ($supply) use ($vascularAccess, $isElisio) {
+                    $aplica = false;
+
+                    if ($supply->type === 'filter') {
+                        $aplica = $isElisio;
+                    } else {
+                        $aplica = match ($supply->for_vascular_access) {
+                            'fistula'  => $vascularAccess === 'fistula',
+                            'catheter' => $vascularAccess === 'catheter',
+                            'both'     => in_array($vascularAccess, ['fistula', 'catheter']),
+                            default    => false,
+                        };
+                    }
+
+                    if ($aplica) {
+                        $supply->increment('existencias');
+                    }
+                });
+            }
         });
 
-        return back()->with('success', 'Paciente eliminado de la agenda');
+        return back()->with('success', 'Baja registrada correctamente');
     }
 
     public function cloneWeek(Request $request)

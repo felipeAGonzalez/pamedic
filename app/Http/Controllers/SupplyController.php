@@ -9,6 +9,7 @@ use App\Models\ActivePatient;
 use App\Models\SchedulePatients;
 use App\Models\DialysisMonitoring;
 use App\Models\DialysisPrescription;
+use App\Models\SupplyOrder;
 use Carbon\Carbon;
 
 class SupplyController extends Controller
@@ -28,12 +29,25 @@ class SupplyController extends Controller
         $period    = $request->query('period', '');
         $today     = Carbon::today();
 
-        [$vascularCounts, $dialyzerCounts] = $this->getCalculationData($startDate, $endDate);
+        if ($startDate && $endDate) {
+            Supply::query()->update(['existencias' => 0]);
+
+            SupplyOrder::create([
+                'period_start' => $startDate,
+                'period_end'   => $endDate,
+                'generated_at' => now(),
+            ]);
+        }
+
+        [$vascularCounts, $dialyzerCounts, $vascularCountsBajas, $dialyzerCountsBajas] =
+            $this->getCalculationData($startDate, $endDate);
 
         $supplies = $this->applyRequestedQuantities(
             Supply::orderBy('material')->get(),
             $vascularCounts,
-            $dialyzerCounts
+            $dialyzerCounts,
+            $vascularCountsBajas,
+            $dialyzerCountsBajas
         );
 
         $pdf = Pdf::loadView('supplies', compact('supplies', 'today', 'week', 'period'))
@@ -92,12 +106,15 @@ class SupplyController extends Controller
         $startDate = $request->query('start_date');
         $endDate   = $request->query('end_date');
 
-        $vascularCounts = collect();
-        $dialyzerCounts = collect();
-        $activePatients = collect();
-        $shiftCounts    = collect();
-        $period         = '';
-        $week           = now()->weekOfYear;
+        $vascularCounts      = collect();
+        $dialyzerCounts      = collect();
+        $vascularCountsBajas = collect();
+        $dialyzerCountsBajas = collect();
+        $activePatients      = collect();
+        $shiftCounts         = collect();
+        $supplies            = collect();
+        $period              = '';
+        $week                = now()->weekOfYear;
 
         if ($startDate && $endDate) {
             $start = Carbon::createFromFormat('Y-m-d', $startDate);
@@ -118,25 +135,39 @@ class SupplyController extends Controller
                 ->groupBy('schedules_id')
                 ->pluck('total', 'schedules_id');
 
-            [$vascularCounts, $dialyzerCounts] = $this->getCalculationData($startDate, $endDate);
+            [$vascularCounts, $dialyzerCounts, $vascularCountsBajas, $dialyzerCountsBajas] =
+                $this->getCalculationData($startDate, $endDate);
+
+            $supplies = $this->applyRequestedQuantities(
+                Supply::orderBy('material')->get(),
+                $vascularCounts,
+                $dialyzerCounts,
+                $vascularCountsBajas,
+                $dialyzerCountsBajas
+            );
         }
 
         return view('supplies.calculate', compact(
             'activePatients', 'vascularCounts', 'dialyzerCounts',
-            'shiftCounts', 'period', 'week', 'startDate', 'endDate'
+            'vascularCountsBajas', 'dialyzerCountsBajas',
+            'shiftCounts', 'supplies', 'period', 'week', 'startDate', 'endDate'
         ));
     }
 
     private function getCalculationData(?string $startDate, ?string $endDate): array
     {
         if (!$startDate || !$endDate) {
-            return [collect(), collect()];
+            return [collect(), collect(), collect(), collect()];
         }
 
         $start = Carbon::createFromFormat('Y-m-d', $startDate);
         $end   = Carbon::createFromFormat('Y-m-d', $endDate);
 
         $activePatientIds = ActivePatient::where('active', 1)
+            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->pluck('patient_id');
+
+        $bajaPatientIds = SchedulePatients::onlyTrashed()
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
             ->pluck('patient_id');
 
@@ -166,25 +197,66 @@ class SupplyController extends Controller
             ->groupBy('type_dialyzer')
             ->pluck('total', 'type_dialyzer');
 
-        return [$vascularCounts, $dialyzerCounts];
+        $vascularCountsBajas = DialysisMonitoring::whereIn('patient_id', $bajaPatientIds)
+            ->where('history', 1)
+            ->whereIn('id', function ($q) use ($bajaPatientIds) {
+                $q->selectRaw('MAX(id)')
+                    ->from('dialysis_monitoring')
+                    ->whereIn('patient_id', $bajaPatientIds)
+                    ->where('history', 1)
+                    ->groupBy('patient_id');
+            })
+            ->selectRaw('vascular_access, COUNT(*) as total')
+            ->groupBy('vascular_access')
+            ->pluck('total', 'vascular_access');
+
+        $dialyzerCountsBajas = DialysisPrescription::whereIn('patient_id', $bajaPatientIds)
+            ->where('history', 1)
+            ->whereIn('id', function ($q) use ($bajaPatientIds) {
+                $q->selectRaw('MAX(id)')
+                    ->from('dialysis_prescription')
+                    ->whereIn('patient_id', $bajaPatientIds)
+                    ->where('history', 1)
+                    ->groupBy('patient_id');
+            })
+            ->selectRaw('type_dialyzer, COUNT(*) as total')
+            ->groupBy('type_dialyzer')
+            ->pluck('total', 'type_dialyzer');
+
+        return [$vascularCounts, $dialyzerCounts, $vascularCountsBajas, $dialyzerCountsBajas];
     }
 
-    private function applyRequestedQuantities($supplies, $vascularCounts, $dialyzerCounts)
-    {
+    private function applyRequestedQuantities(
+        $supplies,
+        $vascularCounts,
+        $dialyzerCounts,
+        $vascularCountsBajas,
+        $dialyzerCountsBajas
+    ) {
         $fistula  = $vascularCounts['fistula']  ?? 0;
         $catheter = $vascularCounts['catheter'] ?? 0;
         $elisio   = ($dialyzerCounts['F6ELISIO21H'] ?? 0) + ($dialyzerCounts['F6ELISIO19H'] ?? 0);
 
-        return $supplies->map(function ($supply) use ($fistula, $catheter, $elisio) {
+        $bajaFistula  = $vascularCountsBajas['fistula']  ?? 0;
+        $bajaCatheter = $vascularCountsBajas['catheter'] ?? 0;
+        $bajaElisio   = ($dialyzerCountsBajas['F6ELISIO21H'] ?? 0) + ($dialyzerCountsBajas['F6ELISIO19H'] ?? 0);
+
+        return $supplies->map(function ($supply) use (
+            $fistula, $catheter, $elisio,
+            $bajaFistula, $bajaCatheter, $bajaElisio
+        ) {
             if ($supply->type === 'filter') {
                 $supply->requested_quantity = $elisio;
+                $supply->baja_quantity      = $bajaElisio;
             } else {
-                $supply->requested_quantity = match ($supply->for_vascular_access) {
-                    'fistula'  => $fistula,
-                    'catheter' => $catheter,
-                    'both'     => $fistula + $catheter,
-                    default    => 0,
+                [$qty, $baja] = match ($supply->for_vascular_access) {
+                    'fistula'  => [$fistula,            $bajaFistula],
+                    'catheter' => [$catheter,            $bajaCatheter],
+                    'both'     => [$fistula + $catheter, $bajaFistula + $bajaCatheter],
+                    default    => [0, 0],
                 };
+                $supply->requested_quantity = $qty;
+                $supply->baja_quantity      = $baja;
             }
             return $supply;
         });
