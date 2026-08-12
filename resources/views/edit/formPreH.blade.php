@@ -3,13 +3,25 @@
 @section('content')
 <h1>Pre-Hemodiálisis</h1>
 <h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+@if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+@endif
 <form  action="{{ route('edit.fillPreHemo') }}" method="POST" class="row">
     <div class="row">
         @csrf
         <div class="col-md-6">
             <div class="form-group">
                 <input type="hidden" class="form-control" id="patient_id" name="patient_id" value="{{ $id ?? $preHemodialysis->patient_id }}">
-                <input type="hidden" name="created_at" value="{{ $id ?? $preHemodialysis->created_at}}">
+                <input type="hidden" name="id" value="{{ $preHemodialysis->id ?? '' }}">
             </div>
             <div class="form-group">
                 <label for="initial_weight">Peso Inicial</label>
