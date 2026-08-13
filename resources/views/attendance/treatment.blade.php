@@ -2,8 +2,8 @@
 
 @section('content')
 <script>
-    setInterval(function() {
-        location.reload();
+    setInterval(() => {
+        window.location.href = "{{ route('attendance.list') }}";
     }, 3000);
 </script>
 <div class="container">
