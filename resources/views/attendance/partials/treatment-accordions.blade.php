@@ -1,0 +1,46 @@
+@if($turns->isEmpty())
+    <div class="alert alert-info mb-0" role="status">No hay pacientes programados disponibles para tratamiento hoy.</div>
+@else
+    <div class="accordion" id="treatment-accordion">
+        @foreach($turns as $turn)
+            @php($collapseId = 'turn-'.Str::slug($turn['key']))
+            <div class="accordion-item" data-turn-key="{{ $turn['key'] }}">
+                <h2 class="accordion-header" id="heading-{{ $collapseId }}">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}" aria-expanded="false" aria-controls="{{ $collapseId }}">
+                        <span class="fw-semibold">{{ $turn['name'] }}</span>
+                        <span class="ms-2 text-muted">{{ $turn['start'] }}</span>
+                        <span class="badge bg-primary rounded-pill ms-auto me-3">{{ $turn['patients']->count() }} pacientes</span>
+                    </button>
+                </h2>
+                <div id="{{ $collapseId }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ $collapseId }}" data-bs-parent="#treatment-accordion">
+                    <div class="accordion-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-dark">
+                                    <tr><th>Expediente</th><th>Foto</th><th>Nombre</th><th>Género</th><th>Fecha de nacimiento</th>@if(in_array(auth()->user()->position, ['NURSE', 'MANAGER'], true))<th>Acciones</th>@endif</tr>
+                                </thead>
+                                <tbody>
+                                @forelse($turn['patients'] as $scheduledPatient)
+                                    @php($patient = $scheduledPatient->patient)
+                                    <tr>
+                                        <td>{{ $patient->expedient_number }}</td>
+                                        <td><img src="{{ $patient->photo ? asset($patient->photo) : asset('default/no-photo-m.png') }}" alt="Foto de {{ $patient->name }}" class="rounded object-fit-cover" width="96" height="96"></td>
+                                        <td>{{ trim($patient->name.' '.$patient->last_name.' '.$patient->last_name_two) }}</td>
+                                        <td>{{ $patient->gender }}</td>
+                                        <td>{{ $patient->birth_date?->format('d-m-Y') ?? 'Sin fecha de nacimiento' }}</td>
+                                        @if(in_array(auth()->user()->position, ['NURSE', 'MANAGER'], true))
+                                            <td><form method="POST" action="{{ route('attendance.asigne', ['id' => $patient->id]) }}" data-assignment-form>@csrf<button type="submit" class="btn btn-success" data-idle-text="Asignar Paciente">Asignar Paciente</button></form></td>
+                                        @endif
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="6" class="text-center text-muted py-4">No hay pacientes disponibles en este turno.</td></tr>
+                                @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+@endif

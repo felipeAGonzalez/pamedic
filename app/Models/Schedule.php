@@ -10,7 +10,9 @@ class Schedule extends Model
     use HasFactory;
 
     protected $table = 'schedules';
+
     protected $primaryKey = 'id';
+
     public $timestamps = true;
 
     protected $fillable = [
@@ -23,7 +25,7 @@ class Schedule extends Model
      */
     public function schedulePatients()
     {
-        return $this->hasMany(SchedulePatients::class, 'schedule_id');
+        return $this->hasMany(SchedulePatients::class, 'schedules_id');
     }
 
     /**
@@ -31,6 +33,6 @@ class Schedule extends Model
      */
     public function patients()
     {
-        return $this->belongsToMany(Patient::class, 'schedule_patients', 'schedule_id', 'patient_id');
+        return $this->belongsToMany(Patient::class, 'schedules_patient', 'schedules_id', 'patient_id')->wherePivotNull('deleted_at');
     }
 }

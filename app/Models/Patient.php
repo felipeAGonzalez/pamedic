@@ -12,13 +12,24 @@ class Patient extends Model
         'birth_date' => 'date',
         'date_entry' => 'date',
     ];
-    protected $fillable = ['expedient_number','name','last_name','contact_phone_number','last_name_two','gender','insurance','birth_date','date_entry','height','photo',];
 
+    protected $fillable = ['expedient_number', 'name', 'last_name', 'contact_phone_number', 'last_name_two', 'gender', 'insurance', 'birth_date', 'date_entry', 'height', 'photo'];
 
     public function activePatient()
     {
-        return $this->hasOne(ActivePatient::class, 'patient_id')->orderby('date','desc');
+        return $this->hasOne(ActivePatient::class, 'patient_id')->orderby('date', 'desc');
     }
+
+    public function activePatients()
+    {
+        return $this->hasMany(ActivePatient::class, 'patient_id');
+    }
+
+    public function schedulePatients()
+    {
+        return $this->hasMany(SchedulePatients::class, 'patient_id');
+    }
+
     public function medicNote()
     {
         return $this->hasOne(MedicNote::class, 'patient_id');

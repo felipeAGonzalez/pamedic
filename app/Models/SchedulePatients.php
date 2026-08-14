@@ -16,7 +16,7 @@ class SchedulePatients extends Model
 
     public function schedule()
     {
-        return $this->belongsTo(Schedule::class);
+        return $this->belongsTo(Schedule::class, 'schedules_id');
     }
 
     public function patient()
