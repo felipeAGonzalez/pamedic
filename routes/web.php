@@ -67,7 +67,6 @@ Route::group(['middleware'=>['auth', 'receptionist.scope']],function () {
         Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 
-        Route::get('/schedule/{year?}/{week?}', [ScheduleController::class,'index'])->name('schedule.index');
         Route::get('/schedule/create', [ScheduleController::class, 'create'])->name('schedule.create');
         Route::get('/schedule/search', [AttendanceController::class, 'search'])->name('schedule.search');
         Route::post('/schedule', [ScheduleController::class, 'store'])->name('schedule.store');
@@ -76,7 +75,6 @@ Route::group(['middleware'=>['auth', 'receptionist.scope']],function () {
         Route::put('/schedule/{id}', [ScheduleController::class, 'update'])->name('schedule.update');
         Route::delete('/schedule/{id}', [ScheduleController::class, 'destroy'])->name('schedule.destroy');
         Route::post('/schedule/clone-week',[ScheduleController::class,'cloneWeek'])->name('schedule.cloneWeek');
-        Route::get('/schedule/{year}/{week}/pdf', [ScheduleController::class, 'printPdf'])->name('schedule.pdf');
 
         Route::get('/patients/{id}/edit', [PatientController::class, 'edit'])->name('patients.edit');
         Route::put('/patients/{id}', [PatientController::class, 'update'])->name('patients.update');
@@ -107,6 +105,12 @@ Route::group(['middleware'=>['auth', 'receptionist.scope']],function () {
 
         Route::delete('/delete/treatment/{id}', [EditController::class, 'destroyTreatment'])->name('delete.treatment');
     });
+
+    Route::group(['middleware' => 'position:ROOT,DIRECTIVE,QUALITY,MANAGER,NEPHROLOGIST,RECEPCIONIST,WHAREHOUSE,NURSE'], function () {
+        Route::get('/schedule/{year}/{week}/pdf', [ScheduleController::class, 'printPdf'])->name('schedule.pdf');
+        Route::get('/schedule/{year?}/{week?}', [ScheduleController::class,'index'])->name('schedule.index');
+    });
+
     Route::get('/edit', [EditController::class, 'index'])->name('edit.index');
     Route::get('/edit/search', [EditController::class,'search'])->name('edit.search');
     Route::get('/edit/create/{id}/fecha/{date}', [EditController::class, 'create'])->name('edit.create');
