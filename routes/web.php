@@ -41,7 +41,7 @@ Route::group(['middleware' => 'web', 'token.expired'], function () {
         }
     });
 });
-Route::group(['middleware'=>['auth']],function () {
+Route::group(['middleware'=>['auth', 'receptionist.scope']],function () {
 
                 Route::get('/welcome', function () {
                             return view('welcome');
