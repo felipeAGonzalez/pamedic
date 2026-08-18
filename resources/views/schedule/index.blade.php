@@ -17,7 +17,7 @@
     </div>
 @endif
 
-@if(Auth::user()->position !== 'NURSE')
+@if(!in_array(Auth::user()->position, ['NURSE', 'MANAGER']))
     <form method="POST" action="{{ route('schedule.cloneWeek') }}">
         @csrf
         <input type="hidden" name="week" value="{{ $week }}">

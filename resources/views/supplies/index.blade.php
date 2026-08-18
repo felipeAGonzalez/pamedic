@@ -4,10 +4,10 @@
 <div class="container">
 
     <h2 class="mb-4">Insumos</h2>
-
+    @if(in_array($user->position, ['QUALITY', 'MANAGER', 'ROOT']))
     <a href="{{ route('supplies.create') }}" class="btn btn-primary mb-3">Agregar Insumo</a>
     <a href="{{ route('supplies.calculate') }}" class="btn btn-secondary mb-3">Calcular Insumos</a>
-
+    @endif
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
@@ -19,7 +19,9 @@
                 <th>Tipo</th>
                 <th>Acceso Vascular</th>
                 <th>Existencias</th>
+                @if(in_array($user->position, ['QUALITY', 'MANAGER', 'ROOT']))
                 <th width="150">Acciones</th>
+                @endif
             </tr>
         </thead>
         <tbody>
@@ -35,6 +37,7 @@
                         @endif
                     </td>
                     <td>{{ $supply->existencias }}</td>
+                    @if(in_array($user->position, ['QUALITY', 'MANAGER', 'ROOT']))
                     <td>
                         <a href="{{ route('supplies.edit', $supply) }}" class="btn btn-warning btn-sm">Editar</a>
 
@@ -46,6 +49,7 @@
                             </button>
                         </form>
                     </td>
+                    @endif
                 </tr>
             @empty
                 <tr>

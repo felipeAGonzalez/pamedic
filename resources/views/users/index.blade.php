@@ -3,6 +3,17 @@
 @section('content')
     <h1>Listado de Usuarios</h1>
     <a href="{{ route('users.create') }}" class="btn btn-primary">Nuevo Usuario</a>
+    <form method="GET" action="{{ route('users.index') }}" class="row g-2 mt-2">
+        <div class="col-md-6">
+            <input type="search" name="search" class="form-control" value="{{ request('search') }}" placeholder="Buscar usuario">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-secondary">Buscar</button>
+            @if(request()->filled('search'))
+                <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">Limpiar</a>
+            @endif
+        </div>
+    </form>
     <div class="table-responsive">
     <table class="table mt-4">
          <thead class="table-dark">

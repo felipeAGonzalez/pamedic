@@ -25,8 +25,14 @@
                     <th scope="col">Foto</th>
                     <th scope="col">Nombre</th>
                     <th scope="col">Género</th>
-                <th scope="col">{{ $user->position != 'NURSE' && $user->position != 'MANAGER' ? 'Asignación' : 'Acciones' }}</th>
-                <th scope="col">{{ $user->position != 'NURSE' && $user->position != 'MANAGER' ? 'Acciones': '' }}</th>
+                    @if($user->position === 'ROOT')
+                        <th scope="col">Fecha</th>
+                    @endif
+                <th scope="col">{{ $user->position != 'NURSE' && $user->position != 'MANAGER' ? 'Asignación' : 'Tratamiento' }}</th>
+                  @if($user->position === 'ROOT')
+                <th scope="col">Acciones</th>
+                    @endif
+
                 </tr>
             </thead>
             <tbody>
@@ -40,9 +46,36 @@
                         </td>
                         <td>{{ $patient->name . ' ' . $patient->last_name . ' ' . $patient->last_name_two }}</td>
                         <td>{{ $patient->gender}}</td>
+                        @if($user->position === 'ROOT')
+                            <td>{{ $patient->activePatient->date }}</td>
+                        @endif
                         <td>
                             @if($user->position != 'NURSE' && $user->position != 'MANAGER')
                             <label>{{ $patient->activePatient->nursePatient->user->name }}</label>
+                            @if($user->position === 'ROOT')
+                                <div class="modal fade" id="finalizeTreatment{{ $patient->id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form action="{{ route('treatment.finalize', ['id' => $patient->id]) }}" method="POST">
+                                                @csrf
+                                                @method('PATCH')
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Finalizar tratamiento anterior</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <label for="start_date_{{ $patient->id }}" class="form-label">Fecha de inicio del tratamiento</label>
+                                                    <input type="date" id="start_date_{{ $patient->id }}" name="start_date" class="form-control" required>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                    <button type="submit" class="btn btn-success">Finalizar Tratamiento</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                             @else
                         <div >
                                     <a href="{{ route('treatment.createWeight', ['id' => $patient->id]) }}" class="btn btn-dark">Pesos</a>
@@ -56,14 +89,15 @@
                                     <a href="{{ route('treatment.createTimeOut', ['id' => $patient->id]) }}" class="btn btn-primary">Verificación/Tiempo Fuera</a>
                                     <a href="{{ route('treatment.createPostHemo', ['id' => $patient->id]) }}" class="btn btn-warning">Post-Hemodialisis</a>
                                     <a href="{{ route('treatment.createOxygen', ['id' => $patient->id]) }}" class="btn btn-danger">Oxigeno Terapia</a>
-                                    <br>
-                                    <br>
-                                    <br>
-                                    <a href="{{ route('treatment.finaliceTreatment', ['id' => $patient->id]) }}" class="btn btn-success">Finalizar Tratamiento</a>
                         </div>
                         @endif
                         </td>
                         <td>
+                            @if($user->position === 'ROOT')
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizeTreatment{{ $patient->id }}">
+                                    Finalizar Tratamiento
+                                </button>
+                            @endif
                         @if(in_array($user->position, ['ROOT', 'DIRECTIVE', 'QUALITY']))
                                         <form action="{{ route('delete.treatment', ['id' => $patient->id]) }}" method="POST" style="display:inline;">
                                             @csrf

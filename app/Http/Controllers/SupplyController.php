@@ -17,8 +17,9 @@ class SupplyController extends Controller
 
     public function index()
     {
-        $supplies = Supply::orderBy('material')->paginate(10);
-        return view('supplies.index', compact('supplies'));
+        $supplies = Supply::orderBy('material')->paginate(15);
+        $user     = auth()->user();
+        return view('supplies.index', compact('supplies', 'user'));
     }
 
     public function printSupplies(Request $request)

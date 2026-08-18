@@ -42,7 +42,7 @@ $nombresDias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
                 {{ $record->patient->name . ' '. $record->patient->last_name }}
             </div>
 
-            @if(Auth::user()->position !== 'NURSE')
+            @if(!in_array(Auth::user()->position, ['NURSE', 'MANAGER']))
                 <form method="POST"
                       action="{{ route('schedule.destroy',$record->id) }}"
                       onsubmit="return confirm('Remove patient from schedule?')">

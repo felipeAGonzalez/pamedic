@@ -20,9 +20,23 @@ class UserController extends Controller
         'WHAREHOUSE' => 'Almacen'
     ];
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::paginate(10);
+        $search = trim($request->input('search', ''));
+        $users = User::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('last_name_one', 'like', "%{$search}%")
+                        ->orWhere('last_name_two', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('profesional_id', 'like', "%{$search}%")
+                        ->orWhere('position', 'like', "%{$search}%");
+                });
+            })
+            ->paginate(10)
+            ->withQueryString();
+
         return view('users.index', compact('users'));
     }
 
