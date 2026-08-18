@@ -40,13 +40,16 @@
             <!-- <li class="nav-item">
                 <a class="nav-link" href="{{ url('/attendance') }}"><span style="color: #f8f9fa">Asistencia</span></a>
             </li> -->
+            @if(Auth::user()->position !== 'RECEPCIONIST')
             <li class="nav-item">
                 <a class="nav-link" href="{{ url('/attendance/list') }}"><span style="color: #f8f9fa">Asignación</span></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url('/treatment') }}"><span style="color: #f8f9fa">Tratamiento</span></a>
             </li>
+            @endif
         </ul>
+        @if(Auth::user()->position !== 'RECEPCIONIST')
         <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Impresión
@@ -70,6 +73,7 @@
                         <a class="dropdown-item" href="{{ url('/machines') }}">Máquinas</a>
                     </div>
         </li>
+        @endif
 
                 <li class="nav-item">
                    <a class="nav-link" href="{{ url('/logout') }}">Cerrar Sesión</a>

@@ -3,13 +3,25 @@
 @section('content')
 <h1>Post Hemodiálisis</h1>
 <h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+@if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+@endif
 <form  action="{{ route('edit.fillPostHemo') }}" method="POST" class="row">
 <div class="container">
     <div class="row">
     @csrf
         <div class="col-md-6">
         <input type="hidden" class="form-control" id="patient_id" name="patient_id" value="{{ $id ?? $postHemoDialysis->patient_id}}">
-        <input type="hidden" name="created_at" value="{{ $id ?? $postHemoDialysis->created_at}}">
+        <input type="hidden" name="id" value="{{ $postHemoDialysis->id ?? '' }}">
             <div class="form-group">
                 <label for="final_ultrafiltration">Ultrafiltración Final</label>
                 <input type="text" class="form-control" id="final_ultrafiltration" name="final_ultrafiltration" value="{{ old('final_ultrafiltration', $postHemoDialysis->final_ultrafiltration ?? '') }}">

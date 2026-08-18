@@ -17,15 +17,17 @@
     </div>
 @endif
 
-<form method="POST" action="{{ route('schedule.cloneWeek') }}">
-    @csrf
-    <input type="hidden" name="week" value="{{ $week }}">
-    <input type="hidden" name="year" value="{{ $year }}">
-    <button class="btn btn-success">
-        Clonar esta semana → siguiente
-    </button>
-</form>
-<br>
+@if(!in_array(Auth::user()->position, ['NURSE', 'MANAGER']))
+    <form method="POST" action="{{ route('schedule.cloneWeek') }}">
+        @csrf
+        <input type="hidden" name="week" value="{{ $week }}">
+        <input type="hidden" name="year" value="{{ $year }}">
+        <button class="btn btn-success">
+            Clonar esta semana → siguiente
+        </button>
+    </form>
+    <br>
+@endif
 <div class="d-flex justify-content-between align-items-center mb-3">
 
     <a href="{{ route('schedule.index', [$prevWeek->year, $prevWeek->weekOfYear]) }}"

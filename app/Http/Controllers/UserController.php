@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 
 class UserController extends Controller
@@ -20,9 +21,23 @@ class UserController extends Controller
         'WHAREHOUSE' => 'Almacen'
     ];
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::paginate(10);
+        $search = trim($request->input('search', ''));
+        $users = User::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('last_name_one', 'like', "%{$search}%")
+                        ->orWhere('last_name_two', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('profesional_id', 'like', "%{$search}%")
+                        ->orWhere('position', 'like', "%{$search}%");
+                });
+            })
+            ->paginate(10)
+            ->withQueryString();
+
         return view('users.index', compact('users'));
     }
 
@@ -88,6 +103,28 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('users.index');
     }
+
+    public function updateEnabled(Request $request, $id)
+    {
+        $data = $request->validate([
+            'enabled' => ['required', 'boolean'],
+        ]);
+
+        $user = User::findOrFail($id);
+
+        if ($user->id === Auth::id() && ! (bool) $data['enabled']) {
+            return redirect()->route('users.index')
+                ->withErrors(['message' => 'No puede deshabilitar su propio usuario.']);
+        }
+
+        $user->enabled = (bool) $data['enabled'];
+        $user->save();
+
+        $message = $user->enabled ? 'Usuario habilitado correctamente.' : 'Usuario deshabilitado correctamente.';
+
+        return redirect()->route('users.index')->with('success', $message);
+    }
+
     public function changePassword(Request $request)
     {
         $request->validate([

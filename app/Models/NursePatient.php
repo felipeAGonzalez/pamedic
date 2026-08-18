@@ -13,6 +13,14 @@ class NursePatient extends Model
         'user_id',
         'date',
         'history',
+        'finalized_by',
+        'finalized_at',
+        'exceptional_start_date',
+    ];
+
+    protected $casts = [
+        'finalized_at' => 'datetime',
+        'exceptional_start_date' => 'date',
     ];
 
     public function active_patient()

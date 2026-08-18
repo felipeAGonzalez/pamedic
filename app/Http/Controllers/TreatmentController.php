@@ -737,8 +737,141 @@ class TreatmentController extends Controller
     }
     public function finaliceTreatment(Request $request,$id)
     {
+        $selectedDate = $request->input('start_date');
+
+        if ($selectedDate !== null) {
+            if ($request->user()->position !== 'ROOT') {
+                abort(403, 'Tratamiento de otra fecha no autorizado.');
+            }
+
+            $validator = Validator::make(
+                $request->all(),
+                ['start_date' => ['required', 'date_format:Y-m-d']],
+                ['start_date.date_format' => 'La fecha seleccionada es inválida.']
+            );
+
+            if ($validator->fails()) {
+                return redirect()->route('treatment.index')->with('Error', 'La fecha seleccionada es inválida.');
+            }
+        }
+
         try {
             \DB::beginTransaction();
+
+            $today = today()->toDateString();
+            $activePatient = null;
+
+            if ($selectedDate !== null) {
+                $activePatient = ActivePatient::where([
+                    'patient_id' => $id,
+                    'active' => 0,
+                    'date' => $selectedDate,
+                ])->lockForUpdate()->first();
+            } else {
+                $activePatient = ActivePatient::where([
+                    'patient_id' => $id,
+                    'active' => 0,
+                    'date' => $today,
+                ])->lockForUpdate()->first();
+
+                if (!$activePatient) {
+                    $emergencyDates = \App\Models\SchedulePatients::where([
+                        'patient_id' => $id,
+                        'schedules_id' => 5,
+                    ])->pluck('date');
+
+                    $activePatient = ActivePatient::where([
+                        'patient_id' => $id,
+                        'active' => 0,
+                    ])->whereIn('date', $emergencyDates)
+                        ->whereHas('nursePatient', function ($query) {
+                            $query->where('history', 0);
+                        })
+                        ->orderBy('date', 'DESC')
+                        ->lockForUpdate()
+                        ->first();
+                }
+            }
+
+            if (!$activePatient) {
+                $finishedQuery = ActivePatient::where('patient_id', $id)
+                    ->where('active', 0)
+                    ->whereHas('nursePatient', function ($query) {
+                        $query->where('history', 1);
+                    });
+
+                if ($selectedDate !== null) {
+                    $finishedQuery->whereDate('date', $selectedDate);
+                } else {
+                    $finishedQuery->where(function ($query) use ($today, $id) {
+                        $query->whereDate('date', $today)
+                            ->orWhereIn('date', \App\Models\SchedulePatients::where([
+                                'patient_id' => $id,
+                                'schedules_id' => 5,
+                            ])->select('date'));
+                    });
+                }
+
+                if ($finishedQuery->exists()) {
+                    throw ValidationException::withMessages(['Error' => 'El tratamiento ya fue finalizado.']);
+                }
+
+                if ($selectedDate !== null) {
+                    throw ValidationException::withMessages(['Error' => 'La fecha seleccionada no corresponde a un tratamiento activo.']);
+                }
+
+                $previousTreatment = ActivePatient::where([
+                    'patient_id' => $id,
+                    'active' => 0,
+                ])->whereDate('date', '<', $today)
+                    ->whereHas('nursePatient', function ($query) {
+                        $query->where('history', 0);
+                    })
+                    ->exists();
+
+                if ($previousTreatment) {
+                    if ($request->user()->position !== 'ROOT') {
+                        abort(403, 'Tratamiento de otra fecha no autorizado.');
+                    }
+
+                    throw ValidationException::withMessages(['Error' => 'Seleccione la fecha de inicio del tratamiento.']);
+                }
+
+                throw ValidationException::withMessages(['Error' => 'Tratamiento activo no encontrado.']);
+            }
+
+            $nursePatients = NursePatient::where([
+                'active_patient_id' => $activePatient->id,
+                'history' => 0,
+            ])->lockForUpdate()->first();
+
+            if (!$nursePatients) {
+                throw ValidationException::withMessages(['Error' => 'El tratamiento ya fue finalizado.']);
+            }
+
+            if ($request->user()->position !== 'ROOT' && $nursePatients->user_id !== $request->user()->id) {
+                abort(403, 'No tiene permiso para finalizar este tratamiento.');
+            }
+
+            $isEmergency = \App\Models\SchedulePatients::where([
+                'patient_id' => $id,
+                'schedules_id' => 5,
+                'date' => $activePatient->date,
+            ])->exists();
+
+            $exceptionalStartDate = null;
+
+            if ($activePatient->date !== $today && !$isEmergency) {
+                if ($request->user()->position !== 'ROOT') {
+                    abort(403, 'Tratamiento de otra fecha no autorizado.');
+                }
+
+                if ($selectedDate === null) {
+                    throw ValidationException::withMessages(['Error' => 'Seleccione la fecha de inicio del tratamiento.']);
+                }
+
+                $exceptionalStartDate = $activePatient->date;
+            }
 
             $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','DESC')->first();
             if (!$dialysisMonitoring) {
@@ -820,21 +953,31 @@ class TreatmentController extends Controller
                 $doubleVerification->history = 1;
                 $doubleVerification->save();
             }
-            $activePatient = ActivePatient::where(['patient_id' => $id, 'active' => 0, 'date' => date('Y-m-d')])->first();
-            if (!$activePatient) {
-                throw ValidationException::withMessages(['Error' => 'Paciente no encontrado']);
-            }
-            $nursePatients = NursePatient::where(['active_patient_id' => $activePatient->id,'history' => 0])->first();
+            $nursePatients->finalized_by = $request->user()->id;
+            $nursePatients->finalized_at = now();
+            $nursePatients->exceptional_start_date = $exceptionalStartDate;
             $nursePatients->history = 1;
             $nursePatients->save();
 
             \DB::commit();
 
-            return redirect()->route('treatment.index')->with('success', 'Tratamiento finalizado exitosamente');
-        } catch (\Exception $e) {
+            return redirect()->route('treatment.index')->with('success', 'Tratamiento finalizado correctamente.');
+        } catch (ValidationException $e) {
             \DB::rollBack();
-            \Log::Error($e);
-            return redirect()->route('treatment.index')->with('Error', $e->getMessage());
+            $message = $e->errors()['Error'][0] ?? 'No fue posible finalizar el tratamiento.';
+
+            return redirect()->route('treatment.index')->with('Error', $message);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e) {
+            \DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            \DB::rollBack();
+            \Log::error('Error inesperado al finalizar tratamiento.', [
+                'patient_id' => $id,
+                'finalized_by' => $request->user()->id,
+            ]);
+
+            return redirect()->route('treatment.index')->with('Error', 'No fue posible finalizar el tratamiento.');
         }
     }
 

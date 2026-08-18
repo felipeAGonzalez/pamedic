@@ -4,11 +4,28 @@
 <h1>TransHemodiálisis</h1>
 <h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
 <h4>Si es necesario terminar antes, en el apartado de Observaciones pon el símbolo #</h4>
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+@if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+@endif
 <div class="container">
     <div class="row">
         <div class="col-md-12">
             <form action="{{ route('edit.fillTransHemo') }}" method="POST" class="row">
             @csrf
+            {{-- patient_id y date únicos para toda la sesión --}}
+            @if($transHemodialysis->isNotEmpty())
+                <input type="hidden" name="patient_id" value="{{ $transHemodialysis->first()->patient_id }}">
+                <input type="hidden" name="date" value="{{ $transHemodialysis->first()->created_at->toDateString() }}">
+            @endif
             <table class="table table-responsive" style="width: 100%">
                 <thead>
                     <tr>
@@ -31,9 +48,6 @@
                 <tbody>
                         @foreach ($transHemodialysis as $item)
                             <tr>
-                                <td style="display: none;">
-                                    <input type="hidden" name="patient_id[]" value="{{ $item->patient_id }}" class="form-control" required>
-                                </td>
                                 <td>
                                     <input type="time" name="time[]" value="{{ $item->time }}" class="form-control" required>
                                 </td>

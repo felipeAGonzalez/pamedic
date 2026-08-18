@@ -25,6 +25,7 @@ class LoginController extends Controller
             'email' => 'required|email',
             'password' => 'required',
         ]);
+        $credentials['enabled'] = true;
         if (Auth::attempt($credentials)) {
             if (Auth::user()->need_change) {
                 return redirect()->route('password.view');

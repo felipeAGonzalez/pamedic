@@ -3,12 +3,22 @@
 @section('content')
 <h1>Monitoreo Pre-Trans y Post Diálisis </h1>
 <h3 style="color: red;">{{ $patient->name .' '. $patient->last_name }}</h3>
-
-
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+@if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+@endif
 <form action="{{ route('edit.fill') }}" method="POST" class="row">
     @csrf
     <input type="hidden" name="patient_id" value="{{ $id ?? $dialysisMonitoring->patient_id}}">
-    <input type="hidden" name="created_at" value="{{ $id ?? $dialysisMonitoring->created_at}}">
+    <input type="hidden" name="id" value="{{ $dialysisMonitoring->id ?? '' }}">
     <div class="col-md-6">
         <div class="form-group">
             <label for="date_hour">Fecha y Hora:</label>
