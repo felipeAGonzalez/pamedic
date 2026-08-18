@@ -21,6 +21,7 @@
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Cargo</th>
+                <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -31,6 +32,7 @@
                 <td>{{ $user->name }}</td>
                 <td>{{ $user->email }}</td>
                 <td>{{ __('web.'.$user->position) }}</td>
+                <td>{{ $user->enabled ? 'Habilitado' : 'Deshabilitado' }}</td>
                 <td>
                         <a href="{{ route('users.show', $user->id) }}" class="btn btn-info">Ver</a>
                         <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary">Editar</a>
@@ -43,6 +45,16 @@
                             @csrf
                             <button type="submit" class="btn btn-success">Reinicio de contraseña</button>
                         </form>
+                        @if(in_array(Auth::user()->position, ['QUALITY', 'ROOT']))
+                        <form action="{{ route('users.enabled', $user->id) }}" method="POST" style="display: inline">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="enabled" value="{{ $user->enabled ? 0 : 1 }}">
+                            <button type="submit" class="btn {{ $user->enabled ? 'btn-warning' : 'btn-success' }}" @if($user->enabled) onclick="return confirm('¿Desea deshabilitar este usuario?')" @endif>
+                                {{ $user->enabled ? 'Deshabilitar' : 'Habilitar' }}
+                            </button>
+                        </form>
+                        @endif
                     </td>
                 </tr>
             @endif

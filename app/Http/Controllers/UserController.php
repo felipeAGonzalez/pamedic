@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 
 class UserController extends Controller
@@ -102,6 +103,28 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('users.index');
     }
+
+    public function updateEnabled(Request $request, $id)
+    {
+        $data = $request->validate([
+            'enabled' => ['required', 'boolean'],
+        ]);
+
+        $user = User::findOrFail($id);
+
+        if ($user->id === Auth::id() && ! (bool) $data['enabled']) {
+            return redirect()->route('users.index')
+                ->withErrors(['message' => 'No puede deshabilitar su propio usuario.']);
+        }
+
+        $user->enabled = (bool) $data['enabled'];
+        $user->save();
+
+        $message = $user->enabled ? 'Usuario habilitado correctamente.' : 'Usuario deshabilitado correctamente.';
+
+        return redirect()->route('users.index')->with('success', $message);
+    }
+
     public function changePassword(Request $request)
     {
         $request->validate([
