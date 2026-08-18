@@ -9,7 +9,7 @@ class MachineController extends Controller
 {
     public function index()
     {
-        $machines = Machine::orderBy('machine_number')->get();
+        $machines = Machine::orderBy('id')->get();
         return view('machines.index', compact('machines'));
     }
 
