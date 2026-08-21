@@ -135,14 +135,13 @@ class AttendanceTreatmentTest extends TestCase
 
     private function user(string $position): User
     {
-        return User::forceCreate([
+        return User::create([
             'name' => 'Usuario',
             'last_name_one' => 'Prueba',
             'last_name_two' => 'Sistema',
             'profesional_id' => uniqid(),
             'position' => $position,
             'email' => uniqid().'@example.test', 'password' => 'password',
-            'enabled' => true,
         ]);
     }
 

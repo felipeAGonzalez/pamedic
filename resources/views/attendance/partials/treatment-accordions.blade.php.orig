@@ -34,7 +34,7 @@
                                         @endif
                                     </tr>
                                 @empty
-                                    <tr><td colspan="{{ in_array(auth()->user()->position, ['NURSE', 'MANAGER'], true) ? 7 : 6 }}" class="text-center text-muted py-4">No hay pacientes disponibles en este turno.</td></tr>
+                                    <tr><td colspan="6" class="text-center text-muted py-4">No hay pacientes disponibles en este turno.</td></tr>
                                 @endforelse
                                 </tbody>
                             </table>

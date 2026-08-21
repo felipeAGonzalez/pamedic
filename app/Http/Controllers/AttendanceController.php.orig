@@ -228,11 +228,10 @@ class AttendanceController extends Controller
             ->with(['schedule', 'machine', 'patient.activePatients' => fn ($query) => $query->whereDate('date', $today)->where('active', 1)])
             ->get()
             ->sortBy(function (SchedulePatients $item) {
-                $machine = $item->machine?->machine_number ?? $item->machine_id;
-                $machineOrder = is_numeric($machine) ? (int) $machine : PHP_INT_MAX;
+                $machine = $item->machine?->machine_number ?? $item->machine_id ?? '';
                 $patient = $item->patient;
 
-                return sprintf('%010d|%s|%s|%s|%010d', $machineOrder, $patient->last_name, $patient->last_name_two, $patient->name, $patient->id);
+                return sprintf('%010s|%s|%s|%s|%010d', $machine, $patient->last_name, $patient->last_name_two, $patient->name, $patient->id);
             })->groupBy('schedules_id');
 
         $normal = $schedules->reject(fn (Schedule $schedule) => strtolower($schedule->schedule_type) === 'emergency')->values();
