@@ -71,6 +71,11 @@ Route::group(['middleware'=>['auth', 'receptionist.scope']],function () {
         Route::group(['middleware' => 'position:ROOT,DIRECTIVE,QUALITY,NEPHROLOGIST,RECEPCIONIST,WHAREHOUSE'], function () {
             Route::get('/schedule/create', [ScheduleController::class, 'create'])->name('schedule.create');
             Route::get('/schedule/search', [AttendanceController::class, 'search'])->name('schedule.search');
+            Route::get('/schedule/patient-search', [ScheduleController::class, 'searchPatients'])->name('schedule.patientSearch');
+            Route::post('/schedule/assign', [ScheduleController::class, 'assignPatient'])->name('schedule.assign');
+            Route::patch('/schedule/{id}/move', [ScheduleController::class, 'movePatient'])->name('schedule.move');
+            Route::delete('/schedule/{id}/permanent', [ScheduleController::class, 'permanentDestroy'])->name('schedule.permanentDestroy');
+            Route::delete('/schedule/clone-week/{batch}/undo', [ScheduleController::class, 'undoCloneWeek'])->name('schedule.undoCloneWeek');
             Route::post('/schedule', [ScheduleController::class, 'store'])->name('schedule.store');
             Route::get('/schedule/{id}', [ScheduleController::class, 'show'])->name('schedule.show');
             Route::get('/schedule/{id}/edit', [ScheduleController::class, 'edit'])->name('schedule.edit');

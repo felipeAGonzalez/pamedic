@@ -12,7 +12,17 @@ class SchedulePatients extends Model
 
     protected $table = 'schedules_patient';
 
-    protected $fillable = ['schedules_id', 'patient_id', 'date', 'machine_id', 'created_at', 'updated_at'];
+    protected $fillable = ['schedules_id', 'patient_id', 'date', 'machine_id', 'continue_schedule', 'clone_batch_id', 'created_at', 'updated_at'];
+
+    protected $casts = [
+        'date' => 'date',
+        'continue_schedule' => 'boolean',
+    ];
+
+    public function cloneBatch()
+    {
+        return $this->belongsTo(ScheduleCloneBatch::class, 'clone_batch_id');
+    }
 
     public function schedule()
     {

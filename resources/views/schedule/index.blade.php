@@ -2,6 +2,8 @@
 
 @section('content')
 
+@php($canEdit = !in_array(Auth::user()->position, ['NURSE', 'MANAGER']))
+
 @if(Session::has('success'))
     <div class="alert2 alert2-success">
         <ul>
@@ -16,9 +18,13 @@
         </ul>
     </div>
 @endif
+@if($canEdit)
+    <div id="schedule-feedback" class="alert d-none mb-3" role="status" aria-live="polite"></div>
+@endif
 
-@if(!in_array(Auth::user()->position, ['NURSE', 'MANAGER']))
-    <form method="POST" action="{{ route('schedule.cloneWeek') }}">
+
+@if($canEdit)
+    <form method="POST" action="{{ route('schedule.cloneWeek') }}" class="d-inline-block">
         @csrf
         <input type="hidden" name="week" value="{{ $week }}">
         <input type="hidden" name="year" value="{{ $year }}">
@@ -26,6 +32,23 @@
             Clonar esta semana → siguiente
         </button>
     </form>
+
+    @if($cloneBatch)
+        <form method="POST"
+              action="{{ route('schedule.undoCloneWeek', $cloneBatch->id) }}"
+              class="d-inline-block ml-2"
+              onsubmit="return confirm('¿Desea deshacer la clonación de la siguiente semana?');">
+            @csrf
+            @method('DELETE')
+            <button class="btn btn-outline-danger" @disabled(! $cloneUndo['can_undo'])>
+                Deshacer clonación de la siguiente semana
+            </button>
+        </form>
+
+        @if(! $cloneUndo['can_undo'])
+            <div class="text-danger small mt-2">{{ $cloneUndo['reason'] }}</div>
+        @endif
+    @endif
     <br>
 @endif
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -54,11 +77,13 @@
         SEMANA {{ $week }} ({{ $range }})
     </h4>
 
-    <x-table title="PRIMER TURNO 6:00 - 9:30" :shiftData="$agenda[1]" :machines="$machines" />
-    <x-table title="SEGUNDO TURNO 10:00 - 13:30" :shiftData="$agenda[2]" :machines="$machines" />
-    <x-table title="TERCER TURNO 14:00 - 17:30" :shiftData="$agenda[3]" :machines="$machines" />
-    <x-table title="CUARTO TURNO 17:30 - 21:00" :shiftData="$agenda[4]" :machines="$machines" />
+    <x-table title="PRIMER TURNO 6:00 - 9:30" :shiftData="$agenda[1]" :machines="$machines" :dates="$dates" :scheduleId="1" :canEdit="$canEdit" />
+    <x-table title="SEGUNDO TURNO 10:00 - 13:30" :shiftData="$agenda[2]" :machines="$machines" :dates="$dates" :scheduleId="2" :canEdit="$canEdit" />
+    <x-table title="TERCER TURNO 14:00 - 17:30" :shiftData="$agenda[3]" :machines="$machines" :dates="$dates" :scheduleId="3" :canEdit="$canEdit" />
+    <x-table title="CUARTO TURNO 17:30 - 21:00" :shiftData="$agenda[4]" :machines="$machines" :dates="$dates" :scheduleId="4" :canEdit="$canEdit" />
 
 </div>
+
+@include("schedule.partials.interactive")
 
 @endsection
