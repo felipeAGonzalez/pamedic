@@ -8,8 +8,6 @@ use App\Models\NursePatient;
 use App\Models\Patient;
 use App\Models\Schedule;
 use App\Models\SchedulePatients;
-use DateTime;
-use DateTimeZone;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +36,6 @@ class AttendanceController extends Controller
         $search = $request->query('search');
 
         $patients = Patient::query();
-        $schedules = Schedule::query();
         if ($search ?? false) {
             $patients = Patient::where('expedient_number', 'LIKE', '%'.$search.'%')->orWhere('name', 'LIKE', '%'.$search.'%')->orWhere('last_name', 'LIKE', '%'.$search.'%')->orWhere('last_name_two', 'LIKE', '%'.$search.'%');
         }
@@ -48,10 +45,9 @@ class AttendanceController extends Controller
             $error = ValidationException::withMessages(['Error' => 'Paciente no encontrado']);
             throw $error;
         }
-        $schedules = $schedules->get();
         $machines = Machine::orderBy('id')->get();
 
-        return view('attendance.attendance_schedule', compact('patients', 'schedules', 'machines'));
+        return view('attendance.attendance_schedule', compact('patients', 'machines'));
 
     }
 
@@ -79,17 +75,23 @@ class AttendanceController extends Controller
 
     public function register(Request $request, $id)
     {
-        $request->validate([
-            'schedule_id' => 'nullable|exists:schedules,id',
+        $data = $request->validate([
+            'date' => ['required', 'date_format:Y-m-d'],
+            'machine_id' => ['required', 'integer', 'exists:machines,id'],
         ]);
         $patient = Patient::findOrFail($id);
+        $sessionDate = $data['date'];
+        $scheduleId = 5;
+        $emergencySchedule = Schedule::whereKey($scheduleId)
+            ->where('schedule_type', 'emergency')
+            ->first();
 
-        $timezone = new DateTimeZone('America/Mexico_City');
-        $date = new DateTime('now', $timezone);
-        $today = $date->format('Y-m-d');
-        $sessionDate = $request->date ?? $today;
-        $scheduleId = $request->schedule_id
-            ?? Schedule::where('schedule', 'EMERGENCY')->value('id');
+        if (!$emergencySchedule) {
+            throw ValidationException::withMessages([
+                'Error' => 'El horario de emergencia no está configurado correctamente.',
+            ]);
+        }
+
         $alreadyScheduled = SchedulePatients::where('patient_id', $id)
             ->whereDate('date', $sessionDate)
             ->exists();
@@ -97,6 +99,17 @@ class AttendanceController extends Controller
         if ($alreadyScheduled) {
             throw ValidationException::withMessages([
                 'Error' => 'El paciente ya está programado en un turno este día',
+            ]);
+        }
+
+        $occupiedMachine = SchedulePatients::where([
+            'schedules_id' => $scheduleId,
+            'machine_id' => $data['machine_id'],
+        ])->whereDate('date', $sessionDate)->exists();
+
+        if ($occupiedMachine) {
+            throw ValidationException::withMessages([
+                'machine_id' => 'La máquina seleccionada ya está ocupada para una emergencia en esta fecha.',
             ]);
         }
 
@@ -123,7 +136,7 @@ class AttendanceController extends Controller
                 'schedules_id' => $scheduleId,
                 'patient_id' => $id,
                 'date' => $sessionDate,
-                'machine_id' => $request->machine_id,
+                'machine_id' => $data['machine_id'],
             ]);
             ActivePatient::create([
                 'patient_id' => $id,
@@ -143,7 +156,7 @@ class AttendanceController extends Controller
         }
 
         return redirect()->route('attendance.attendanceSchedule')
-            ->with('message', 'Asistencia registrada correctamente');
+            ->with('message', 'Emergencia registrada correctamente.');
     }
 
     public function list(Request $request)
@@ -154,7 +167,6 @@ class AttendanceController extends Controller
     public function refresh(Request $request)
     {
         $data = $this->availableTurnData();
-
         return response()->json([
             'html' => view('attendance.partials.treatment-accordions', $data)->render(),
             'current_turn_key' => $data['currentTurnKey'],
@@ -168,9 +180,14 @@ class AttendanceController extends Controller
             return $this->assignmentResponse($request, 'No tienes permiso para realizar esta acción.', 403);
         }
 
+        $data = $request->validate([
+            'active_patient_id' => ['required', 'integer', 'exists:active_patient,id'],
+        ]);
+
         try {
-            $result = DB::transaction(function () use ($request, $id) {
-                $activePatient = ActivePatient::where('patient_id', $id)
+            $result = DB::transaction(function () use ($request, $id, $data) {
+                $activePatient = ActivePatient::whereKey($data['active_patient_id'])
+                    ->where('patient_id', $id)
                     ->whereDate('date', today())
                     ->lockForUpdate()
                     ->first();

@@ -60,11 +60,16 @@ class UserController extends Controller
             'name' => 'required',
             'last_name_one' => 'required',
             'last_name_two' => 'required',
-            'profesional_id' => 'required',
+            'profesional_id' => 'required_if:position,NURSE,DIRECTIVE|nullable|string|max:15',
             'position' => 'required',
             'email' => 'required|email|unique:users,email',
+        ], [
+            'profesional_id.required_if' => 'La cédula profesional es obligatoria para Enfermero y Médico.',
+            'profesional_id.max' => 'La cédula profesional no debe exceder los 15 caracteres.',
         ]);
-        $user = User::create(array_merge($request->all(),['password'=>'pamedic','need_change' => true]));
+        $data = $request->all();
+        $data['profesional_id'] = $data['profesional_id'] ?? '';
+        $user = User::create(array_merge($data,['password'=>'pamedic','need_change' => true]));
         if (! $user) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
@@ -84,9 +89,12 @@ class UserController extends Controller
             'name' => 'nullable',
             'last_name_one' => 'nullable',
             'last_name_two' => 'nullable',
-            'profesional_id' => 'nullable',
+            'profesional_id' => 'required_if:position,NURSE,DIRECTIVE|nullable|string|max:15',
             'position' => 'nullable',
             'email' => 'nullable|email|unique:users,email,' . $id,
+        ], [
+            'profesional_id.required_if' => 'La cédula profesional es obligatoria para Enfermero y Médico.',
+            'profesional_id.max' => 'La cédula profesional no debe exceder los 15 caracteres.',
         ]);
         $data=$request->all();
         $data = array_filter($data, function ($value) {

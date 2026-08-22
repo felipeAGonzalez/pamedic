@@ -34,13 +34,10 @@
         <ul class="navbar-nav ms-auto">  <li class="nav-item">
                 <a class="nav-link" href="{{ url('/schedule') }}"><span style="color: #f8f9fa">Horario de paciente</span></a>
             </li>
-            <li class="nav-item">
-               <a class="nav-link" href="{{ url('/attendance/schedule') }}"><span style="color: #f8f9fa">Asistencia</span></a>
-           </li>
-            <!-- <li class="nav-item">
-                <a class="nav-link" href="{{ url('/attendance') }}"><span style="color: #f8f9fa">Asistencia</span></a>
-            </li> -->
             @if(Auth::user()->position !== 'RECEPCIONIST')
+            <li class="nav-item">
+               <a class="nav-link" href="{{ url('/attendance/schedule') }}"><span style="color: #f8f9fa">Emergencia</span></a>
+           </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url('/attendance/list') }}"><span style="color: #f8f9fa">Asignación</span></a>
             </li>

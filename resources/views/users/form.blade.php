@@ -22,22 +22,24 @@
                 <label for="last_name_two">Segundo Apellido:</label>
                 <input type="text" name="last_name_two" id="last_name_two" class="form-control" value="{{ old('last_name_two', isset($user) ? $user->last_name_two : '') }}">
             </div>
-
-            <div class="form-group">
-                <label for="profesional_id">C®¶dula Profesional:</label>
-                <input type="text" name="profesional_id" id="profesional_id" class="form-control" value="{{ old('profesional_id', isset($user) ? $user->profesional_id : '') }}">
-            </div>
-
+            @php
+                $selectedPosition = old('position', isset($user) ? $user->position : '');
+                $requiresProfessionalId = in_array($selectedPosition, ['NURSE', 'DIRECTIVE']);
+            @endphp
             <div class="form-group">
                 <label for="position">Seleccione un cargo:</label>
                 <select name="position" class="form-select" id="position">
-                    <option value="">Seleccione una opci®Æn</option>
+                    <option value="">Seleccione una opci√≥n</option>
                     @foreach($position as $key => $value)
-                        <option value="{{ $key }}" {{ isset($user) && $user->position == $key ? 'selected' : '' }}>
-                            {{ $value }}
-                        </option>
+                    <option value="{{ $key }}" {{ $selectedPosition == $key ? 'selected' : '' }}>
+                        {{ $value }}
+                    </option>
                     @endforeach
                 </select>
+            </div>
+            <div class="form-group" id="profesional_id_group" @if(!$requiresProfessionalId) style="display: none;" @endif>
+                <label for="profesional_id">C√©dula Profesional:</label>
+                <input type="text" name="profesional_id" id="profesional_id" class="form-control" maxlength="15" value="{{ old('profesional_id', isset($user) ? $user->profesional_id : '') }}" @if($requiresProfessionalId) required @else disabled @endif>
             </div>
             <div class="form-group">
                 <label for="email">Email:</label>
@@ -56,4 +58,16 @@
             </div>
         @endif
     </form>
+    <script>
+        const position = document.getElementById('position');
+        const professionalIdGroup = document.getElementById('profesional_id_group');
+        const professionalId = document.getElementById('profesional_id');
+
+        position.addEventListener('change', function () {
+            const isRequired = ['NURSE', 'DIRECTIVE','MANAGER','NEPHROLOGIST'].includes(this.value);
+            professionalIdGroup.style.display = isRequired ? '' : 'none';
+            professionalId.required = isRequired;
+            professionalId.disabled = !isRequired;
+        });
+    </script>
 @endsection

@@ -149,7 +149,7 @@ class EditController extends Controller
         $transHemodialysis = TransHemodialysis::where('patient_id', $id)
             ->where('history', 1)
             ->whereDate('created_at', $date)
-            ->orderBy('time','ASC')
+            ->orderBy('id','ASC')
             ->get();
         return view('edit.formTransH', compact('transHemodialysis','patient'));
     }
@@ -171,7 +171,7 @@ class EditController extends Controller
         $evaluationRisk = EvaluationRisk::where('patient_id', $id)
             ->where('history', 1)
             ->whereDate('created_at', $date)
-            ->orderBy('hour','ASC')
+            ->orderBy('id','ASC')
             ->get();
         return view('edit.formEvaluation', compact('evaluationRisk','patient'));
     }
@@ -400,7 +400,10 @@ class EditController extends Controller
             'respiratory_rate' => 'nullable|numeric',
             'heart_rate' => 'nullable|numeric',
             'weight_out' => 'nullable|numeric',
-            'fall_risk' => 'nullable|string',
+            'fall_risk' => 'required|string|in:high,medium,low',
+        ], [
+            'fall_risk.required' => 'Debe seleccionar el riesgo de caída.',
+            'fall_risk.in' => 'El riesgo de caída seleccionado no es válido.',
         ]);
 
         if (!$request->input('id')) {
@@ -408,15 +411,15 @@ class EditController extends Controller
         }
         $postHemoDialysis = PostHemoDialysis::findOrFail($request->input('id'));
         $postHemoDialysis->update([
-            'final_ultrafiltration' => $request->input('final_ultrafiltration'),
-            'treated_blood'         => $request->input('treated_blood'),
-            'ktv'                   => $request->input('ktv'),
-            'patient_temperature'   => $request->input('patient_temperature'),
-            'blood_pressure_stand'  => $request->input('blood_pressure_stand'),
-            'blood_pressure_sit'    => $request->input('blood_pressure_sit'),
-            'respiratory_rate'      => $request->input('respiratory_rate'),
-            'heart_rate'            => $request->input('heart_rate'),
-            'weight_out'            => $request->input('weight_out'),
+            'final_ultrafiltration' => $request->input('final_ultrafiltration') ?? '',
+            'treated_blood'         => $request->input('treated_blood') ?? '',
+            'ktv'                   => $request->input('ktv') ?? '',
+            'patient_temperature'   => $request->input('patient_temperature') ?? '',
+            'blood_pressure_stand'  => $request->input('blood_pressure_stand') ?? '',
+            'blood_pressure_sit'    => $request->input('blood_pressure_sit') ?? '',
+            'respiratory_rate'      => $request->input('respiratory_rate') ?? '',
+            'heart_rate'            => $request->input('heart_rate') ?? '',
+            'weight_out'            => $request->input('weight_out') ?? '',
             'fall_risk'             => $request->input('fall_risk'),
         ]);
         return redirect()->route('edit.index')->with('success', 'Datos guardados exitosamente');
@@ -447,16 +450,21 @@ class EditController extends Controller
     public function fillNurseEvaluation(Request $request){
         $validator = $request->validate([
             'fase.*' => 'nullable|string',
-            'nurse_valuation.*' => 'nullable|string',
-            'nurse_intervention.*' => 'nullable|string',
+            'nurse_valuation' => 'nullable|array',
+            'nurse_valuation.*' => 'nullable|string|max:800',
+            'nurse_intervention' => 'nullable|array',
+            'nurse_intervention.*' => 'nullable|string|max:800',
+        ], [
+            'nurse_valuation.*.max' => 'La valoración de enfermería no debe exceder los 800 caracteres.',
+            'nurse_intervention.*.max' => 'La intervención de enfermería no debe exceder los 800 caracteres.',
         ]);
         foreach ($request->input('fase') as $key => $value) {
             NurseEvaluation::updateOrCreate(
             ['patient_id' => $request->input('patient_id'),
              'fase' => $value,'created_at' => $request->input('created_at')[$key],'history' => 1],
             [
-            'nurse_valuation' => $request->input('nurse_valuation')[$key],
-            'nurse_intervention' => $request->input('nurse_intervention')[$key],
+            'nurse_valuation' => $request->input("nurse_valuation.$key") ?? '',
+            'nurse_intervention' => $request->input("nurse_intervention.$key") ?? '',
             ]
             );
         }

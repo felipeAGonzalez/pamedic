@@ -6,7 +6,7 @@ return [
 'MANAGER'=>'Jefe de Enfermería',
 'QUALITY'=>'Calidad',
 'NEPHROLOGIST'=>'Nefrólogo',
-'RECEPTIONIST'=>'Recepcionista',
+'RECEPCIONIST'=>'Recepcionista',
 'NURSE'=>'Enfermero',
 'none'=>'No aplica',
 'catheter'=>'Catéter',
