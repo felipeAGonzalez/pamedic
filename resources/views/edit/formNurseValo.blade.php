@@ -13,10 +13,10 @@
         <input type="hidden" name="created_at[]" value="{{ $evaluation['created_at'] }}">
 
         <label for="nurse_valuation">Valoración de Enfermería</label>
-        <textarea name="nurse_valuation[]" id="nurse_valuation" class="form-control" required>{{ $evaluation['nurse_valuation'] }}</textarea>
+        <textarea name="nurse_valuation[]" id="nurse_valuation" class="form-control" maxlength="800">{{ $evaluation['nurse_valuation'] }}</textarea>
 
         <label for="nurse_intervention">Intervención de Enfermería</label>
-        <textarea name="nurse_intervention[]" id="nurse_intervention" class="form-control" required>{{ $evaluation['nurse_intervention'] }}</textarea>
+        <textarea name="nurse_intervention[]" id="nurse_intervention" class="form-control" maxlength="800">{{ $evaluation['nurse_intervention'] }}</textarea>
         <br>
 </div>
 

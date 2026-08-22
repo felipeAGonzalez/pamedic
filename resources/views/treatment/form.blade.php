@@ -15,7 +15,7 @@
         </div>
         <div class="form-group">
             <label for="machine_number">Número de Máquina:</label>
-            <input type="text" name="machine_number" id="machine_number" class="form-control" value="{{ $dialysisMonitoring->machine_number ?? '' }}">
+            <input type="text" name="machine_number" id="machine_number" class="form-control" value="{{ old('machine_number', !empty($dialysisMonitoring->machine_number) ? $dialysisMonitoring->machine_number : ($assignedMachineNumber ?? '')) }}">
         </div>
 
         <div class="form-group">

@@ -29,7 +29,7 @@
                         <th scope="col">Fecha</th>
                     @endif
                 <th scope="col">{{ $user->position != 'NURSE' && $user->position != 'MANAGER' ? 'Asignación' : 'Tratamiento' }}</th>
-                  @if($user->position === 'ROOT')
+                  @if(in_array($user->position, ['NURSE', 'MANAGER', 'ROOT']))
                 <th scope="col">Acciones</th>
                     @endif
 
@@ -90,6 +90,13 @@
                                     <a href="{{ route('treatment.createPostHemo', ['id' => $patient->id]) }}" class="btn btn-warning">Post-Hemodialisis</a>
                                     <a href="{{ route('treatment.createOxygen', ['id' => $patient->id]) }}" class="btn btn-danger">Oxigeno Terapia</a>
                         </div>
+                        @unless($patientsWithSavedClinicalData->contains($patient->id))
+                            <form action="{{ route('treatment.assignment.undo', ['id' => $patient->activePatient->id]) }}" method="POST" class="mt-2" onsubmit="return confirm('¿Desea deshacer esta asignación?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-outline-danger">Deshacer asignación</button>
+                            </form>
+                        @endunless
                         @endif
                         </td>
                         <td>
@@ -97,6 +104,12 @@
                                 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizeTreatment{{ $patient->id }}">
                                     Finalizar Tratamiento
                                 </button>
+                            @elseif(in_array($user->position, ['NURSE', 'MANAGER']))
+                                <form action="{{ route('treatment.finalize', ['id' => $patient->id]) }}" method="POST" onsubmit="return confirm('¿Desea finalizar este tratamiento?');">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-success">Finalizar Tratamiento</button>
+                                </form>
                             @endif
                         @if(in_array($user->position, ['ROOT', 'DIRECTIVE', 'QUALITY']))
                                         <form action="{{ route('delete.treatment', ['id' => $patient->id]) }}" method="POST" style="display:inline;">

@@ -26,13 +26,13 @@
         </div>
     @endif
     <div class="container">
-        <h1>Asistencia programada</h1>
+        <h1>Emergencia</h1>
 
         <div class="row">
             <div class="col-md-6">
                 <form action="{{ route('attendance.searchSchedule') }}" method="GET" class="mb-3">
                     <div class="input-group mb-6">
-                        <input type="text" name="search" class="form-control" placeholder="Buscar por nombre o numero de expediente">
+                        <input type="text" name="search" class="form-control" value="{{ request('search') }}" placeholder="Buscar por nombre o número de expediente">
                             <button type="submit" class="btn btn-primary">Buscar</button>
                     </div>
                 </form>
@@ -78,32 +78,24 @@
                             <form action="{{ route('attendance.register', $patient->id) }}" method="POST">
                                 @csrf
                                 @method('PATCH')
-                                <select name="schedule_id" class="form-select mb-2" >
-                                    <option value="">Seleccionar horario</option>
-                                    @foreach($schedules as $schedule)
-                                        <option value="{{ $schedule->id }}">
-                                            {{ $schedule->schedule }} - {{ __('web.'.$schedule->schedule_type) }}
-                                        </option>
-                                    @endforeach
-                                </select>
                                <div class="mb-3">
-                                    <label for="date" class="form-label">Fecha de asistencia</label>
-                                    <input type="date" name="date" id="date" class="form-control"
-                                        value="Fecha de asistencia">
+                                    <label for="date_{{ $patient->id }}" class="form-label">Fecha de emergencia</label>
+                                    <input type="date" name="date" id="date_{{ $patient->id }}" class="form-control"
+                                        value="{{ old('date', today()->toDateString()) }}" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label>Maquina</label>
-                                    <select name="machine_id" class="form-select">
-                                        <option value="">Selecciona Maquina</option>
+                                    <label for="machine_id_{{ $patient->id }}">Máquina</label>
+                                    <select name="machine_id" id="machine_id_{{ $patient->id }}" class="form-select" required>
+                                        <option value="">Seleccionar máquina</option>
                                         @foreach($machines as $machine)
-                                            <option value="{{ $machine->id }}">
-                                                Maquina {{ $machine->machine_number }} — SN: {{ $machine->serial_number }}
+                                            <option value="{{ $machine->id }}" {{ (string) old('machine_id') === (string) $machine->id ? 'selected' : '' }}>
+                                                Máquina {{ $machine->machine_number }} — SN: {{ $machine->serial_number }}
                                             </option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <br>
-                                <button type="submit" class="btn btn-primary">Registrar Asistencia</button>
+                                <button type="submit" class="btn btn-primary">Registrar Emergencia</button>
                             </form>
                         </td>
                     </tr>

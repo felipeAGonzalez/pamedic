@@ -23,6 +23,7 @@ use App\Models\DoubleVerification;
 use App\Models\User;
 use App\Models\Medicine;
 use App\Models\Patient;
+use App\Models\SchedulePatients;
 
 class TreatmentController extends Controller
 {
@@ -59,6 +60,7 @@ class TreatmentController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $patientsWithSavedClinicalData = collect();
         if ($user->position == 'NURSE' || $user->position == 'MANAGER') {
             $nursePatients = NursePatient::where(['user_id' => Auth::user()->id,'history' => 0])->get();
             $patients = $nursePatients->map(function ($nursePatient) {
@@ -66,7 +68,9 @@ class TreatmentController extends Controller
                 $patient->setRelation('activePatient', $nursePatient->active_patient);
                 return $patient;
             });
-            return view('treatment.index', compact('patients','user'));
+            $patientsWithSavedClinicalData = $this->patientsWithSavedClinicalData($patients->pluck('id'));
+
+            return view('treatment.index', compact('patients','user','patientsWithSavedClinicalData'));
         }
         $nursePatients = NursePatient::where(['history' => 0])->whereNotNull('user_id')->get();
         $patients = $nursePatients->map(function ($nursePatient) {
@@ -74,8 +78,106 @@ class TreatmentController extends Controller
             $patient->setRelation('activePatient', $nursePatient->active_patient);
             return $patient;
         });
-        return view('treatment.index', compact('patients','user'));
+        return view('treatment.index', compact('patients','user','patientsWithSavedClinicalData'));
     }
+
+    public function undoAssignment(Request $request, $id)
+    {
+        try {
+            \DB::transaction(function () use ($request, $id) {
+                $activePatient = ActivePatient::whereKey($id)->lockForUpdate()->first();
+
+                if (!$activePatient) {
+                    throw ValidationException::withMessages(['Error' => 'La asignación ya no se encuentra activa.']);
+                }
+
+                $nursePatient = NursePatient::where([
+                    'active_patient_id' => $activePatient->id,
+                    'history' => 0,
+                ])->lockForUpdate()->first();
+
+                if (!$nursePatient) {
+                    throw ValidationException::withMessages(['Error' => 'La asignación ya no se encuentra activa.']);
+                }
+
+                if ((int) $nursePatient->user_id !== (int) $request->user()->id) {
+                    abort(403, 'No tiene permiso para deshacer esta asignación.');
+                }
+
+                if ($this->hasActiveClinicalData($activePatient->patient_id)) {
+                    throw ValidationException::withMessages([
+                        'Error' => 'No se puede deshacer la asignación porque el tratamiento ya tiene información clínica registrada.',
+                    ]);
+                }
+
+                $nursePatient->delete();
+                $activePatient->update(['active' => 1]);
+            }, 3);
+        } catch (ValidationException $e) {
+            $message = $e->errors()['Error'][0] ?? 'No fue posible deshacer la asignación.';
+
+            return redirect()->route('treatment.index')->with('Error', $message);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            \Log::error('Error inesperado al deshacer asignación de tratamiento.', [
+                'active_patient_id' => $id,
+                'user_id' => $request->user()->id,
+            ]);
+
+            return redirect()->route('treatment.index')->with('Error', 'No fue posible deshacer la asignación.');
+        }
+
+        return redirect()->route('treatment.index')->with('success', 'Asignación deshecha correctamente.');
+    }
+
+    private function hasActiveClinicalData($patientId)
+    {
+        foreach ($this->clinicalModels() as $model) {
+            if ($model::where(['patient_id' => $patientId, 'history' => 0])->exists()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function patientsWithSavedClinicalData($patientIds)
+    {
+        $patientIds = $patientIds->all();
+        $patientsWithData = collect();
+
+        if (empty($patientIds)) {
+            return $patientsWithData;
+        }
+
+        foreach ($this->clinicalModels() as $model) {
+            $patientsWithData = $patientsWithData->merge(
+                $model::whereIn('patient_id', $patientIds)->where('history', 0)->pluck('patient_id')
+            );
+        }
+
+        return $patientsWithData->unique()->values();
+    }
+
+    private function clinicalModels()
+    {
+        return [
+            DialysisMonitoring::class,
+            DialysisPrescription::class,
+            PreHemodialysis::class,
+            TransHemodialysis::class,
+            PostHemoDialysis::class,
+            EvaluationRisk::class,
+            NurseEvaluation::class,
+            TimeOut::class,
+            Verification::class,
+            MedicationAdministration::class,
+            OxygenTherapy::class,
+            DoubleVerification::class,
+        ];
+    }
+
     public function createWeight(Request $request,$id)
     {
         $patient = Patient::where('id',$id)->first();
@@ -94,6 +196,18 @@ class TreatmentController extends Controller
     public function create(Request $request,$id)
     {
         $patient = Patient::where('id',$id)->first();
+        $activePatient = ActivePatient::where(['patient_id' => $id, 'active' => 0])
+            ->whereHas('nursePatient', function ($query) {
+                $query->where('history', 0);
+            })
+            ->orderBy('date', 'DESC')
+            ->first();
+        $scheduledPatient = $activePatient
+            ? SchedulePatients::where(['patient_id' => $id, 'date' => $activePatient->date])->with('machine')->first()
+            : null;
+        $assignedMachineNumber = $scheduledPatient
+            ? ($scheduledPatient->machine?->machine_number ?? $scheduledPatient->machine_id)
+            : null;
         $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $patient->id, 'history' =>  0])->first();
         if ($dialysisMonitoring) {
             $diagnostic = explode(',', $dialysisMonitoring->diagnostic);
@@ -106,7 +220,7 @@ class TreatmentController extends Controller
             });
         }
         if ($dialysisMonitoring) {
-            return view('treatment.form', compact('dialysisMonitoring','patient','diagnostic'));
+            return view('treatment.form', compact('dialysisMonitoring','patient','diagnostic','assignedMachineNumber'));
         }else{
             $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $patient->id, 'history' =>  1])->orderBy('date_hour','DESC')->first();
             if ($dialysisMonitoring) {
@@ -114,13 +228,13 @@ class TreatmentController extends Controller
                 $dialysisMonitoring->created_at = now();
                 $dialysisMonitoring->updated_at = now();
                 $dialysisMonitoring->date_hour = date('Y-m-d H:i');
-                $dialysisMonitoring->machine_number = "";
+                $dialysisMonitoring->machine_number = $assignedMachineNumber ?? "";
                 $dialysisMonitoring->session_number = $dialysisMonitoring->session_number + 1;
                 $dialysisMonitoring->history = 0;
                 $dialysisMonitoring->save();
-                return view('treatment.form', compact('dialysisMonitoring','patient'));
+                return view('treatment.form', compact('dialysisMonitoring','patient','assignedMachineNumber'));
             }
-            return view('treatment.form', compact('patient','id'));
+            return view('treatment.form', compact('patient','id','assignedMachineNumber'));
         }
     }
     public function createPres(Request $request,$id)
@@ -164,7 +278,7 @@ class TreatmentController extends Controller
             return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar el monitoreo de diálisis');
         }
         $hour = date('H:i', strtotime($dialysisMonitoring->date_hour));
-        $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('time','ASC')->get();
+        $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
         if (($transHemodialysis->count() > 0)) {
                 return view('treatment.formTransH', compact('transHemodialysis','patient'));
             }
@@ -186,7 +300,7 @@ class TreatmentController extends Controller
                     'observations' => '',
                 ]);
             }
-            $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('time','ASC')->get();
+            $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
             return view('treatment.formTransH', compact('transHemodialysis','patient'));
         }
 
@@ -247,7 +361,7 @@ class TreatmentController extends Controller
                  2 => 'Post-Hemodiálisis'
                 ];
 
-        $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  0])->orderBy('hour','ASC')->get();
+        $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
         if (($evaluationRisk->count() > 0)) {
 
             return view('treatment.formEvaluation', compact('evaluationRisk','patient'));
@@ -266,7 +380,7 @@ class TreatmentController extends Controller
                 	'fall_risk_trans' => 'low'
                 ]);
             }
-            $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  0])->orderBy('hour','ASC')->get();
+            $evaluationRisk = EvaluationRisk::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
             return view('treatment.formEvaluation', compact('evaluationRisk','patient'));
     }
     public function createEvaluationNurse(Request $request,$id)
@@ -425,7 +539,8 @@ class TreatmentController extends Controller
 
     }
     public function fillWeight(Request $request){
-        $validator = $request->validate([
+        $data = $request->validate([
+            'patient_id' => 'required|integer|exists:patient,id',
             'previous_initial_weight' => 'numeric',
             'previous_final_weight' => 'numeric',
             'previous_weight_gain' => 'numeric',
@@ -433,18 +548,82 @@ class TreatmentController extends Controller
             'dry_weight' => 'numeric',
             'weight_gain' => 'numeric',
         ]);
-        $preHemodialysis = PreHemodialysis::updateOrCreate(
-            ['patient_id' => $request->input('patient_id'), 'history' => 0],
-            [
-            'previous_initial_weight' => $request->input('previous_initial_weight', 0),
-            'previous_final_weight' => $request->input('previous_final_weight',0),
-            'previous_weight_gain' => $request->input('previous_weight_gain',0),
-            'initial_weight' => $request->input('initial_weight'),
-            'dry_weight' => $request->input('dry_weight',0),
-            'weight_gain' => $request->input('weight_gain',0),
-            ]
-        );
-        return redirect()->route('treatment.index')->with('success', 'Datos de la pre-diálisis guardada exitosamente');
+
+        \DB::transaction(function () use ($data) {
+            $patientId = $data['patient_id'];
+            $preHemodialysis = PreHemodialysis::where([
+                'patient_id' => $patientId,
+                'history' => 0,
+            ])->lockForUpdate()->first();
+
+            if (!$preHemodialysis) {
+                $previousPreHemodialysis = PreHemodialysis::where([
+                    'patient_id' => $patientId,
+                    'history' => 1,
+                ])->orderBy('id', 'DESC')->lockForUpdate()->first();
+
+                if (!$previousPreHemodialysis) {
+                    throw ValidationException::withMessages([
+                        'Error' => 'No existe una Prehemodiálisis anterior para registrar los Pesos.',
+                    ]);
+                }
+
+                $preHemodialysis = $previousPreHemodialysis->replicate();
+                $validLevels = ['low', 'medium', 'high'];
+                $validOptionalLevels = ['low', 'medium', 'high', 'N/A', 'N/P'];
+                $hasInvalidHistoricalLevels =
+                    !in_array($preHemodialysis->itchiness, $validOptionalLevels, true)
+                    || !in_array($preHemodialysis->pallor_skin, $validOptionalLevels, true)
+                    || !in_array($preHemodialysis->edema, $validOptionalLevels, true)
+                    || !in_array($preHemodialysis->fall_risk, $validLevels, true);
+
+                if ($hasInvalidHistoricalLevels) {
+                    $clinicalReference = PreHemodialysis::where([
+                        'patient_id' => $patientId,
+                        'history' => 1,
+                    ])->whereIn('itchiness', $validOptionalLevels)
+                        ->whereIn('pallor_skin', $validOptionalLevels)
+                        ->whereIn('edema', $validOptionalLevels)
+                        ->whereIn('fall_risk', $validLevels)
+                        ->orderBy('id', 'DESC')
+                        ->first();
+
+                    if (!$clinicalReference) {
+                        throw ValidationException::withMessages([
+                            'Error' => 'El historial de Prehemodiálisis está incompleto y no puede utilizarse para registrar los Pesos.',
+                        ]);
+                    }
+
+                    if (!in_array($preHemodialysis->itchiness, $validOptionalLevels, true)) {
+                        $preHemodialysis->itchiness = $clinicalReference->itchiness;
+                    }
+                    if (!in_array($preHemodialysis->pallor_skin, $validOptionalLevels, true)) {
+                        $preHemodialysis->pallor_skin = $clinicalReference->pallor_skin;
+                    }
+                    if (!in_array($preHemodialysis->edema, $validOptionalLevels, true)) {
+                        $preHemodialysis->edema = $clinicalReference->edema;
+                    }
+                    if (!in_array($preHemodialysis->fall_risk, $validLevels, true)) {
+                        $preHemodialysis->fall_risk = $clinicalReference->fall_risk;
+                    }
+                }
+
+                $preHemodialysis->history = 0;
+                $preHemodialysis->reuse_number = (int) $previousPreHemodialysis->reuse_number + 1;
+            }
+
+            $preHemodialysis->fill([
+                'previous_initial_weight' => $data['previous_initial_weight'] ?? 0,
+                'previous_final_weight' => $data['previous_final_weight'] ?? 0,
+                'previous_weight_gain' => $data['previous_weight_gain'] ?? 0,
+                'initial_weight' => $data['initial_weight'] ?? null,
+                'dry_weight' => $data['dry_weight'] ?? 0,
+                'weight_gain' => $data['weight_gain'] ?? 0,
+            ]);
+            $preHemodialysis->save();
+        }, 3);
+
+        return redirect()->route('treatment.index')->with('success', 'Pesos guardados correctamente.');
 
     }
     public function fillTransHemo(Request $request){
@@ -489,6 +668,7 @@ class TreatmentController extends Controller
     }
     public function fillPostHemo(Request $request){
         $validator = $request->validate([
+            'patient_id' => 'required|integer|exists:patient,id',
             'final_ultrafiltration' => 'nullable|numeric',
             'treated_blood' => 'nullable|numeric',
             'ktv' => 'nullable|numeric',
@@ -498,21 +678,26 @@ class TreatmentController extends Controller
             'respiratory_rate' => 'nullable|numeric',
             'heart_rate' => 'nullable|numeric',
             'weight_out' => 'nullable|numeric',
-            'fall_risk' => 'nullable|string',
+            'fall_risk' => 'required|string|in:high,medium,low',
+        ], [
+            'patient_id.required' => 'No se encontró el paciente del tratamiento.',
+            'patient_id.exists' => 'No se encontró el paciente del tratamiento.',
+            'fall_risk.required' => 'Debe seleccionar el riesgo de caída.',
+            'fall_risk.in' => 'El riesgo de caída seleccionado no es válido.',
         ]);
 
         $postHemoDialysis = PostHemoDialysis::updateOrCreate(
             ['patient_id' => $request->input('patient_id'), 'history' => 0],
             [
-            'final_ultrafiltration' => $request->input('final_ultrafiltration'),
-            'treated_blood' => $request->input('treated_blood'),
-            'ktv' => $request->input('ktv'),
-            'patient_temperature' => $request->input('patient_temperature'),
-            'blood_pressure_stand' => $request->input('blood_pressure_stand'),
-            'blood_pressure_sit' => $request->input('blood_pressure_sit'),
-            'respiratory_rate' => $request->input('respiratory_rate'),
-            'heart_rate' => $request->input('heart_rate'),
-            'weight_out' => $request->input('weight_out'),
+            'final_ultrafiltration' => $request->input('final_ultrafiltration') ?? '',
+            'treated_blood' => $request->input('treated_blood') ?? '',
+            'ktv' => $request->input('ktv') ?? '',
+            'patient_temperature' => $request->input('patient_temperature') ?? '',
+            'blood_pressure_stand' => $request->input('blood_pressure_stand') ?? '',
+            'blood_pressure_sit' => $request->input('blood_pressure_sit') ?? '',
+            'respiratory_rate' => $request->input('respiratory_rate') ?? '',
+            'heart_rate' => $request->input('heart_rate') ?? '',
+            'weight_out' => $request->input('weight_out') ?? '',
             'fall_risk' => $request->input('fall_risk'),
             ]
         );
@@ -543,8 +728,13 @@ class TreatmentController extends Controller
     public function fillNurseEvaluation(Request $request){
         $validator = $request->validate([
             'fase.*' => 'required|string',
-            'nurse_valuation.*' => 'nullable|string',
-            'nurse_intervention.*' => 'nullable|string',
+            'nurse_valuation' => 'nullable|array',
+            'nurse_valuation.*' => 'nullable|string|max:800',
+            'nurse_intervention' => 'nullable|array',
+            'nurse_intervention.*' => 'nullable|string|max:800',
+        ], [
+            'nurse_valuation.*.max' => 'La valoración de enfermería no debe exceder los 800 caracteres.',
+            'nurse_intervention.*.max' => 'La intervención de enfermería no debe exceder los 800 caracteres.',
         ]);
         foreach ($request->input('fase') as $key => $value) {
             NurseEvaluation::updateOrCreate(
@@ -552,8 +742,8 @@ class TreatmentController extends Controller
             'history' => 0,
              'fase' => $value],
             [
-            'nurse_valuation' => $request->input('nurse_valuation')[$key],
-            'nurse_intervention' => $request->input('nurse_intervention')[$key],
+            'nurse_valuation' => $request->input("nurse_valuation.$key") ?? '',
+            'nurse_intervention' => $request->input("nurse_intervention.$key") ?? '',
             ]
             );
         }

@@ -1,4 +1,4 @@
-@props(['title','shiftData','machines'])
+@props(['title', 'shiftData', 'machines', 'dates', 'scheduleId', 'canEdit' => false])
 
 @php
 $dias = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -28,35 +28,30 @@ $nombresDias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
     </td>
 
     @foreach($dias as $dia)
-<td class="p-0" style="font-size:12px;">
-    @php
-        $patients = collect($shiftData[$dia] ?? []);
-        $record = $patients->firstWhere('machine_id', $machine->id);
-    @endphp
+        @php
+            $records = collect($shiftData[$dia] ?? [])
+                ->filter(fn ($record) => (int) $record->machine_id === (int) $machine->id)
+                ->values();
+        @endphp
 
-    @if($record)
-        <div class="d-flex align-items-start justify-content-between px-1 py-1">
+        <td class="schedule-cell p-1"
+            style="font-size:12px; min-width:165px; min-height:55px;"
+            data-schedule-id="{{ $scheduleId }}"
+            data-date="{{ $dates[$dia] }}"
+            data-machine-id="{{ $machine->id }}"
+            data-record-count="{{ $records->count() }}"
+            @if($canEdit) tabindex="0" role="button" title="Agregar paciente o recibir un cambio de máquina" @endif>
+            @foreach($records as $record)
+                @include('schedule.partials.patient-card', ['record' => $record, 'canEdit' => $canEdit])
+            @endforeach
 
-            <div class="lh-sm">
-                <strong>{{ $record->patient->expedient_number }}</strong><br>
-                {{ $record->patient->name . ' '. $record->patient->last_name }}
-            </div>
-
-            @if(!in_array(Auth::user()->position, ['NURSE', 'MANAGER']))
-                <form method="POST"
-                      action="{{ route('schedule.destroy',$record->id) }}"
-                      onsubmit="return confirm('Remove patient from schedule?')">
-                    @csrf
-                    @method('DELETE')
-                    <button class="btn btn-danger btn-sm px-2 py-0">✖</button>
-                </form>
+            @if($records->isEmpty() && $canEdit)
+                <div class="schedule-empty-placeholder text-muted text-center py-2">
+                    <i class="bi bi-person-plus"></i> Agregar
+                </div>
             @endif
-
-        </div>
-    @endif
-</td>
-@endforeach
-
+        </td>
+    @endforeach
 </tr>
 @endforeach
 
