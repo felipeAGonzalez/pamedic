@@ -13,16 +13,24 @@ RUN apt-get update && apt-get install -y \
     curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+    && docker-php-ext-install pdo_mysql mbstring exif bcmath gd
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-COPY . /var/www/html
+WORKDIR /var/www/html
+
+COPY . .
+
+RUN composer install --no-dev --optimize-autoloader
 
 RUN a2enmod rewrite
 
+RUN sed -i 's!/var/www/html!/var/www/html/public!g' \
+    /etc/apache2/sites-available/000-default.conf
+
+RUN chown -R www-data:www-data storage bootstrap/cache
+
 EXPOSE 80
 
-WORKDIR /var/www/html
 
 CMD ["apache2-foreground"]
