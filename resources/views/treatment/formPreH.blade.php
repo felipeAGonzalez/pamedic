@@ -50,6 +50,7 @@
             <div class="form-group">
                 <label for="itchiness">Prurito</label>
                 <select class="form-control" id="itchiness" name="itchiness">
+                    <option value="">Seleccione una opción</option>
                     <option value="low" {{ old('itchiness', $preHemodialysis->itchiness ?? '') == 'low' ? 'selected' : '' }}>Bajo</option>
                     <option value="medium" {{ old('itchiness', $preHemodialysis->itchiness ?? '') == 'medium' ? 'selected' : '' }}>Medio</option>
                     <option value="high" {{ old('itchiness', $preHemodialysis->itchiness ?? '') == 'high' ? 'selected' : '' }}>Alto</option>
@@ -60,6 +61,7 @@
             <div class="form-group">
                 <label for="pallor_skin">Palidez de la Piel</label>
                 <select class="form-control" id="pallor_skin" name="pallor_skin">
+                    <option value="">Seleccione una opción</option>
                     <option value="low" {{ old('pallor_skin', $preHemodialysis->pallor_skin ?? '') == 'low' ? 'selected' : '' }}>Bajo</option>
                     <option value="medium" {{ old('pallor_skin', $preHemodialysis->pallor_skin ?? '') == 'medium' ? 'selected' : '' }}>Medio</option>
                     <option value="high" {{ old('pallor_skin', $preHemodialysis->pallor_skin ?? '') == 'high' ? 'selected' : '' }}>Alto</option>
@@ -70,6 +72,7 @@
             <div class="form-group">
                 <label for="edema">Edema</label>
                 <select class="form-control" id="edema" name="edema">
+                    <option value="">Seleccione una opción</option>
                     <option value="low" {{ old('edema', $preHemodialysis->edema ?? '') == 'low' ? 'selected' : '' }}>Bajo</option>
                     <option value="medium" {{ old('edema', $preHemodialysis->edema ?? '') == 'medium' ? 'selected' : '' }}>Medio</option>
                     <option value="high" {{ old('edema', $preHemodialysis->edema ?? '') == 'high' ? 'selected' : '' }}>Alto</option>
@@ -84,6 +87,7 @@
             <div class="form-group">
                 <label for="fall_risk">Riesgo de Caída</label>
                 <select class="form-control" id="fall_risk" name="fall_risk">
+                    <option value="">Seleccione una opción</option>
                     <option value="low" {{ old('fall_risk', $preHemodialysis->fall_risk ?? '') == 'low' ? 'selected' : '' }}>Bajo</option>
                     <option value="medium" {{ old('fall_risk', $preHemodialysis->fall_risk ?? '') == 'medium' ? 'selected' : '' }}>Medio</option>
                     <option value="high" {{ old('fall_risk', $preHemodialysis->fall_risk ?? '') == 'high' ? 'selected' : '' }}>Alto</option>

@@ -568,46 +568,8 @@ class TreatmentController extends Controller
                     ]);
                 }
 
-                $preHemodialysis = $previousPreHemodialysis->replicate();
-                $validLevels = ['low', 'medium', 'high'];
-                $validOptionalLevels = ['low', 'medium', 'high', 'N/A', 'N/P'];
-                $hasInvalidHistoricalLevels =
-                    !in_array($preHemodialysis->itchiness, $validOptionalLevels, true)
-                    || !in_array($preHemodialysis->pallor_skin, $validOptionalLevels, true)
-                    || !in_array($preHemodialysis->edema, $validOptionalLevels, true)
-                    || !in_array($preHemodialysis->fall_risk, $validLevels, true);
-
-                if ($hasInvalidHistoricalLevels) {
-                    $clinicalReference = PreHemodialysis::where([
-                        'patient_id' => $patientId,
-                        'history' => 1,
-                    ])->whereIn('itchiness', $validOptionalLevels)
-                        ->whereIn('pallor_skin', $validOptionalLevels)
-                        ->whereIn('edema', $validOptionalLevels)
-                        ->whereIn('fall_risk', $validLevels)
-                        ->orderBy('id', 'DESC')
-                        ->first();
-
-                    if (!$clinicalReference) {
-                        throw ValidationException::withMessages([
-                            'Error' => 'El historial de Prehemodiálisis está incompleto y no puede utilizarse para registrar los Pesos.',
-                        ]);
-                    }
-
-                    if (!in_array($preHemodialysis->itchiness, $validOptionalLevels, true)) {
-                        $preHemodialysis->itchiness = $clinicalReference->itchiness;
-                    }
-                    if (!in_array($preHemodialysis->pallor_skin, $validOptionalLevels, true)) {
-                        $preHemodialysis->pallor_skin = $clinicalReference->pallor_skin;
-                    }
-                    if (!in_array($preHemodialysis->edema, $validOptionalLevels, true)) {
-                        $preHemodialysis->edema = $clinicalReference->edema;
-                    }
-                    if (!in_array($preHemodialysis->fall_risk, $validLevels, true)) {
-                        $preHemodialysis->fall_risk = $clinicalReference->fall_risk;
-                    }
-                }
-
+                $preHemodialysis = new PreHemodialysis();
+                $preHemodialysis->patient_id = $patientId;
                 $preHemodialysis->history = 0;
                 $preHemodialysis->reuse_number = (int) $previousPreHemodialysis->reuse_number + 1;
             }

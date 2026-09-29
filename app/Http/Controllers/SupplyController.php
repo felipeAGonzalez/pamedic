@@ -68,7 +68,8 @@ class SupplyController extends Controller
             'material'            => 'required|unique:supplies,material',
             'type'                => 'required|in:' . implode(',', array_keys(\App\Models\Supply::TYPES)),
             'for_vascular_access' => 'required|in:catheter,fistula,both,no_apply',
-            'existencias'         => 'required|integer|min:0',
+            'units_per_patient'   => 'required|numeric|min:0.01',
+            'existencias'         => 'required|numeric|min:0',
         ]);
 
         Supply::create($request->all());
@@ -87,7 +88,8 @@ class SupplyController extends Controller
             'material'            => 'required|unique:supplies,material,' . $supply->id,
             'type'                => 'required|in:' . implode(',', array_keys(\App\Models\Supply::TYPES)),
             'for_vascular_access' => 'required|in:catheter,fistula,both,no_apply',
-            'existencias'         => 'required|integer|min:0',
+            'units_per_patient'   => 'required|numeric|min:0.01',
+            'existencias'         => 'required|numeric|min:0',
         ]);
 
         $supply->update($request->all());
@@ -246,9 +248,11 @@ class SupplyController extends Controller
             $fistula, $catheter, $elisio,
             $bajaFistula, $bajaCatheter, $bajaElisio
         ) {
+            $factor = max(0.01, (float) $supply->units_per_patient);
+
             if ($supply->type === 'filter') {
-                $supply->requested_quantity = $elisio;
-                $supply->baja_quantity      = $bajaElisio;
+                $supply->requested_quantity = $elisio * $factor;
+                $supply->baja_quantity      = $bajaElisio * $factor;
             } else {
                 [$qty, $baja] = match ($supply->for_vascular_access) {
                     'fistula'  => [$fistula,            $bajaFistula],
@@ -256,8 +260,8 @@ class SupplyController extends Controller
                     'both'     => [$fistula + $catheter, $bajaFistula + $bajaCatheter],
                     default    => [0, 0],
                 };
-                $supply->requested_quantity = $qty;
-                $supply->baja_quantity      = $baja;
+                $supply->requested_quantity = $qty * $factor;
+                $supply->baja_quantity      = $baja * $factor;
             }
             return $supply;
         });

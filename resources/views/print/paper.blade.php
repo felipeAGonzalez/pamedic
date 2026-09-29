@@ -4,16 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{$date.'-'.substr($patient->expedient_number, -4)}}</title>
+    <style>
+        .document-header {
+            width: 100%;
+            height: 76px;
+            margin-bottom: 3px;
+            border: 0px solid #7894a8;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .document-logo {
+            width: 92px;
+            padding: 3px;
+            background-color: #8db4e3;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .document-logo img {
+            width: 66px;
+        }
+
+        .document-heading {
+            padding: 6px 10px;
+            background-color: #8db4e3;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .document-title {
+            margin: 0;
+            color: #000000;
+            font-size: 18px;
+            line-height: 1.1;
+        }
+
+        .document-subtitle {
+            width: 58%;
+            margin: 4px auto 0;
+            padding-top: 3px;
+            border-top: 1px solid #8db4e3;
+            color: #000000;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 0.4px;
+        }
+
+        .document-code-label,
+        .document-code-value {
+            width: 165px;
+            padding-right: 8px;
+            padding-left: 8px;
+            border-left: 1px solid #7894a8;
+            vertical-align: middle;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .document-code-label {
+            height: 22px;
+            border-bottom: 1px solid #7894a8;
+            background-color: #8db4e3;
+            color: #000203;
+            font-weight: bold;
+        }
+
+        .document-code-value {
+            background-color: #fff;
+            color: #000000;
+            white-space: nowrap;
+        }
+    </style>
 </head>
 <body>
-    <table style="width: 100%;  border-collapse: collapse;">
+    <table class="document-header">
         <tr>
-            <td style="width: 50px; background-color: #8db4e3;">
-                <img src="{{public_path('logos/pamedic.png')}}" width="70" style="margin-right: 10px;">
+            <td class="document-logo" rowspan="2">
+                <img src="{{public_path('logos/pamedic.png')}}">
             </td>
-            <td colspan=5>
-                <h3 style="margin: 0; text-align: center; background-color: #8db4e3; padding: 10px;"><strong><pre>       Hoja de Enfermería - Nota de Enfermería        </pre></strong></h3>
+            <td class="document-heading" rowspan="2">
+                <h1 class="document-title">Hoja de Enfermería</h1>
+                <div class="document-subtitle">Nota de Enfermería</div>
             </td>
+            <th class="document-code-label">CLAVE</th>
+        </tr>
+        <tr>
+            <td class="document-code-value">PM-DM-PROC-MED-02: FOR-05</td>
         </tr>
     </table>
     <table border="1" style="width: 100%;">

@@ -114,7 +114,7 @@
                 <td><input type="checkbox" id="reprocessed_dialyzer_label" name="reprocessed_dialyzer_label" value="1" {{ isset($verification['reprocessed_dialyzer_label']) && $verification['reprocessed_dialyzer_label'] == 1 ? 'checked' : '' }}></td>
             </tr>
             <tr>
-                <td>Verificación de acceso vascular</td>
+                <td>Verificación de acceso vascular (Identificación y funcionalidad)</td>
                 <td><input type="checkbox" id="vascular_access" name="vascular_access" value="1" {{ isset($verification['vascular_access']) && $verification['vascular_access'] == 1 ? 'checked' : '' }}></td>
             </tr>
         </tbody>

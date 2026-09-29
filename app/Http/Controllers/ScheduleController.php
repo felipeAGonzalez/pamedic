@@ -437,7 +437,7 @@ class ScheduleController extends Controller
             }
 
             if ($applies) {
-                $supply->increment('existencias');
+                $supply->increment('existencias', max(0.01, (float) $supply->units_per_patient));
             }
         });
     }

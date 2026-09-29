@@ -18,6 +18,7 @@
                 <th>Material</th>
                 <th>Tipo</th>
                 <th>Acceso Vascular</th>
+                <th>Unidades por paciente</th>
                 <th>Existencias</th>
                 @if(in_array($user->position, ['QUALITY', 'MANAGER', 'ROOT']))
                 <th width="150">Acciones</th>
@@ -36,6 +37,7 @@
                         @else No Aplica
                         @endif
                     </td>
+                    <td>{{ $supply->units_per_patient }}</td>
                     <td>{{ $supply->existencias }}</td>
                     @if(in_array($user->position, ['QUALITY', 'MANAGER', 'ROOT']))
                     <td>
@@ -53,7 +55,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="text-center">No hay insumos registrados</td>
+                    <td colspan="{{ in_array($user->position, ['QUALITY', 'MANAGER', 'ROOT']) ? 6 : 5 }}" class="text-center">No hay insumos registrados</td>
                 </tr>
             @endforelse
         </tbody>

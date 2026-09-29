@@ -164,12 +164,14 @@ class ScheduleInteractiveTest extends TestCase
             'material' => 'Filtro',
             'type' => 'filter',
             'for_vascular_access' => 'no_apply',
+            'units_per_patient' => 2.5,
             'existencias' => 0,
         ]);
         $fistulaSupply = Supply::create([
             'material' => 'Fístula',
             'type' => 'supply',
             'for_vascular_access' => 'fistula',
+            'units_per_patient' => 1.5,
             'existencias' => 0,
         ]);
 
@@ -184,8 +186,8 @@ class ScheduleInteractiveTest extends TestCase
             'patient_id' => $patient->id,
             'date' => '2026-08-17',
         ]);
-        $this->assertSame(1, $filter->fresh()->existencias);
-        $this->assertSame(1, $fistulaSupply->fresh()->existencias);
+        $this->assertSame(2.5, $filter->fresh()->existencias);
+        $this->assertSame(1.5, $fistulaSupply->fresh()->existencias);
 
         $this->actingAs($user)->post(route('schedule.cloneWeek'), [
             'week' => 34,
@@ -478,7 +480,8 @@ class ScheduleInteractiveTest extends TestCase
             $table->string('material');
             $table->string('type');
             $table->string('for_vascular_access');
-            $table->unsignedInteger('existencias')->default(0);
+            $table->unsignedDecimal('units_per_patient', 10, 2)->default(1);
+            $table->unsignedDecimal('existencias', 10, 2)->default(0);
             $table->timestamps();
         });
     }

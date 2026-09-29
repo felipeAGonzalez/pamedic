@@ -44,9 +44,19 @@
         </div>
 
         <div class="mb-3">
+            <label>Unidades por paciente</label>
+            <input type="number" name="units_per_patient" value="{{ old('units_per_patient', 1) }}"
+                   class="form-control @error('units_per_patient') is-invalid @enderror" min="0.01" step="0.01" required>
+            <small class="form-text text-muted">Use 1 para el cálculo normal.</small>
+            @error('units_per_patient')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3">
             <label>Existencias</label>
             <input type="number" name="existencias" value="{{ old('existencias', 0) }}"
-                   class="form-control @error('existencias') is-invalid @enderror" min="0" required>
+                   class="form-control @error('existencias') is-invalid @enderror" min="0" step="0.01" required>
             @error('existencias')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
