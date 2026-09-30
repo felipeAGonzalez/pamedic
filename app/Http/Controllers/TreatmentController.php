@@ -930,7 +930,7 @@ class TreatmentController extends Controller
                     $emergencyDates = \App\Models\SchedulePatients::where([
                         'patient_id' => $id,
                         'schedules_id' => 5,
-                    ])->pluck('date');
+                    ])->toBase()->pluck('date');
 
                     $activePatient = ActivePatient::where([
                         'patient_id' => $id,
