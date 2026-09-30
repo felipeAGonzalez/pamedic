@@ -12,14 +12,12 @@ use Tests\TestCase;
 
 class ReceptionistAccessTest extends TestCase
 {
-    public function test_receptionist_can_use_every_schedule_and_attendance_route(): void
+    public function test_receptionist_can_use_every_schedule_route(): void
     {
         $allowedRoutes = [
             'schedule.index', 'schedule.create', 'schedule.search', 'schedule.store',
             'schedule.show', 'schedule.edit', 'schedule.update', 'schedule.destroy',
             'schedule.cloneWeek', 'schedule.pdf',
-            'attendance.index', 'attendance.search', 'attendance.register',
-            'attendance.attendanceSchedule', 'attendance.searchSchedule',
         ];
 
         foreach ($allowedRoutes as $routeName) {
@@ -37,6 +35,8 @@ class ReceptionistAccessTest extends TestCase
         $forbiddenRoutes = [
             'patients.index', 'supplies.index', 'edit.index', 'users.index',
             'medicines.index', 'machines.index', 'print.index',
+            'attendance.index', 'attendance.search', 'attendance.register',
+            'attendance.attendanceSchedule', 'attendance.searchSchedule',
             'attendance.list', 'attendance.asigne', 'treatment.index',
         ];
 
@@ -53,13 +53,13 @@ class ReceptionistAccessTest extends TestCase
         }
     }
 
-    public function test_receptionist_menu_only_shows_schedule_and_attendance(): void
+    public function test_receptionist_menu_only_shows_schedule(): void
     {
         Auth::setUser($this->user('RECEPCIONIST'));
         $html = view('layouts.app')->render();
 
         $this->assertStringContainsString('Horario de paciente', $html);
-        $this->assertStringContainsString('Asistencia', $html);
+        $this->assertStringNotContainsString('Asistencia', $html);
         $this->assertStringNotContainsString('Asignación', $html);
         $this->assertStringNotContainsString('Tratamiento', $html);
         $this->assertStringNotContainsString('Administración', $html);

@@ -272,11 +272,12 @@ class TreatmentFinalizationTest extends TestCase
 
     private function user(string $position): User
     {
-        return User::create([
+        return User::forceCreate([
             'name' => 'Usuario',
             'position' => $position,
             'email' => uniqid().'@example.test',
             'password' => 'password',
+            'enabled' => true,
         ]);
     }
 
@@ -301,6 +302,7 @@ class TreatmentFinalizationTest extends TestCase
             $table->string('position');
             $table->string('email')->unique();
             $table->string('password');
+            $table->boolean('enabled')->default(true);
             $table->timestamps();
         });
         Schema::create('patient', function (Blueprint $table) {

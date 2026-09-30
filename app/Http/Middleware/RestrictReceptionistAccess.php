@@ -17,11 +17,6 @@ class RestrictReceptionistAccess
         $routeName = $request->route()?->getName();
         $allowedRoutes = [
             'welcome',
-            'attendance.index',
-            'attendance.search',
-            'attendance.register',
-            'attendance.attendanceSchedule',
-            'attendance.searchSchedule',
             'password.view',
             'password.update',
         ];
