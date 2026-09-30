@@ -1047,6 +1047,9 @@ class TreatmentController extends Controller
             $preHemodialysis->save();
 
             $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('time','ASC')->get();
+            if ($transHemodialysis->isEmpty()) {
+                throw ValidationException::withMessages(['Error' => 'Primero debe llenar la transhemodiálisis']);
+            }
             foreach ($transHemodialysis as $trans) {
                 $trans->history = 1;
                 $trans->save();

@@ -52,6 +52,27 @@ class TreatmentFinalizationTest extends TestCase
         ]);
     }
 
+    public function test_treatment_without_trans_hemodialysis_cannot_be_finalized(): void
+    {
+        $user = $this->user('NURSE');
+        [$patient, , $assignment] = $this->treatment($user, '2026-08-18', 1);
+
+        DB::table('trans_hemodialysis')->where('patient_id', $patient->id)->delete();
+
+        $this->actingAs($user)->patch(route('treatment.finalize', $patient->id))
+            ->assertRedirect(route('treatment.index'))
+            ->assertSessionHas('Error', 'Primero debe llenar la transhemodiálisis');
+
+        $this->assertDatabaseHas('nurse_patient', [
+            'id' => $assignment->id,
+            'history' => 0,
+        ]);
+        $this->assertDatabaseHas('dialysis_monitoring', [
+            'patient_id' => $patient->id,
+            'history' => 0,
+        ]);
+    }
+
     public function test_emergency_started_yesterday_uses_its_original_start_date(): void
     {
         $user = $this->user('NURSE');

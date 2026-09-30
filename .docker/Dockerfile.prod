@@ -1,0 +1,73 @@
+# syntax=docker/dockerfile:1
+
+FROM node:20-alpine AS frontend
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+
+COPY vite.config.js ./
+COPY resources ./resources
+COPY public ./public
+
+RUN npm run build
+
+
+FROM php:8.2-apache
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libonig-dev \
+        libpng-dev \
+        libxml2-dev \
+        libzip-dev \
+        unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"$(nproc)" \
+        bcmath \
+        exif \
+        gd \
+        mbstring \
+        opcache \
+        pdo_mysql \
+        zip \
+    && a2enmod rewrite headers \
+    && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+COPY . .
+COPY --from=frontend /app/public/build ./public/build
+
+RUN composer install \
+        --no-dev \
+        --no-interaction \
+        --no-progress \
+        --optimize-autoloader \
+        --prefer-dist \
+    && cp .docker/000-default.conf /etc/apache2/sites-available/000-default.conf \
+    && printf '%s\n' \
+        'expose_php=Off' \
+        'memory_limit=400M' \
+        'post_max_size=8M' \
+        'upload_max_filesize=7M' \
+        'date.timezone=America/Mexico_City' \
+        > "$PHP_INI_DIR/conf.d/pamedic.ini" \
+    && rm -rf public/storage \
+    && ln -s /var/www/html/storage/app/public public/storage \
+    && chmod +x .docker/entrypoint.prod.sh \
+    && chown -R www-data:www-data storage bootstrap/cache
+
+ENTRYPOINT ["/var/www/html/.docker/entrypoint.prod.sh"]
+
+EXPOSE 80
+
+CMD ["apache2-foreground"]

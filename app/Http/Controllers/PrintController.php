@@ -68,7 +68,7 @@ class PrintController extends Controller
                 throw $error;
             }
             $activePatients = ActivePatient::query();
-            $activePatients = $activePatients->whereIn('patient_id', $patients->pluck('id'))->orderBy('date','desc')->get();
+            $activePatients = $activePatients->whereIn('patient_id', $patients->pluck('id'))->where('active', 0)->orderBy('date','desc')->get();
             if ($activePatients->isEmpty()) {
                 $error = ValidationException::withMessages(['Error' => 'Paciente sin tratamientos']);
                 throw $error;
@@ -76,7 +76,7 @@ class PrintController extends Controller
         }
          if ($date ?? false) {
             $activePatients = ActivePatient::query();
-            $activePatients = $activePatients->where('date', $date)->get();
+            $activePatients = $activePatients->where('date', $date)->where('active', 0)->get();
             if ($activePatients->isEmpty()) {
                 $error = ValidationException::withMessages(['Error' => 'Fecha sin tratamientos']);
                 throw $error;
@@ -88,7 +88,7 @@ class PrintController extends Controller
     public function indexMedicNote(){
         $nursePatients = NursePatient::where(['date' => date('Y-m-d'),'history'=>1])->get();
         $activePatients = $nursePatients->map(function ($nursePatients) {
-            return $nursePatients->active_patient;
+            return $nursePatients->active_patient->where('active', 0);
         });
 
         return view('noteMedic.index', compact('activePatients'));
