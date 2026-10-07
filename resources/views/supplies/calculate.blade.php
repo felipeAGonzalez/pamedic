@@ -7,8 +7,20 @@
 
     <a href="{{ route('supplies.index') }}" class="btn btn-secondary mb-3">Volver</a>
     @if($period)
-        <a href="{{ route('supplies.pdf', ['week' => $week, 'period' => $period, 'start_date' => $startDate, 'end_date' => $endDate]) }}"
-           class="btn btn-danger mb-3" target="_blank">PDF</a>
+        <form method="POST" action="{{ route('supplies.pdf') }}" class="d-inline" target="_blank">
+            @csrf
+            <input type="hidden" name="start_date" value="{{ $startDate }}">
+            <input type="hidden" name="end_date" value="{{ $endDate }}">
+            <button type="submit" class="btn btn-danger mb-3"
+                    onclick="return confirm('¿Generar una nueva requisición y avanzar el corte de emergencias?')">
+                Generar nueva requisición
+            </button>
+        </form>
+    @endif
+    @if($lastOrder && $lastOrder->items->isNotEmpty())
+        <a href="{{ route('supplies.reprint', $lastOrder) }}" class="btn btn-outline-danger mb-3" target="_blank">
+            Reimprimir requisición #{{ $lastOrder->id }}
+        </a>
     @endif
 
     <form method="GET" action="{{ route('supplies.calculate') }}" class="mb-4">
@@ -28,7 +40,13 @@
     </form>
 
     @if($period)
-        <p class="text-muted">Periodo: <strong>{{ $period }}</strong> &mdash; {{ $activePatients->count() }} paciente(s) activos</p>
+        <p class="text-muted">
+            Periodo programado: <strong>{{ $period }}</strong><br>
+            Emergencias pendientes desde el último corte: <strong>{{ $emergencyCount }}</strong>
+            @if($lastEmergencyCutoff)
+                (último corte: {{ $lastEmergencyCutoff->emergency_to->format('d/m/Y H:i') }})
+            @endif
+        </p>
 
         <div class="row mb-4">
             <div class="col-md-4">

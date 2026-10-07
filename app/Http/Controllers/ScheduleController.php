@@ -662,12 +662,33 @@ class ScheduleController extends Controller
                     ->whereBetween('date', [$startWeek, $endWeek])
                     ->where('schedules_id', '!=', 5)
                     ->where('continue_schedule', true)
-                    ->get();
+                    ->orderBy('id')
+                    ->get()
+                    ->groupBy(function ($record) {
+                        return Carbon::parse($record->date)->toDateString()
+                            .'|'.$record->schedules_id
+                            .'|'.$record->machine_id;
+                    })
+                    ->map(function ($slotRecords) {
+                        return $slotRecords->first(function ($record) {
+                            return $record->trashed();
+                        }) ?? $slotRecords->first();
+                    })
+                    ->values();
 
                 $createdCount = 0;
 
                 foreach ($records as $record) {
                     $newDate = Carbon::parse($record->date)->addWeek();
+
+                    $occupiedSlot = SchedulePatients::whereDate('date', $newDate)
+                        ->where('schedules_id', $record->schedules_id)
+                        ->where('machine_id', $record->machine_id)
+                        ->exists();
+
+                    if ($occupiedSlot) {
+                        continue;
+                    }
 
                     $clonedRecord = SchedulePatients::firstOrCreate([
                         'patient_id' => $record->patient_id,

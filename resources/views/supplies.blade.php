@@ -22,10 +22,12 @@
             </td>
             <td style="width: 25%; vertical-align: middle; line-height: 1.8;">
                 Semana No.: {{ $week }}<br>
+                Requisición No.: {{ $order->id }}<br>
                 Fecha: {{ $today instanceof \Carbon\Carbon ? $today->format('d/m/Y') : $today }}<br>
                 @if($period)
-                    Periodo: {{ $period }}
+                    Periodo: {{ $period }}<br>
                 @endif
+                Emergencias: {{ $order->emergency_count }}
             </td>
         </tr>
     </table>

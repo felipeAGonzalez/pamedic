@@ -218,6 +218,35 @@ class ScheduleInteractiveTest extends TestCase
         $this->assertSame($clonedCount, SchedulePatients::whereBetween('date', ['2026-08-24', '2026-08-30'])->count());
     }
 
+    public function test_clone_keeps_absent_original_patient_instead_of_temporary_replacement(): void
+    {
+        $user = $this->user('QUALITY');
+        $schedule = $this->schedule();
+        $machine = $this->machine('1');
+        $original = $this->patient('EXP-ORIGINAL');
+        $replacement = $this->patient('EXP-REPLACEMENT');
+
+        $originalRecord = $this->scheduled($original, $schedule, $machine, '2026-08-17');
+        $originalRecord->delete();
+        $this->scheduled($replacement, $schedule, $machine, '2026-08-17');
+
+        $this->actingAs($user)->post(route('schedule.cloneWeek'), [
+            'week' => 34,
+            'year' => 2026,
+        ])->assertRedirect()
+            ->assertSessionHas('success', 'Semana clonada correctamente');
+
+        $this->assertTrue(SchedulePatients::where('patient_id', $original->id)
+            ->where('schedules_id', $schedule->id)
+            ->whereDate('date', '2026-08-24')
+            ->where('machine_id', $machine->id)
+            ->exists());
+        $this->assertFalse(SchedulePatients::where('patient_id', $replacement->id)
+            ->whereDate('date', '2026-08-24')
+            ->exists());
+        $this->assertSame(1, SchedulePatients::whereDate('date', '2026-08-24')->count());
+    }
+
     public function test_untouched_cloned_week_can_be_undone_without_counting_as_cancellation(): void
     {
         $user = $this->user('QUALITY');

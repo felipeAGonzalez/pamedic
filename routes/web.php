@@ -192,7 +192,8 @@ Route::group(['middleware'=>['auth', 'receptionist.scope']],function () {
     Route::post('/treatment/fill/timeout', [TreatmentController::class, 'fillTimeOut'])->name('treatment.fillTimeOut');
 
     Route::get('/supplies/calculate', [SupplyController::class, 'suppliesCalculate'])->name('supplies.calculate');
-    Route::get('/supplies/pdf', [SupplyController::class, 'printSupplies'])->name('supplies.pdf');
+    Route::post('/supplies/pdf', [SupplyController::class, 'printSupplies'])->name('supplies.pdf');
+    Route::get('/supplies/orders/{order}/pdf', [SupplyController::class, 'reprintSupplies'])->name('supplies.reprint');
     Route::resource('supplies', SupplyController::class);
 
     Route::match(['get', 'post'],'password/view', [LoginController::class, 'password'])->name('password.view');
