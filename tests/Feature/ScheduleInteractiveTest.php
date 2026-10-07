@@ -218,6 +218,34 @@ class ScheduleInteractiveTest extends TestCase
         $this->assertSame($clonedCount, SchedulePatients::whereBetween('date', ['2026-08-24', '2026-08-30'])->count());
     }
 
+    public function test_attended_patient_cannot_be_removed_from_calendar(): void
+    {
+        $user = $this->user('QUALITY');
+        $patient = $this->patient();
+        $record = $this->scheduled($patient, $this->schedule(), $this->machine('1'), '2026-08-20');
+        $activePatient = ActivePatient::where('patient_id', $patient->id)
+            ->whereDate('date', '2026-08-20')
+            ->firstOrFail();
+
+        DB::table('nurse_patient')->insert([
+            'active_patient_id' => $activePatient->id,
+            'date' => '2026-08-20',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->deleteJson(route('schedule.destroy', $record->id))
+            ->assertConflict()
+            ->assertJsonPath(
+                'message',
+                'No se puede eliminar del calendario porque el paciente ya fue asignado a enfermería o atendido.'
+            );
+
+        $this->assertNotNull($record->fresh());
+        $this->assertNotNull($activePatient->fresh());
+    }
+
     public function test_clone_keeps_absent_original_patient_instead_of_temporary_replacement(): void
     {
         $user = $this->user('QUALITY');

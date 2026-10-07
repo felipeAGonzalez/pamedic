@@ -354,20 +354,24 @@ class ScheduleController extends Controller
         $schedulePatient = SchedulePatients::findOrFail($id);
         $patientId = $schedulePatient->patient_id;
 
-        DB::transaction(function () use ($patientId) {
-            SchedulePatients::withTrashed()
-                ->where('patient_id', $patientId)
-                ->update(['continue_schedule' => false]);
+        try {
+            DB::transaction(function () use ($patientId) {
+                SchedulePatients::withTrashed()
+                    ->where('patient_id', $patientId)
+                    ->update(['continue_schedule' => false]);
 
-            $futureRecords = SchedulePatients::where('patient_id', $patientId)
-                ->whereDate('date', '>=', today()->toDateString())
-                ->lockForUpdate()
-                ->get();
+                $futureRecords = SchedulePatients::where('patient_id', $patientId)
+                    ->whereDate('date', '>=', today()->toDateString())
+                    ->lockForUpdate()
+                    ->get();
 
-            foreach ($futureRecords as $record) {
-                $this->cancelScheduleRecord($record, false);
-            }
-        });
+                foreach ($futureRecords as $record) {
+                    $this->cancelScheduleRecord($record, false);
+                }
+            });
+        } catch (ConflictHttpException $exception) {
+            return $this->scheduleCancellationConflictResponse($request, $exception->getMessage());
+        }
 
         $message = 'Paciente dado de baja definitivamente del horario.';
 
@@ -385,9 +389,13 @@ class ScheduleController extends Controller
     {
         $schedulePatient = SchedulePatients::findOrFail($id);
 
-        DB::transaction(function () use ($schedulePatient) {
-            $this->cancelScheduleRecord($schedulePatient, true);
-        });
+        try {
+            DB::transaction(function () use ($schedulePatient) {
+                $this->cancelScheduleRecord($schedulePatient, true);
+            });
+        } catch (ConflictHttpException $exception) {
+            return $this->scheduleCancellationConflictResponse($request, $exception->getMessage());
+        }
 
         $message = 'Ausencia registrada correctamente. El paciente continuará la siguiente semana.';
 
@@ -406,15 +414,33 @@ class ScheduleController extends Controller
         $date = $schedulePatient->date->toDateString();
         $patientId = $schedulePatient->patient_id;
 
-        ActivePatient::where('patient_id', $patientId)
+        $activePatient = ActivePatient::where('patient_id', $patientId)
             ->whereDate('date', $date)
-            ->first()?->delete();
+            ->lockForUpdate()
+            ->first();
+
+        if ($activePatient && NursePatient::where('active_patient_id', $activePatient->id)->exists()) {
+            throw new ConflictHttpException(
+                'No se puede eliminar del calendario porque el paciente ya fue asignado a enfermería o atendido.'
+            );
+        }
+
+        $activePatient?->delete();
 
         $schedulePatient->continue_schedule = $continueSchedule;
         $schedulePatient->save();
         $schedulePatient->delete();
 
         $this->restoreCancelledSupplies($patientId, $date);
+    }
+
+    private function scheduleCancellationConflictResponse(Request $request, string $message)
+    {
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message], 409);
+        }
+
+        return back()->with('error', $message);
     }
 
     private function restoreCancelledSupplies(int $patientId, string $date): void
