@@ -176,8 +176,10 @@ class ScheduleInteractiveTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->delete(route('schedule.destroy', $record->id))
-            ->assertRedirect();
+            ->deleteJson(route('schedule.destroy', $record->id))
+            ->assertOk()
+            ->assertJsonPath('record_id', $record->id)
+            ->assertJsonPath('message', 'Ausencia registrada correctamente. El paciente continuará la siguiente semana.');
 
         $trashed = SchedulePatients::withTrashed()->findOrFail($record->id);
         $this->assertNotNull($trashed->deleted_at);
@@ -310,8 +312,10 @@ class ScheduleInteractiveTest extends TestCase
         $future = $this->scheduled($patient, $schedule, $machine, '2026-08-21');
 
         $this->actingAs($user)
-            ->delete(route('schedule.permanentDestroy', $today->id))
-            ->assertRedirect();
+            ->deleteJson(route('schedule.permanentDestroy', $today->id))
+            ->assertOk()
+            ->assertJsonPath('patient_id', $patient->id)
+            ->assertJsonPath('message', 'Paciente dado de baja definitivamente del horario.');
 
         $this->assertNull($past->fresh()->deleted_at);
         $this->assertFalse($past->fresh()->continue_schedule);

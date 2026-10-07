@@ -349,7 +349,7 @@ class ScheduleController extends Controller
         }
     }
 
-    public function permanentDestroy($id)
+    public function permanentDestroy(Request $request, $id)
     {
         $schedulePatient = SchedulePatients::findOrFail($id);
         $patientId = $schedulePatient->patient_id;
@@ -369,10 +369,19 @@ class ScheduleController extends Controller
             }
         });
 
-        return back()->with('success', 'Paciente dado de baja definitivamente del horario.');
+        $message = 'Paciente dado de baja definitivamente del horario.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => $message,
+                'patient_id' => $patientId,
+            ]);
+        }
+
+        return back()->with('success', $message);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $schedulePatient = SchedulePatients::findOrFail($id);
 
@@ -380,7 +389,16 @@ class ScheduleController extends Controller
             $this->cancelScheduleRecord($schedulePatient, true);
         });
 
-        return back()->with('success', 'Ausencia registrada correctamente. El paciente continuará la siguiente semana.');
+        $message = 'Ausencia registrada correctamente. El paciente continuará la siguiente semana.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => $message,
+                'record_id' => (int) $schedulePatient->id,
+            ]);
+        }
+
+        return back()->with('success', $message);
     }
 
     private function cancelScheduleRecord(SchedulePatients $schedulePatient, bool $continueSchedule): void

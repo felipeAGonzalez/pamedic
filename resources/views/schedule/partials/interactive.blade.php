@@ -49,6 +49,14 @@
         .schedule-card-actions form {
             margin: 0;
         }
+        #schedule-feedback.schedule-feedback-floating {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1080;
+            max-width: min(420px, calc(100vw - 2rem));
+            box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .15);
+        }
     </style>
 
     <script>
@@ -70,8 +78,7 @@
 
             function showFeedback(message, type) {
                 feedback.textContent = message;
-                feedback.className = 'alert mt-3 alert-' + (type || 'success');
-                feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                feedback.className = 'alert schedule-feedback-floating alert-' + (type || 'success');
             }
 
             async function responseData(response) {
@@ -221,6 +228,59 @@
                     button.disabled = false;
                 }
             }
+
+            document.addEventListener('submit', async function (event) {
+                const form = event.target.closest('.schedule-delete-form');
+                if (! form) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                if (! confirm(form.dataset.confirm)) {
+                    return;
+                }
+
+                const card = form.closest('.schedule-patient-card');
+                const button = form.querySelector('button[type="submit"]');
+                button.disabled = true;
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'DELETE',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        }
+                    });
+                    const data = await responseData(response);
+
+                    if (! response.ok) {
+                        throw new Error(data.message || 'No fue posible eliminar al paciente del horario.');
+                    }
+
+                    const cards = form.dataset.deleteType === 'permanent'
+                        ? Array.from(document.querySelectorAll('.schedule-patient-card')).filter(function (item) {
+                            return item.dataset.patientId === card.dataset.patientId;
+                        })
+                        : [card];
+                    const affectedCells = new Set();
+
+                    cards.forEach(function (item) {
+                        const cell = item.closest('.schedule-cell');
+                        if (cell) {
+                            affectedCells.add(cell);
+                        }
+                        item.remove();
+                    });
+                    affectedCells.forEach(refreshCell);
+                    showFeedback(data.message);
+                } catch (error) {
+                    button.disabled = false;
+                    showFeedback(error.message, 'danger');
+                }
+            });
 
             document.addEventListener('dragstart', function (event) {
                 const card = event.target.closest('.schedule-patient-card');

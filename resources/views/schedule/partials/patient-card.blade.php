@@ -2,6 +2,7 @@
 
 <div class="schedule-patient-card border rounded bg-white p-1 mb-1"
      data-record-id="{{ $record->id }}"
+     data-patient-id="{{ $record->patient_id }}"
      draggable="{{ $canEdit ? 'true' : 'false' }}">
     <div class="d-flex align-items-start justify-content-between gap-1">
         <div class="lh-sm">
@@ -13,7 +14,9 @@
             <div class="d-flex gap-1 schedule-card-actions">
                 <form method="POST"
                       action="{{ route('schedule.destroy', $record->id) }}"
-                      onsubmit="return confirm('¿Registrar que el paciente faltará únicamente este día?')">
+                      class="schedule-delete-form"
+                      data-delete-type="absence"
+                      data-confirm="¿Registrar que el paciente faltará únicamente este día?">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-warning btn-sm px-2 py-0"
@@ -22,7 +25,9 @@
 
                 <form method="POST"
                       action="{{ route('schedule.permanentDestroy', $record->id) }}"
-                      onsubmit="return confirm('¿Dar de baja definitivamente al paciente de todas sus programaciones actuales y futuras?')">
+                      class="schedule-delete-form"
+                      data-delete-type="permanent"
+                      data-confirm="¿Dar de baja definitivamente al paciente de todas sus programaciones actuales y futuras?">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger btn-sm px-2 py-0"
