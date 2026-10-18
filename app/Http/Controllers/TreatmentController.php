@@ -562,16 +562,12 @@ class TreatmentController extends Controller
                     'history' => 1,
                 ])->orderBy('id', 'DESC')->lockForUpdate()->first();
 
-                if (!$previousPreHemodialysis) {
-                    throw ValidationException::withMessages([
-                        'Error' => 'No existe una Prehemodiálisis anterior para registrar los Pesos.',
-                    ]);
-                }
-
                 $preHemodialysis = new PreHemodialysis();
                 $preHemodialysis->patient_id = $patientId;
                 $preHemodialysis->history = 0;
-                $preHemodialysis->reuse_number = (int) $previousPreHemodialysis->reuse_number + 1;
+                $preHemodialysis->reuse_number = $previousPreHemodialysis
+                    ? (int) $previousPreHemodialysis->reuse_number + 1
+                    : 1;
             }
 
             $preHemodialysis->fill([
