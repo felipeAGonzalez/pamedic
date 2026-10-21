@@ -54,10 +54,20 @@
         </div>
 
         <div class="mb-3">
-            <label>Existencias</label>
+            <label>Reserva disponible</label>
             <input type="number" name="existencias" value="{{ old('existencias', 0) }}"
                    class="form-control @error('existencias') is-invalid @enderror" min="0" step="0.01" required>
             @error('existencias')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3">
+            <label>Origen de la reserva</label>
+            <textarea name="reserve_origin" maxlength="1000" rows="2"
+                      class="form-control @error('reserve_origin') is-invalid @enderror">{{ old('reserve_origin') }}</textarea>
+            <small class="form-text text-muted">Es obligatorio cuando existe una reserva.</small>
+            @error('reserve_origin')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>

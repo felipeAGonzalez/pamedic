@@ -190,6 +190,8 @@ class ScheduleInteractiveTest extends TestCase
         ]);
         $this->assertSame(2.5, $filter->fresh()->existencias);
         $this->assertSame(1.5, $fistulaSupply->fresh()->existencias);
+        $this->assertStringContainsString('Cancelación posterior a requisición #', $filter->fresh()->reserve_origin);
+        $this->assertStringContainsString('Cancelación posterior a requisición #', $fistulaSupply->fresh()->reserve_origin);
 
         $this->actingAs($user)->post(route('schedule.cloneWeek'), [
             'week' => 34,
@@ -543,6 +545,7 @@ class ScheduleInteractiveTest extends TestCase
             $table->string('for_vascular_access');
             $table->unsignedDecimal('units_per_patient', 10, 2)->default(1);
             $table->unsignedDecimal('existencias', 10, 2)->default(0);
+            $table->text('reserve_origin')->nullable();
             $table->timestamps();
         });
     }

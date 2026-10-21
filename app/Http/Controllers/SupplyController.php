@@ -13,6 +13,7 @@ use App\Models\SupplyOrder;
 use App\Models\NursePatient;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class SupplyController extends Controller
 {
@@ -46,10 +47,9 @@ class SupplyController extends Controller
                 $startDate,
                 $endDate,
                 $emergencyFrom,
-                $generatedAt
+                $generatedAt,
+                true
             );
-
-            Supply::query()->update(['existencias' => 0]);
 
             $order = SupplyOrder::create([
                 'period_start' => $startDate,
@@ -67,6 +67,20 @@ class SupplyController extends Controller
                     'requested_quantity' => $supply->requested_quantity,
                     'cancellation_quantity' => $supply->baja_quantity,
                 ]);
+
+                if ($supply->reserve_used > 0) {
+                    $remainingReserve = round(
+                        max(0, (float) $supply->existencias - $supply->reserve_used),
+                        2
+                    );
+
+                    Supply::whereKey($supply->id)->update([
+                        'existencias' => $remainingReserve,
+                        'reserve_origin' => $remainingReserve === 0.0
+                            ? null
+                            : $supply->reserve_origin,
+                    ]);
+                }
             }
 
             return [
@@ -105,15 +119,27 @@ class SupplyController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'material'            => 'required|unique:supplies,material',
             'type'                => 'required|in:' . implode(',', array_keys(\App\Models\Supply::TYPES)),
             'for_vascular_access' => 'required|in:catheter,fistula,both,no_apply',
             'units_per_patient'   => 'required|numeric|min:0.01',
             'existencias'         => 'required|numeric|min:0',
+            'reserve_origin'      => [
+                Rule::requiredIf((float) $request->input('existencias', 0) > 0),
+                'nullable',
+                'string',
+                'max:1000',
+            ],
+        ], [
+            'reserve_origin.required' => 'Indique de dónde proviene la reserva.',
         ]);
 
-        Supply::create($request->all());
+        if ((float) $data['existencias'] === 0.0) {
+            $data['reserve_origin'] = null;
+        }
+
+        Supply::create($data);
 
         return redirect()->route('supplies.index')->with('success', 'Insumo creado correctamente');
     }
@@ -125,15 +151,27 @@ class SupplyController extends Controller
 
     public function update(Request $request, Supply $supply)
     {
-        $request->validate([
+        $data = $request->validate([
             'material'            => 'required|unique:supplies,material,' . $supply->id,
             'type'                => 'required|in:' . implode(',', array_keys(\App\Models\Supply::TYPES)),
             'for_vascular_access' => 'required|in:catheter,fistula,both,no_apply',
             'units_per_patient'   => 'required|numeric|min:0.01',
             'existencias'         => 'required|numeric|min:0',
+            'reserve_origin'      => [
+                Rule::requiredIf((float) $request->input('existencias', 0) > 0),
+                'nullable',
+                'string',
+                'max:1000',
+            ],
+        ], [
+            'reserve_origin.required' => 'Indique de dónde proviene la reserva.',
         ]);
 
-        $supply->update($request->all());
+        if ((float) $data['existencias'] === 0.0) {
+            $data['reserve_origin'] = null;
+        }
+
+        $supply->update($data);
 
         return redirect()->route('supplies.index')->with('success', 'Insumo actualizado correctamente');
     }
@@ -216,7 +254,8 @@ class SupplyController extends Controller
         string $startDate,
         string $endDate,
         Carbon $emergencyFrom,
-        Carbon $emergencyTo
+        Carbon $emergencyTo,
+        bool $lockSupplies = false
     ): array {
         [$vascularCounts, $dialyzerCounts, $vascularCountsBajas, $dialyzerCountsBajas] =
             $this->getCalculationData($startDate, $endDate);
@@ -225,8 +264,13 @@ class SupplyController extends Controller
 
         $vascularCounts = $this->mergeCounts($vascularCounts, $emergencyVascular);
         $dialyzerCounts = $this->mergeCounts($dialyzerCounts, $emergencyDialyzer);
+        $suppliesQuery = Supply::orderBy('material');
+        if ($lockSupplies) {
+            $suppliesQuery->lockForUpdate();
+        }
+
         $supplies = $this->applyRequestedQuantities(
-            Supply::orderBy('material')->get(),
+            $suppliesQuery->get(),
             $vascularCounts,
             $dialyzerCounts,
             $vascularCountsBajas,
@@ -421,6 +465,17 @@ class SupplyController extends Controller
                 $supply->requested_quantity = $qty * $factor;
                 $supply->baja_quantity      = $baja * $factor;
             }
+
+            $supply->quantity_before_reserve = $supply->requested_quantity;
+            $supply->reserve_used = min(
+                max(0, (float) $supply->existencias),
+                $supply->quantity_before_reserve
+            );
+            $supply->requested_quantity = round(
+                $supply->quantity_before_reserve - $supply->reserve_used,
+                2
+            );
+
             return $supply;
         });
     }

@@ -466,7 +466,7 @@ class ScheduleController extends Controller
 
         $isElisio = in_array($typeDialyzer, ['F6ELISIO21H', 'F6ELISIO19H']);
 
-        Supply::all()->each(function ($supply) use ($vascularAccess, $isElisio) {
+        Supply::all()->each(function ($supply) use ($vascularAccess, $isElisio, $order) {
             $applies = false;
 
             if ($supply->type === 'filter') {
@@ -481,7 +481,20 @@ class ScheduleController extends Controller
             }
 
             if ($applies) {
-                $supply->increment('existencias', max(0.01, (float) $supply->units_per_patient));
+                $origin = 'Cancelación posterior a requisición #'.$order->id;
+                $currentOrigin = trim((string) $supply->reserve_origin);
+
+                if ($currentOrigin === '') {
+                    $currentOrigin = $origin;
+                } elseif (! str_contains($currentOrigin, $origin)) {
+                    $currentOrigin .= '; '.$origin;
+                }
+
+                $supply->update([
+                    'existencias' => (float) $supply->existencias
+                        + max(0.01, (float) $supply->units_per_patient),
+                    'reserve_origin' => $currentOrigin,
+                ]);
             }
         });
     }

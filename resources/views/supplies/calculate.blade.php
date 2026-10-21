@@ -131,6 +131,8 @@
                     <th>Material</th>
                     <th>Cantidad Calculada</th>
                     <th class="text-danger">Bajas</th>
+                    <th>Reserva aplicada / disponible</th>
+                    <th>Origen de la reserva</th>
                     <th>Total a Solicitar</th>
                 </tr>
             </thead>
@@ -139,13 +141,20 @@
                     @php
                         $baja  = $supply->baja_quantity ?? 0;
                         $total = $supply->requested_quantity ?? 0;
+                        $beforeReserve = $supply->quantity_before_reserve ?? $total;
+                        $reserveUsed = $supply->reserve_used ?? 0;
                     @endphp
                     <tr>
                         <td>{{ $supply->material }}</td>
-                        <td>{{ $total + $baja }}</td>
+                        <td>{{ $beforeReserve + $baja }}</td>
                         <td class="{{ $baja > 0 ? 'text-danger fw-bold' : '' }}">
                             {{ $baja > 0 ? '-' . $baja : '—' }}
                         </td>
+                        <td>
+                            {{ $reserveUsed > 0 ? '-' . $reserveUsed : '—' }}
+                            <small class="text-muted">/ {{ $supply->existencias }}</small>
+                        </td>
+                        <td>{{ $supply->reserve_origin ?: '—' }}</td>
                         <td><strong>{{ $total }}</strong></td>
                     </tr>
                 @endforeach

@@ -14,6 +14,7 @@ class Supply extends Model
         'for_vascular_access',
         'units_per_patient',
         'existencias',
+        'reserve_origin',
     ];
 
     protected $casts = [

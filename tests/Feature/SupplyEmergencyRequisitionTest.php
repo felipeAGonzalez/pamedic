@@ -97,6 +97,62 @@ class SupplyEmergencyRequisitionTest extends TestCase
         $this->assertSame($orderCount, SupplyOrder::count());
     }
 
+    public function test_reserve_changes_requested_quantity_and_is_only_consumed_when_order_is_generated(): void
+    {
+        $user = $this->user();
+        SupplyOrder::create([
+            'period_start' => '2026-10-01',
+            'period_end' => '2026-10-03',
+            'generated_at' => '2026-10-04 09:00:00',
+            'emergency_to' => '2026-10-04 09:00:00',
+        ]);
+        $this->emergencySession(4, '2026-10-06', '2026-10-06 11:00:00');
+        $partialReserve = Supply::create([
+            'material' => 'Reserva parcial',
+            'type' => 'supply',
+            'for_vascular_access' => 'fistula',
+            'units_per_patient' => 2.5,
+            'existencias' => 1.5,
+            'reserve_origin' => 'Reserva de almacén',
+        ]);
+        $excessReserve = Supply::create([
+            'material' => 'Reserva con sobrante',
+            'type' => 'supply',
+            'for_vascular_access' => 'fistula',
+            'units_per_patient' => 2.5,
+            'existencias' => 4,
+            'reserve_origin' => 'Sobrante anterior',
+        ]);
+
+        $preview = $this->actingAs($user)->get(route('supplies.calculate', [
+            'start_date' => '2026-10-08',
+            'end_date' => '2026-10-10',
+        ]));
+
+        $preview->assertOk();
+        $previewSupplies = $preview->viewData('supplies')->keyBy('id');
+        $this->assertSame(2.5, $previewSupplies[$partialReserve->id]->quantity_before_reserve);
+        $this->assertSame(1.5, $previewSupplies[$partialReserve->id]->reserve_used);
+        $this->assertSame(1.0, $previewSupplies[$partialReserve->id]->requested_quantity);
+        $this->assertSame(1.5, $partialReserve->fresh()->existencias);
+
+        $this->actingAs($user)->post(route('supplies.pdf'), [
+            'start_date' => '2026-10-08',
+            'end_date' => '2026-10-10',
+        ])->assertOk();
+
+        $order = SupplyOrder::latest('id')->firstOrFail();
+        $this->assertDatabaseHas('supply_order_items', [
+            'supply_order_id' => $order->id,
+            'supply_id' => $partialReserve->id,
+            'requested_quantity' => 1,
+        ]);
+        $this->assertSame(0.0, $partialReserve->fresh()->existencias);
+        $this->assertNull($partialReserve->fresh()->reserve_origin);
+        $this->assertSame(1.5, $excessReserve->fresh()->existencias);
+        $this->assertSame('Sobrante anterior', $excessReserve->fresh()->reserve_origin);
+    }
+
     private function emergencySession(int $patientId, string $date, string $assignedAt): void
     {
         $activePatientId = DB::table('active_patient')->insertGetId([
@@ -167,6 +223,7 @@ class SupplyEmergencyRequisitionTest extends TestCase
             $table->string('for_vascular_access');
             $table->decimal('units_per_patient', 10, 2)->default(1);
             $table->decimal('existencias', 10, 2)->default(0);
+            $table->text('reserve_origin')->nullable();
             $table->timestamps();
         });
         Schema::create('supply_orders', function (Blueprint $table) {
