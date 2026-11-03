@@ -24,6 +24,8 @@ use App\Models\User;
 use App\Models\Medicine;
 use App\Models\Patient;
 use App\Models\SchedulePatients;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 
 class TreatmentController extends Controller
 {
@@ -176,6 +178,335 @@ class TreatmentController extends Controller
             OxygenTherapy::class,
             DoubleVerification::class,
         ];
+    }
+
+    public function copyPreviousTreatment(Request $request, ActivePatient $activePatient)
+    {
+        abort_unless($request->user()->position === 'ROOT', 403);
+
+        try {
+            \DB::transaction(function () use ($activePatient) {
+                $currentTreatment = ActivePatient::whereKey($activePatient->id)
+                    ->where('active', 0)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $currentTreatment) {
+                    throw ValidationException::withMessages([
+                        'Error' => 'Tratamiento activo no encontrado.',
+                    ]);
+                }
+
+                $currentAssignment = NursePatient::where([
+                    'active_patient_id' => $currentTreatment->id,
+                    'history' => 0,
+                ])->lockForUpdate()->first();
+
+                if (! $currentAssignment) {
+                    throw ValidationException::withMessages([
+                        'Error' => 'Tratamiento activo no encontrado.',
+                    ]);
+                }
+
+                $currentDate = Carbon::parse($currentTreatment->date)->startOfDay();
+                $previousAssignment = NursePatient::query()
+                    ->select('nurse_patient.*')
+                    ->join('active_patient as previous_active', 'previous_active.id', '=', 'nurse_patient.active_patient_id')
+                    ->where('previous_active.patient_id', $currentTreatment->patient_id)
+                    ->where('nurse_patient.history', 1)
+                    ->whereDate('previous_active.date', '<', $currentDate->toDateString())
+                    ->whereDate('previous_active.date', '>=', $currentDate->copy()->subDays(30)->toDateString())
+                    ->orderByDesc('previous_active.date')
+                    ->orderByDesc('nurse_patient.id')
+                    ->first();
+
+                if (! $previousAssignment) {
+                    throw ValidationException::withMessages([
+                        'Error' => 'No existe un tratamiento anterior dentro de los últimos 30 días.',
+                    ]);
+                }
+
+                $previousActivePatient = ActivePatient::findOrFail($previousAssignment->active_patient_id);
+                $sessionStart = $previousAssignment->created_at
+                    ?? Carbon::parse($previousActivePatient->date)->startOfDay();
+                $sessionEnd = $previousAssignment->finalized_at
+                    ?? $previousAssignment->updated_at
+                    ?? Carbon::parse($previousActivePatient->date)->endOfDay();
+
+                $this->copyPreviousClinicalSections(
+                    $currentTreatment,
+                    $previousAssignment,
+                    Carbon::parse($sessionStart),
+                    Carbon::parse($sessionEnd)
+                );
+            }, 3);
+        } catch (ValidationException $exception) {
+            $message = $exception->errors()['Error'][0]
+                ?? 'No fue posible llenar el tratamiento con la sesión anterior.';
+
+            return redirect()->route('treatment.index')->with('Error', $message);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            \Log::error('Error al copiar el tratamiento anterior.', [
+                'active_patient_id' => $activePatient->id,
+                'user_id' => $request->user()->id,
+            ]);
+
+            return redirect()->route('treatment.index')
+                ->with('Error', 'No fue posible llenar el tratamiento con la sesión anterior.');
+        }
+
+        return redirect()->route('treatment.index')
+            ->with('success', 'Tratamiento llenado con la información clínica del tratamiento anterior.');
+    }
+
+    private function copyPreviousClinicalSections(
+        ActivePatient $currentTreatment,
+        NursePatient $previousAssignment,
+        Carbon $sessionStart,
+        Carbon $sessionEnd
+    ): void {
+        $patientId = $currentTreatment->patient_id;
+        $now = now();
+
+        $monitoringSource = $this->previousSessionQuery(
+            DialysisMonitoring::class,
+            $patientId,
+            $sessionStart,
+            $sessionEnd
+        )->latest('id')->first();
+
+        $scheduledPatient = SchedulePatients::where('patient_id', $patientId)
+            ->whereDate('date', $currentTreatment->date)
+            ->with('machine')
+            ->first();
+        $machineNumber = $scheduledPatient
+            ? ($scheduledPatient->machine?->machine_number ?? $scheduledPatient->machine_id)
+            : ($monitoringSource?->machine_number ?? '');
+
+        $monitoring = $this->copySingleClinicalRecord(
+            $monitoringSource,
+            DialysisMonitoring::where(['patient_id' => $patientId, 'history' => 0])
+                ->lockForUpdate()
+                ->first(),
+            $patientId,
+            ['date_hour', 'machine_number', 'session_number'],
+            [
+                'date_hour' => $now,
+                'machine_number' => $machineNumber,
+                'session_number' => $monitoringSource
+                    ? (int) $monitoringSource->session_number + 1
+                    : 1,
+            ]
+        );
+
+        $prescriptionSource = $this->previousSessionQuery(
+            DialysisPrescription::class,
+            $patientId,
+            $sessionStart,
+            $sessionEnd
+        )->latest('id')->first();
+        $this->copySingleClinicalRecord(
+            $prescriptionSource,
+            DialysisPrescription::where(['patient_id' => $patientId, 'history' => 0])
+                ->lockForUpdate()
+                ->first(),
+            $patientId
+        );
+
+        $postSource = $this->previousSessionQuery(
+            PostHemoDialysis::class,
+            $patientId,
+            $sessionStart,
+            $sessionEnd
+        )->latest('id')->first();
+        $preSource = $this->previousSessionQuery(
+            PreHemodialysis::class,
+            $patientId,
+            $sessionStart,
+            $sessionEnd
+        )->latest('id')->first();
+        $previousFinalWeight = $postSource?->weight_out ?? $preSource?->previous_final_weight;
+        $previousWeightGain = is_numeric($preSource?->initial_weight) && is_numeric($previousFinalWeight)
+            ? round((float) $preSource->initial_weight - (float) $previousFinalWeight, 2)
+            : ($preSource?->previous_weight_gain ?? 0);
+
+        $this->copySingleClinicalRecord(
+            $preSource,
+            PreHemodialysis::where(['patient_id' => $patientId, 'history' => 0])
+                ->lockForUpdate()
+                ->first(),
+            $patientId,
+            ['previous_initial_weight', 'previous_final_weight', 'previous_weight_gain', 'reuse_number'],
+            [
+                'previous_initial_weight' => $preSource?->initial_weight ?? 0,
+                'previous_final_weight' => $previousFinalWeight ?? 0,
+                'previous_weight_gain' => $previousWeightGain,
+                'reuse_number' => $preSource ? (int) $preSource->reuse_number + 1 : 1,
+            ]
+        );
+
+        $this->copySingleClinicalRecord(
+            $postSource,
+            PostHemoDialysis::where(['patient_id' => $patientId, 'history' => 0])
+                ->lockForUpdate()
+                ->first(),
+            $patientId
+        );
+
+        $monitoringTime = $monitoring?->date_hour
+            ? Carbon::parse($monitoring->date_hour)
+            : $now;
+
+        $transSources = $this->previousSessionQuery(
+            TransHemodialysis::class,
+            $patientId,
+            $sessionStart,
+            $sessionEnd
+        )->orderBy('time')->orderBy('id')->get();
+        $transTargets = TransHemodialysis::where(['patient_id' => $patientId, 'history' => 0])
+            ->orderBy('time')
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get();
+        foreach ($transSources as $index => $source) {
+            $this->copyClinicalRecord(
+                $source,
+                $transTargets->get($index),
+                $patientId,
+                ['time'],
+                ['time' => $monitoringTime->copy()->addMinutes($index * 15)->format('H:i:s')]
+            );
+        }
+
+        $evaluationSources = $this->previousSessionQuery(
+            EvaluationRisk::class,
+            $patientId,
+            $sessionStart,
+            $sessionEnd
+        )->orderBy('hour')->orderBy('id')->get();
+        $evaluationTargets = EvaluationRisk::where(['patient_id' => $patientId, 'history' => 0])
+            ->lockForUpdate()
+            ->get();
+        foreach ($evaluationSources as $index => $source) {
+            $target = $evaluationTargets->firstWhere('fase', $source->fase)
+                ?? $evaluationTargets->get($index);
+            $this->copyClinicalRecord(
+                $source,
+                $target,
+                $patientId,
+                ['hour'],
+                ['hour' => $monitoringTime->copy()->addHours($index)->format('H:i:s')]
+            );
+        }
+
+        $nurseSources = $this->previousSessionQuery(
+            NurseEvaluation::class,
+            $patientId,
+            $sessionStart,
+            $sessionEnd
+        )->orderBy('id')->get();
+        $nurseTargets = NurseEvaluation::where(['patient_id' => $patientId, 'history' => 0])
+            ->lockForUpdate()
+            ->get();
+        foreach ($nurseSources as $index => $source) {
+            $target = $nurseTargets->firstWhere('fase', $source->fase)
+                ?? $nurseTargets->get($index);
+            $this->copyClinicalRecord($source, $target, $patientId);
+        }
+
+        foreach ([TimeOut::class, Verification::class] as $model) {
+            $source = $this->previousSessionQuery(
+                $model,
+                $patientId,
+                $sessionStart,
+                $sessionEnd
+            )->latest('id')->first();
+            $target = $model::where(['patient_id' => $patientId, 'history' => 0])
+                ->lockForUpdate()
+                ->first();
+            $this->copySingleClinicalRecord($source, $target, $patientId);
+        }
+
+        \Log::info('Tratamiento anterior copiado por ROOT.', [
+            'active_patient_id' => $currentTreatment->id,
+            'previous_nurse_patient_id' => $previousAssignment->id,
+            'user_id' => Auth::id(),
+        ]);
+    }
+
+    private function previousSessionQuery(
+        string $model,
+        int $patientId,
+        Carbon $sessionStart,
+        Carbon $sessionEnd
+    ) {
+        return $model::where('patient_id', $patientId)
+            ->where('history', 1)
+            ->whereBetween('created_at', [$sessionStart, $sessionEnd]);
+    }
+
+    private function copySingleClinicalRecord(
+        ?Model $source,
+        ?Model $target,
+        int $patientId,
+        array $excluded = [],
+        array $currentValues = []
+    ): ?Model {
+        if (! $source) {
+            return $target;
+        }
+
+        return $this->copyClinicalRecord($source, $target, $patientId, $excluded, $currentValues);
+    }
+
+    private function copyClinicalRecord(
+        Model $source,
+        ?Model $target,
+        int $patientId,
+        array $excluded = [],
+        array $currentValues = []
+    ): Model {
+        $excluded = array_merge(
+            ['id', 'patient_id', 'history', 'created_at', 'updated_at'],
+            $excluded
+        );
+        $values = collect($source->getAttributes())->except($excluded)->all();
+
+        if ($target) {
+            foreach ($values as $field => $value) {
+                if ($this->clinicalValueIsBlank($target->getAttribute($field))) {
+                    $target->setAttribute($field, $value);
+                }
+            }
+            foreach ($currentValues as $field => $value) {
+                if ($this->clinicalValueIsBlank($target->getAttribute($field))) {
+                    $target->setAttribute($field, $value);
+                }
+            }
+            if ($target->isDirty()) {
+                $target->save();
+            }
+
+            return $target;
+        }
+
+        $model = $source->newInstance();
+        $model->forceFill(array_merge($values, $currentValues, [
+            'patient_id' => $patientId,
+            'history' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]));
+        $model->save();
+
+        return $model;
+    }
+
+    private function clinicalValueIsBlank($value): bool
+    {
+        return $value === null || $value === '';
     }
 
     public function createWeight(Request $request,$id)

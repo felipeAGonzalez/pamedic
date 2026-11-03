@@ -101,6 +101,10 @@
                         </td>
                         <td>
                             @if($user->position === 'ROOT')
+                                <form action="{{ route('treatment.copyPrevious', ['activePatient' => $patient->activePatient->id]) }}" method="POST" class="mb-2" onsubmit="return confirm('¿Desea llenar los apartados vacíos con el tratamiento anterior? Esta acción no copiará Oxigenoterapia ni Medicamentos.');">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary">Llenar con tratamiento anterior</button>
+                                </form>
                                 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#finalizeTreatment{{ $patient->id }}">
                                     Finalizar Tratamiento
                                 </button>

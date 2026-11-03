@@ -176,6 +176,7 @@ Route::group(['middleware'=>['auth', 'receptionist.scope']],function () {
     Route::get('/treatment/create/weight/{id}', [TreatmentController::class, 'createWeight'])->name('treatment.createWeight');
     Route::get('/treatment/create/timeout/{id}', [TreatmentController::class, 'createTimeOut'])->name('treatment.createTimeOut');
     Route::delete('/treatment/assignment/{id}', [TreatmentController::class, 'undoAssignment'])->middleware('position:NURSE,MANAGER')->name('treatment.assignment.undo');
+    Route::post('/treatment/{activePatient}/copy-previous', [TreatmentController::class, 'copyPreviousTreatment'])->name('treatment.copyPrevious');
     Route::patch('/treatment/finalize/{id}', [TreatmentController::class, 'finaliceTreatment'])->middleware('position:NURSE,MANAGER,ROOT')->name('treatment.finalize');
     Route::delete('/treatment/fill/{id}', [TreatmentController::class, 'destroy'])->name('treatment.destroy');
 
