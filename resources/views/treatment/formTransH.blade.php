@@ -35,7 +35,7 @@
                                     <input type="hidden" name="patient_id[]" value="{{ $item->patient_id }}" class="form-control" required>
                                 </td>
                                 <td>
-                                    <input type="time" name="time[]" value="{{ $item->time }}" class="form-control" required readonly>
+                                    <input type="time" name="time[]" value="{{ $item->time ? \Carbon\Carbon::parse($item->time)->format('H:i') : '' }}" class="form-control" required readonly>
                                 </td>
                                 <td>
                                     <input type="number" name="arterial_pressure_sistolica[]" value="{{ $item->arterial_pressure != '0' ? explode('/', $item->arterial_pressure)[0] : 0 }}" class="form-control" onclick="this.value=''">

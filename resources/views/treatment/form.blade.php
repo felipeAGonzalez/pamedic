@@ -11,7 +11,7 @@
     <div class="col-md-6">
         <div class="form-group">
             <label for="date_hour">Fecha y Hora:</label>
-            <input type="datetime-local" name="date_hour" id="date_hour" class="form-control"  value="{{ $dialysisMonitoring->date_hour ?? '' }}">
+            <input type="datetime-local" name="date_hour" id="date_hour" class="form-control" value="{{ !empty($dialysisMonitoring->date_hour) ? \Carbon\Carbon::parse($dialysisMonitoring->date_hour)->format('Y-m-d\TH:i') : '' }}">
         </div>
         <div class="form-group">
             <label for="machine_number">Número de Máquina:</label>
