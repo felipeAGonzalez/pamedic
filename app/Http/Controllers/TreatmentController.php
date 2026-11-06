@@ -24,6 +24,7 @@ use App\Models\User;
 use App\Models\Medicine;
 use App\Models\Patient;
 use App\Models\SchedulePatients;
+use App\Services\TransHemodialysisScheduleService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
@@ -315,34 +316,34 @@ class TreatmentController extends Controller
             $patientId
         );
 
-        $postSource = $this->previousSessionQuery(
-            PostHemoDialysis::class,
-            $patientId,
-            $sessionStart,
-            $sessionEnd
-        )->latest('id')->first();
         $preSource = $this->previousSessionQuery(
             PreHemodialysis::class,
             $patientId,
             $sessionStart,
             $sessionEnd
         )->latest('id')->first();
-        $previousFinalWeight = $postSource?->weight_out ?? $preSource?->previous_final_weight;
-        $previousWeightGain = is_numeric($preSource?->initial_weight) && is_numeric($previousFinalWeight)
-            ? round((float) $preSource->initial_weight - (float) $previousFinalWeight, 2)
-            : ($preSource?->previous_weight_gain ?? 0);
-
+        $postSource = $this->previousSessionQuery(
+            PostHemoDialysis::class,
+            $patientId,
+            $sessionStart,
+            $sessionEnd
+        )->latest('id')->first();
         $this->copySingleClinicalRecord(
             $preSource,
             PreHemodialysis::where(['patient_id' => $patientId, 'history' => 0])
                 ->lockForUpdate()
                 ->first(),
             $patientId,
-            ['previous_initial_weight', 'previous_final_weight', 'previous_weight_gain', 'reuse_number'],
             [
-                'previous_initial_weight' => $preSource?->initial_weight ?? 0,
-                'previous_final_weight' => $previousFinalWeight ?? 0,
-                'previous_weight_gain' => $previousWeightGain,
+                'previous_initial_weight',
+                'previous_final_weight',
+                'previous_weight_gain',
+                'initial_weight',
+                'dry_weight',
+                'weight_gain',
+                'reuse_number',
+            ],
+            [
                 'reuse_number' => $preSource ? (int) $preSource->reuse_number + 1 : 1,
             ]
         );
@@ -375,8 +376,22 @@ class TreatmentController extends Controller
                 $source,
                 $transTargets->get($index),
                 $patientId,
-                ['time'],
-                ['time' => $monitoringTime->copy()->addMinutes($index * 15)->format('H:i:s')]
+                [
+                    'time',
+                    'arterial_pressure',
+                    'mean_pressure',
+                    'arterial_pressure_monitor',
+                    'venous_pressure_monitor',
+                    'transmembrane_pressure_monitor',
+                ],
+                [
+                    'time' => $monitoringTime->copy()->addMinutes($index * 15)->format('H:i:s'),
+                    'arterial_pressure' => 0,
+                    'mean_pressure' => 0,
+                    'arterial_pressure_monitor' => -200,
+                    'venous_pressure_monitor' => 100,
+                    'transmembrane_pressure_monitor' => 100,
+                ]
             );
         }
 
@@ -428,6 +443,8 @@ class TreatmentController extends Controller
                 ->first();
             $this->copySingleClinicalRecord($source, $target, $patientId);
         }
+
+        app(TransHemodialysisScheduleService::class)->syncForPatient($patientId);
 
         \Log::info('Tratamiento anterior copiado por ROOT.', [
             'active_patient_id' => $currentTreatment->id,
@@ -513,11 +530,11 @@ class TreatmentController extends Controller
     {
         $patient = Patient::where('id',$id)->first();
         $preHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  0])->first();
+        $prevPreHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
+        $prevPostHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('created_at','DESC')->first();
         if ($preHemodialysis) {
-            return view('treatment.formWeight', compact('preHemodialysis','patient'));
+            return view('treatment.formWeight', compact('preHemodialysis','prevPreHemodialysis','prevPostHemoDialysis','patient'));
         }else{
-            $prevPreHemodialysis = PreHemodialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('id','DESC')->first();
-            $prevPostHemoDialysis = PostHemoDialysis::where(['patient_id' => $id, 'history' =>  1])->orderBy('created_at','DESC')->first();
             if ($prevPreHemodialysis) {
                 return view('treatment.formWeight', compact('prevPreHemodialysis','prevPostHemoDialysis','patient'));
             }
@@ -601,38 +618,13 @@ class TreatmentController extends Controller
         if (!$dialysisPrescription) {
             return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar la prescripción de diálisis');
         }
-        $times = ($dialysisPrescription->time / 15 ) + 1;
-
-        $scheduleUltrafilter = $dialysisPrescription->schedule_ultrafilter / ($times -1);
         $dialysisMonitoring = DialysisMonitoring::where(['patient_id' => $id, 'history' =>  0])->orderBy('date_hour','DESC')->first();
         if (!$dialysisMonitoring) {
             return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar el monitoreo de diálisis');
         }
-        $hour = date('H:i', strtotime($dialysisMonitoring->date_hour));
-        $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
-        if (($transHemodialysis->count() > 0)) {
-                return view('treatment.formTransH', compact('transHemodialysis','patient'));
-            }
-        for ($i=0; $i <$times ; $i++) {
-                TransHemodialysis::create([
-                    'patient_id' => $id,
-                    'time' => date('H:i', strtotime($hour) + ($i * 15 * 60)),
-                    'arterial_pressure' => 0,
-                    'mean_pressure' => 0,
-                    'heart_rate' => 0,
-                    'respiratory_rate' => 18,
-                    'temperature' => 36.5,
-                    'arterial_pressure_monitor' => -200,
-                    'venous_pressure_monitor' => 100,
-                    'transmembrane_pressure_monitor' => 100,
-                    'blood_flow' => 0,
-                    'ultrafiltration' => $i * $scheduleUltrafilter,
-                    'heparin' => 0,
-                    'observations' => '',
-                ]);
-            }
-            $transHemodialysis = TransHemodialysis::where(['patient_id' => $id, 'history' =>  0])->orderBy('id','ASC')->get();
-            return view('treatment.formTransH', compact('transHemodialysis','patient'));
+        $transHemodialysis = app(TransHemodialysisScheduleService::class)->syncForPatient($id);
+
+        return view('treatment.formTransH', compact('transHemodialysis','patient'));
         }
 
     public function createPostHemo(Request $request,$id)

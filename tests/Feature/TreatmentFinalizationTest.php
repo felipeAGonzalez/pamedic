@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\ActivePatient;
+use App\Models\DialysisMonitoring;
+use App\Models\DialysisPrescription;
 use App\Models\NursePatient;
 use App\Models\Patient;
+use App\Models\TransHemodialysis;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Carbon;
@@ -250,9 +253,9 @@ class TreatmentFinalizationTest extends TestCase
 
         $historicalRows = [
             'dialysis_monitoring' => ['date_hour' => '2026-08-10 06:00:00', 'machine_number' => '2', 'session_number' => 8, 'vascular_access' => 'fistula'],
-            'dialysis_prescription' => ['time' => '180', 'blood_flux' => '350'],
-            'pre_hemodialysis' => ['initial_weight' => 70, 'dry_weight' => 65, 'reuse_number' => 4],
-            'trans_hemodialysis' => ['time' => '06:00:00', 'heart_rate' => 75],
+            'dialysis_prescription' => ['time' => '180', 'blood_flux' => '350', 'schedule_ultrafilter' => 2300],
+            'pre_hemodialysis' => ['previous_initial_weight' => 68, 'previous_final_weight' => 64, 'previous_weight_gain' => 4, 'initial_weight' => 70, 'dry_weight' => 65, 'weight_gain' => 5, 'reuse_number' => 4],
+            'trans_hemodialysis' => ['time' => '06:00:00', 'heart_rate' => 75, 'arterial_pressure' => '120/80', 'mean_pressure' => 93, 'arterial_pressure_monitor' => -180, 'venous_pressure_monitor' => 120, 'transmembrane_pressure_monitor' => 110],
             'post_hemodialysis' => ['weight_out' => 66],
             'evaluation_risk' => ['fase' => 'Pre-Hemodiálisis', 'hour' => '06:00:00', 'result' => '4'],
             'nurse_valuation' => ['fase' => 'Pre-Hemodiálisis', 'nurse_valuation' => 'Valoración anterior', 'nurse_intervention' => 'Intervención anterior'],
@@ -323,12 +326,23 @@ class TreatmentFinalizationTest extends TestCase
             'patient_id' => $patient->id,
             'history' => 0,
             'reuse_number' => 5,
+            'previous_initial_weight' => null,
+            'previous_final_weight' => null,
+            'previous_weight_gain' => null,
+            'initial_weight' => null,
+            'dry_weight' => null,
+            'weight_gain' => null,
         ]);
         $this->assertDatabaseHas('trans_hemodialysis', [
             'patient_id' => $patient->id,
             'history' => 0,
             'time' => '02:00:00',
             'heart_rate' => 75,
+            'arterial_pressure' => '0',
+            'mean_pressure' => 0,
+            'arterial_pressure_monitor' => -200,
+            'venous_pressure_monitor' => 100,
+            'transmembrane_pressure_monitor' => 100,
         ]);
         $this->assertDatabaseHas('time_out', [
             'patient_id' => $patient->id,
@@ -343,6 +357,50 @@ class TreatmentFinalizationTest extends TestCase
             'patient_id' => $patient->id,
             'history' => 0,
         ]);
+
+        $activePrescription = DialysisPrescription::where([
+            'patient_id' => $patient->id,
+            'history' => 0,
+        ])->firstOrFail();
+        $activePrescription->update([
+            'time' => 160,
+            'schedule_ultrafilter' => 2400,
+        ]);
+        $reducedRows = TransHemodialysis::where([
+            'patient_id' => $patient->id,
+            'history' => 0,
+        ])->orderBy('time')->get();
+        $this->assertCount(12, $reducedRows);
+        $this->assertSame('02:00:00', $reducedRows->first()->time);
+        $this->assertSame('04:40:00', $reducedRows->last()->time);
+        $this->assertSame(2400, (int) $reducedRows->last()->ultrafiltration);
+
+        $activePrescription->update(['time' => 200]);
+        $expandedRows = TransHemodialysis::where([
+            'patient_id' => $patient->id,
+            'history' => 0,
+        ])->orderBy('time')->get();
+        $this->assertCount(15, $expandedRows);
+        $this->assertSame('05:20:00', $expandedRows->last()->time);
+        $this->assertSame(2400, (int) $expandedRows->last()->ultrafiltration);
+
+        DialysisMonitoring::where([
+            'patient_id' => $patient->id,
+            'history' => 0,
+        ])->firstOrFail()->update(['date_hour' => '2026-08-18 03:00:00']);
+        $this->assertSame(
+            '06:20:00',
+            TransHemodialysis::where(['patient_id' => $patient->id, 'history' => 0])
+                ->orderByDesc('time')
+                ->value('time')
+        );
+
+        $this->actingAs($root)
+            ->get(route('treatment.createWeight', $patient->id))
+            ->assertOk()
+            ->assertSee('value="68"', false)
+            ->assertSee('value="66"', false)
+            ->assertSee('value="65"', false);
     }
 
     public function test_non_root_cannot_copy_previous_treatment(): void
@@ -549,6 +607,7 @@ class TreatmentFinalizationTest extends TestCase
         });
         Schema::table('dialysis_prescription', function (Blueprint $table) {
             $table->string('blood_flux')->nullable();
+            $table->decimal('schedule_ultrafilter')->nullable();
         });
         Schema::table('pre_hemodialysis', function (Blueprint $table) {
             $table->decimal('previous_initial_weight')->nullable();
@@ -556,10 +615,22 @@ class TreatmentFinalizationTest extends TestCase
             $table->decimal('previous_weight_gain')->nullable();
             $table->decimal('initial_weight')->nullable();
             $table->decimal('dry_weight')->nullable();
+            $table->decimal('weight_gain')->nullable();
             $table->integer('reuse_number')->nullable();
         });
         Schema::table('trans_hemodialysis', function (Blueprint $table) {
             $table->integer('heart_rate')->nullable();
+            $table->integer('respiratory_rate')->nullable();
+            $table->decimal('temperature')->nullable();
+            $table->string('arterial_pressure')->nullable();
+            $table->integer('mean_pressure')->nullable();
+            $table->integer('arterial_pressure_monitor')->nullable();
+            $table->integer('venous_pressure_monitor')->nullable();
+            $table->integer('transmembrane_pressure_monitor')->nullable();
+            $table->integer('blood_flow')->nullable();
+            $table->integer('ultrafiltration')->nullable();
+            $table->integer('heparin')->nullable();
+            $table->text('observations')->nullable();
         });
         Schema::table('post_hemodialysis', function (Blueprint $table) {
             $table->decimal('weight_out')->nullable();

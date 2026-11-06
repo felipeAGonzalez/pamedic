@@ -16,11 +16,11 @@
             </div>
             <div class="form-group">
             <label for="previous_initial_weight">Peso Inicial Anterior</label>
-            <input type="text" class="form-control" id="previous_initial_weight" name="previous_initial_weight" value="{{ old('previous_initial_weight', $prevPreHemodialysis->previous_initial_weight ?? $preHemodialysis->previous_initial_weight ?? '') }}" oninput="calculateWeights()">
+            <input type="text" class="form-control" id="previous_initial_weight" name="previous_initial_weight" value="{{ old('previous_initial_weight', $preHemodialysis->previous_initial_weight ?? $prevPreHemodialysis->previous_initial_weight ?? '') }}" oninput="calculateWeights()">
             </div>
             <div class="form-group">
             <label for="previous_final_weight">Peso Final Anterior</label>
-            <input type="text" class="form-control" id="previous_final_weight" name="previous_final_weight" value="{{ old('previous_final_weight', $prevPostHemoDialysis->weight_out ?? $preHemodialysis->previous_final_weight ?? '') }}" oninput="calculateWeights()">
+            <input type="text" class="form-control" id="previous_final_weight" name="previous_final_weight" value="{{ old('previous_final_weight', $preHemodialysis->previous_final_weight ?? $prevPostHemoDialysis->weight_out ?? '') }}" oninput="calculateWeights()">
             </div>
             <div class="form-group">
             <label for="previous_weight_gain">Peso Ganado Anterior</label>
@@ -28,7 +28,7 @@
             </div>
             <div class="form-group">
             <label for="dry_weight">Peso Seco</label>
-            <input type="text" class="form-control" id="dry_weight" name="dry_weight" value="{{ old('dry_weight', $prevPreHemodialysis->dry_weight ?? $preHemodialysis->dry_weight ?? '') }}" oninput="calculateWeights()">
+            <input type="text" class="form-control" id="dry_weight" name="dry_weight" value="{{ old('dry_weight', $preHemodialysis->dry_weight ?? $prevPreHemodialysis->dry_weight ?? '') }}" oninput="calculateWeights()">
             </div>
             <div class="form-group">
             <label for="weight_gain">Peso Ganado</label>
