@@ -51,40 +51,40 @@
                                     <input type="number" name="heart_rate[]" value="{{ $item->heart_rate }}" class="form-control" onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <select name="respiratory_rate[]" class="form-control" required>
+                                    <select name="respiratory_rate[]" class="form-control">
                                         @for ($i = 8; $i <= 30; $i++)
                                             <option value="{{ $i }}" {{ $item->respiratory_rate == $i ? 'selected' : '' }}>{{ $i }}</option>
                                         @endfor
                                     </select>
                                 </td>
                                 <td>
-                                    <select name="temperature[]" class="form-control" required>
+                                    <select name="temperature[]" class="form-control">
                                         @for ($i = 35; $i <= 40; $i += 0.5)
                                             <option value="{{ $i }}" {{ $item->temperature == $i ? 'selected' : '' }}>{{ $i }}</option>
                                         @endfor
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" name="arterial_pressure_monitor[]" value="{{ $item->arterial_pressure_monitor }}" class="form-control" required onclick="this.value=''">
+                                    <input type="number" name="arterial_pressure_monitor[]" value="{{ $item->arterial_pressure_monitor }}" class="form-control" onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="venous_pressure_monitor[]" value="{{ $item->venous_pressure_monitor }}" class="form-control" required onclick="this.value=''">
+                                    <input type="number" name="venous_pressure_monitor[]" value="{{ $item->venous_pressure_monitor }}" class="form-control" onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="transmembrane_pressure_monitor[]" value="{{ $item->transmembrane_pressure_monitor }}" class="form-control" required onclick="this.value=''">
+                                    <input type="number" name="transmembrane_pressure_monitor[]" value="{{ $item->transmembrane_pressure_monitor }}" class="form-control" onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <select name="blood_flow[]" class="form-control" required>
+                                    <select name="blood_flow[]" class="form-control">
                                         @for ($i = 200; $i <= 400; $i += 10)
                                             <option value="{{ $i }}" {{ $item->blood_flow == $i ? 'selected' : '' }}>{{ $i }}</option>
                                         @endfor
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" name="ultrafiltration[]" value="{{ $item->ultrafiltration }}" class="form-control" required onclick="this.value=''">
+                                    <input type="number" name="ultrafiltration[]" value="{{ $item->ultrafiltration }}" class="form-control" onclick="this.value=''">
                                 </td>
                                 <td>
-                                    <input type="number" name="heparin[]" value="{{ $item->heparin }}" class="form-control" required onclick="this.value=''">
+                                    <input type="number" name="heparin[]" value="{{ $item->heparin }}" class="form-control" onclick="this.value=''">
                                 </td>
                                 <td>
                                     <input type="text" name="observations[]" value="{{ $item->observations }}" class="form-control">

@@ -448,6 +448,45 @@ class TreatmentFinalizationTest extends TestCase
             ->assertSessionHas('Error', 'No existe un tratamiento anterior dentro de los últimos 30 días.');
     }
 
+    public function test_trans_hemodialysis_accepts_mobile_time_and_saves_partial_data(): void
+    {
+        $nurse = $this->user('NURSE');
+        $patient = $this->patient();
+
+        TransHemodialysis::create([
+            'patient_id' => $patient->id,
+            'time' => '09:00:00',
+            'arterial_pressure' => '120/80',
+            'mean_pressure' => 93,
+            'heart_rate' => 70,
+            'respiratory_rate' => 18,
+            'temperature' => 36.5,
+            'arterial_pressure_monitor' => -200,
+            'venous_pressure_monitor' => 100,
+            'transmembrane_pressure_monitor' => 100,
+            'blood_flow' => 300,
+            'ultrafiltration' => 0,
+            'heparin' => 0,
+            'history' => 0,
+        ]);
+
+        $this->actingAs($nurse)->post(route('treatment.fillTransHemo'), [
+            'patient_id' => [$patient->id],
+            'time' => ['09:00'],
+            'heart_rate' => [82],
+        ])->assertRedirect(route('treatment.index'))
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('success', 'Transhemodiálisis guardada correctamente.');
+
+        $this->assertDatabaseHas('trans_hemodialysis', [
+            'patient_id' => $patient->id,
+            'time' => '09:00:00',
+            'heart_rate' => 82,
+            'arterial_pressure' => '120/80',
+            'mean_pressure' => 93,
+        ]);
+    }
+
     private function treatment(User $assignedUser, string $date, int $scheduleId): array
     {
         $patient = $this->patient();

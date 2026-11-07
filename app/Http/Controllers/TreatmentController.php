@@ -909,43 +909,77 @@ class TreatmentController extends Controller
     }
     public function fillTransHemo(Request $request){
 
-        $validator = $request->validate([
-            'time.*' => 'required|date_format:H:i:s',
+        $request->validate([
+            'patient_id' => 'required|array',
+            'patient_id.*' => 'required|integer|exists:patient,id',
+            'time' => 'required|array',
+            'time.*' => 'required|date_format:H:i',
             'arterial_pressure_sistolica.*' => 'nullable|numeric',
             'arterial_pressure_diastolica.*' => 'nullable|numeric',
-            'mean_pressure.*' => 'required|numeric',
-            'heart_rate.*' => 'required|numeric',
-            'respiratory_rate.*' => 'required|numeric',
-            'temperature.*' => 'required|numeric',
-            'arterial_pressure_monitor.*' => 'required|string',
-            'venous_pressure_monitor.*' => 'required|numeric',
-            'transmembrane_pressure_monitor.*' => 'required|numeric',
-            'blood_flow.*' => 'required|numeric',
-            'ultrafiltration.*' => 'required|numeric',
-            'heparin.*' => 'required|numeric',
+            'mean_pressure.*' => 'nullable|numeric',
+            'heart_rate.*' => 'nullable|numeric',
+            'respiratory_rate.*' => 'nullable|numeric',
+            'temperature.*' => 'nullable|numeric',
+            'arterial_pressure_monitor.*' => 'nullable|numeric',
+            'venous_pressure_monitor.*' => 'nullable|numeric',
+            'transmembrane_pressure_monitor.*' => 'nullable|numeric',
+            'blood_flow.*' => 'nullable|numeric',
+            'ultrafiltration.*' => 'nullable|numeric',
+            'heparin.*' => 'nullable|numeric',
             'observations.*' => 'nullable|string',
+        ], [
+            'time.*.required' => 'La hora de cada registro es obligatoria.',
+            'time.*.date_format' => 'La hora debe tener un formato válido.',
+            '*.numeric' => 'Los valores clínicos capturados deben ser numéricos.',
         ]);
+
         foreach ($request->input('time') as $key => $value) {
-            TransHemodialysis::updateOrCreate(
-            ['patient_id' => $request->input('patient_id'),
-             'time' => $value, 'history' => 0],
-            [
-                'arterial_pressure' => floatval($request->input('arterial_pressure_sistolica')[$key]).'/'.floatval($request->input('arterial_pressure_diastolica')[$key]),
-                'mean_pressure' => $request->input('mean_pressure')[$key],
-                'heart_rate' => $request->input('heart_rate')[$key],
-                'respiratory_rate' => $request->input('respiratory_rate')[$key],
-                'temperature' => $request->input('temperature')[$key],
-                'arterial_pressure_monitor' => $request->input('arterial_pressure_monitor')[$key],
-                'venous_pressure_monitor' => $request->input('venous_pressure_monitor')[$key],
-                'transmembrane_pressure_monitor' => $request->input('transmembrane_pressure_monitor')[$key],
-                'blood_flow' => $request->input('blood_flow')[$key],
-                'ultrafiltration' => $request->input('ultrafiltration')[$key],
-                'heparin' => $request->input('heparin')[$key],
-                'observations' => $request->input('observations')[$key],
-            ]
-            );
+            $time = Carbon::createFromFormat('H:i', $value)->format('H:i:s');
+            $transHemodialysis = TransHemodialysis::where([
+                'patient_id' => $request->input("patient_id.$key"),
+                'time' => $time,
+                'history' => 0,
+            ])->first();
+
+            if (! $transHemodialysis) {
+                continue;
+            }
+
+            $values = [];
+            $systolic = $request->input("arterial_pressure_sistolica.$key");
+            $diastolic = $request->input("arterial_pressure_diastolica.$key");
+            if ($systolic !== null && $diastolic !== null) {
+                $values['arterial_pressure'] = $systolic.'/'.$diastolic;
+            }
+
+            foreach ([
+                'mean_pressure',
+                'heart_rate',
+                'respiratory_rate',
+                'temperature',
+                'arterial_pressure_monitor',
+                'venous_pressure_monitor',
+                'transmembrane_pressure_monitor',
+                'blood_flow',
+                'ultrafiltration',
+                'heparin',
+            ] as $field) {
+                $fieldValue = $request->input("$field.$key");
+                if ($fieldValue !== null) {
+                    $values[$field] = $fieldValue;
+                }
+            }
+
+            if ($request->has("observations.$key")) {
+                $values['observations'] = $request->input("observations.$key", '');
+            }
+
+            if ($values) {
+                $transHemodialysis->update($values);
+            }
         }
-        return redirect()->route('treatment.index')->with('success', 'Datos de guardados exitosamente');
+
+        return redirect()->route('treatment.index')->with('success', 'Transhemodiálisis guardada correctamente.');
     }
     public function fillPostHemo(Request $request){
         $validator = $request->validate([

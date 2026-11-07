@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\NursePatient;
 use Illuminate\Support\Facades\Auth;
@@ -340,7 +341,8 @@ class EditController extends Controller
     public function fillTransHemo(Request $request)
     {
         $request->validate([
-            'time.*'                           => 'nullable|date_format:H:i:s',
+            'time'                             => 'required|array',
+            'time.*'                           => 'required|date_format:H:i',
             'arterial_pressure_sistolica.*'    => 'nullable|numeric',
             'arterial_pressure_diastolica.*'   => 'nullable|numeric',
             'mean_pressure.*'                  => 'nullable|numeric',
@@ -354,35 +356,56 @@ class EditController extends Controller
             'ultrafiltration.*'                => 'nullable|numeric',
             'heparin.*'                        => 'nullable|numeric',
             'observations.*'                   => 'nullable|string',
+        ], [
+            'time.*.required'                  => 'La hora de cada registro es obligatoria.',
+            'time.*.date_format'               => 'La hora debe tener un formato válido.',
+            '*.numeric'                        => 'Los valores clínicos capturados deben ser numéricos.',
         ]);
 
         $patientId = $request->input('patient_id');
         $date      = $request->input('date');
 
         foreach ($request->input('time') as $key => $value) {
+            $time = Carbon::createFromFormat('H:i', $value)->format('H:i:s');
             $existing = TransHemodialysis::where('patient_id', $patientId)
-                ->where('time', $value)
+                ->where('time', $time)
                 ->where('history', 1)
                 ->whereDate('created_at', $date)
                 ->first();
 
             if ($existing) {
-                $existing->update([
-                    'arterial_pressure'              => floatval($request->input('arterial_pressure_sistolica')[$key])
-                                                       . '/'
-                                                       . floatval($request->input('arterial_pressure_diastolica')[$key]),
-                    'mean_pressure'                  => $request->input('mean_pressure')[$key],
-                    'heart_rate'                     => $request->input('heart_rate')[$key],
-                    'respiratory_rate'               => $request->input('respiratory_rate')[$key],
-                    'temperature'                    => $request->input('temperature')[$key],
-                    'arterial_pressure_monitor'      => $request->input('arterial_pressure_monitor')[$key],
-                    'venous_pressure_monitor'        => $request->input('venous_pressure_monitor')[$key],
-                    'transmembrane_pressure_monitor' => $request->input('transmembrane_pressure_monitor')[$key],
-                    'blood_flow'                     => $request->input('blood_flow')[$key],
-                    'ultrafiltration'                => $request->input('ultrafiltration')[$key],
-                    'heparin'                        => $request->input('heparin')[$key],
-                    'observations'                   => $request->input('observations')[$key],
-                ]);
+                $values = [];
+                $systolic = $request->input("arterial_pressure_sistolica.$key");
+                $diastolic = $request->input("arterial_pressure_diastolica.$key");
+                if ($systolic !== null && $diastolic !== null) {
+                    $values['arterial_pressure'] = $systolic.'/'.$diastolic;
+                }
+
+                foreach ([
+                    'mean_pressure',
+                    'heart_rate',
+                    'respiratory_rate',
+                    'temperature',
+                    'arterial_pressure_monitor',
+                    'venous_pressure_monitor',
+                    'transmembrane_pressure_monitor',
+                    'blood_flow',
+                    'ultrafiltration',
+                    'heparin',
+                ] as $field) {
+                    $fieldValue = $request->input("$field.$key");
+                    if ($fieldValue !== null) {
+                        $values[$field] = $fieldValue;
+                    }
+                }
+
+                if ($request->has("observations.$key")) {
+                    $values['observations'] = $request->input("observations.$key", '');
+                }
+
+                if ($values) {
+                    $existing->update($values);
+                }
             }
             // Si no existe el registro no se crea uno nuevo — solo se editan existentes
         }
