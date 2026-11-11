@@ -106,6 +106,17 @@
                 }
             }
 
+            function adjustVascularCount(vascularAccess, amount) {
+                if (! vascularAccess) {
+                    return;
+                }
+
+                const count = document.querySelector('[data-vascular-count="' + vascularAccess + '"]');
+                if (count) {
+                    count.textContent = String(Math.max(0, Number(count.textContent) + amount));
+                }
+            }
+
             function openPatientModal(cell) {
                 if (cell.dataset.recordCount !== '0') {
                     return;
@@ -221,6 +232,8 @@
 
                     targetCell.innerHTML = data.html;
                     refreshCell(targetCell);
+                    adjustVascularCount(data.vascular_access, 1);
+                    window.adjustScheduleVascularDayCount?.(targetCell.dataset.date, data.vascular_access, 1);
                     modal.hide();
                     showFeedback(data.message);
                 } catch (error) {
@@ -271,7 +284,13 @@
                         const cell = item.closest('.schedule-cell');
                         if (cell) {
                             affectedCells.add(cell);
+                            window.adjustScheduleVascularDayCount?.(
+                                cell.dataset.date,
+                                item.dataset.vascularAccess,
+                                -1
+                            );
                         }
+                        adjustVascularCount(item.dataset.vascularAccess, -1);
                         item.remove();
                     });
                     affectedCells.forEach(refreshCell);

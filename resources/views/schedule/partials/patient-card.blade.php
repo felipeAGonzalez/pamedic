@@ -1,13 +1,22 @@
 @props(['record', 'canEdit'])
 
+@php
+    $vascularAccessMark = match($record->vascular_access) {
+        'fistula' => 'F',
+        'catheter' => 'C',
+        default => null,
+    };
+@endphp
+
 <div class="schedule-patient-card border rounded bg-white p-1 mb-1"
      data-record-id="{{ $record->id }}"
      data-patient-id="{{ $record->patient_id }}"
+     data-vascular-access="{{ $record->vascular_access }}"
      draggable="{{ $canEdit ? 'true' : 'false' }}">
     <div class="d-flex align-items-start justify-content-between gap-1">
         <div class="lh-sm">
             <strong>{{ $record->patient->expedient_number }}</strong><br>
-            {{ trim($record->patient->name.' '.$record->patient->last_name.' '.$record->patient->last_name_two) }}
+            {{ trim($record->patient->name.' '.$record->patient->last_name.' '.$record->patient->last_name_two) }}@if($vascularAccessMark) <strong>({{ $vascularAccessMark }})</strong>@endif
         </div>
 
         @if($canEdit)

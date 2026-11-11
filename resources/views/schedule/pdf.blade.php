@@ -15,6 +15,8 @@
 
         .header-title { font-size: 8px; font-weight: bold; text-align: center; margin: 0; }
         .header-sub   { font-size: 6px; text-align: center; margin: 1px 0; }
+        .vascular-legend { margin-bottom: 4px; }
+        .vascular-legend td { border: 1px solid #999; padding: 2px 8px; font-size: 6px; text-align: center; }
 
         .turno-header td {
             background-color: #4472C4;
@@ -80,6 +82,13 @@
     </tr>
 </table>
 
+<table class="vascular-legend" style="width: auto; margin-left: auto; margin-right: auto;">
+    <tr>
+        <td><strong>F</strong> = Fístula ({{ $vascularAccessCounts['fistula'] }})</td>
+        <td><strong>C</strong> = Catéter ({{ $vascularAccessCounts['catheter'] }})</td>
+    </tr>
+</table>
+
 {{-- TURNOS --}}
 @foreach($turnLabels as $turnId => $turnLabel)
 
@@ -130,7 +139,7 @@
                         @endphp
                         <td class="td-ec {{ $colorClass }} {{ $niproClass }}">{{ substr($slot->patient->expedient_number ?? '', -4) }}</td>
                         <td class="td-paciente {{ $colorClass }} {{ $niproClass }}">
-                            {{ trim(($slot->patient->last_name ?? '') . ' ' . ($slot->patient->last_name_two ?? '') . ' ' . ($slot->patient->name ?? '')) }}
+                            {{ trim(($slot->patient->last_name ?? '') . ' ' . ($slot->patient->last_name_two ?? '') . ' ' . ($slot->patient->name ?? '')) }}@if($slot->vascular_access === 'fistula') (F)@elseif($slot->vascular_access === 'catheter') (C)@endif
                         </td>
                         <td class="td-rc {{ $colorClass }} {{ $niproClass }}"></td>
                         <td class="td-av {{ $colorClass }} {{ $niproClass }}"></td>

@@ -65,15 +65,24 @@ class ScheduleInteractiveTest extends TestCase
         $patient = $this->patient();
         $schedule = $this->schedule();
         $machine = $this->machine('1');
+        DialysisMonitoring::create([
+            'patient_id' => $patient->id,
+            'vascular_access' => 'fistula',
+            'history' => 1,
+        ]);
 
-        $this->actingAs($user)->postJson(route('schedule.assign'), [
+        $response = $this->actingAs($user)->postJson(route('schedule.assign'), [
             'patient_id' => $patient->id,
             'schedules_id' => $schedule->id,
             'date' => '2026-08-20',
             'machine_id' => $machine->id,
-        ])->assertCreated()
+        ]);
+
+        $response->assertCreated()
             ->assertJsonPath('message', 'Paciente agregado al horario correctamente.')
+            ->assertJsonPath('vascular_access', 'fistula')
             ->assertJsonStructure(['html']);
+        $this->assertStringContainsString('(F)', $response->json('html'));
 
         $created = SchedulePatients::where('patient_id', $patient->id)
             ->where('schedules_id', $schedule->id)
@@ -88,6 +97,53 @@ class ScheduleInteractiveTest extends TestCase
             'date' => '2026-08-20',
             'active' => 1,
         ]);
+    }
+
+    public function test_weekly_schedule_shows_vascular_marks_and_session_counts(): void
+    {
+        $user = $this->user('QUALITY');
+        $schedule = $this->schedule();
+        $machine = $this->machine('1');
+        $fistulaPatient = $this->patient('EXP-F', 'FISTULA');
+        $catheterPatient = $this->patient('EXP-C', 'CATETER');
+
+        DialysisMonitoring::create([
+            'patient_id' => $fistulaPatient->id,
+            'vascular_access' => 'catheter',
+            'history' => 1,
+        ]);
+        DialysisMonitoring::create([
+            'patient_id' => $fistulaPatient->id,
+            'vascular_access' => 'fistula',
+            'history' => 1,
+        ]);
+        DialysisMonitoring::create([
+            'patient_id' => $catheterPatient->id,
+            'vascular_access' => 'catheter',
+            'history' => 1,
+        ]);
+
+        $this->scheduled($fistulaPatient, $schedule, $machine, '2026-08-17');
+        $this->scheduled($catheterPatient, $schedule, $machine, '2026-08-18');
+        $this->scheduled($fistulaPatient, $schedule, $machine, '2026-08-19');
+
+        $this->actingAs($user)
+            ->get(route('schedule.index', [2026, 34]))
+            ->assertOk()
+            ->assertSee('FISTULA PRUEBA QA')
+            ->assertSee('CATETER PRUEBA QA')
+            ->assertSee('(F)')
+            ->assertSee('(C)')
+            ->assertSee('data-vascular-count="fistula">2</span>', false)
+            ->assertSee('data-vascular-count="catheter">1</span>', false)
+            ->assertSee('Accesos vasculares por día')
+            ->assertSee('"2026-08-17":{"label":"Lunes","fistula":1,"catheter":0}', false)
+            ->assertSee('"2026-08-18":{"label":"Martes","fistula":0,"catheter":1}', false)
+            ->assertSee('"2026-08-19":{"label":"Mi\u00e9rcoles","fistula":1,"catheter":0}', false);
+
+        $pdfResponse = $this->actingAs($user)->get(route('schedule.pdf', [2026, 34]));
+        $pdfResponse->assertOk()->assertHeader('content-type', 'application/pdf');
+        $this->assertStringStartsWith('%PDF', $pdfResponse->getContent());
     }
 
     public function test_occupied_cell_and_duplicate_patient_are_rejected(): void

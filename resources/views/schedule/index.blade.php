@@ -74,8 +74,27 @@
 <div class="container-fluid">
 
     <h4 class="text-center bg-warning p-2">
-        SEMANA {{ $week }} ({{ $range }})
+        <span id="weekly-vascular-access"
+              role="button"
+              tabindex="0"
+              data-bs-toggle="popover"
+              data-bs-trigger="hover focus"
+              data-bs-placement="bottom"
+              title="Accesos vasculares por día">
+            SEMANA {{ $week }} ({{ $range }})
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            <span class="visually-hidden">Ver conteo de accesos vasculares por día</span>
+        </span>
     </h4>
+
+    <div class="d-flex justify-content-center gap-3 mb-3" id="vascular-access-legend">
+        <span class="badge bg-light text-dark border px-3 py-2">
+            <strong>F</strong> = Fístula (<span data-vascular-count="fistula">{{ $vascularAccessCounts['fistula'] }}</span>)
+        </span>
+        <span class="badge bg-light text-dark border px-3 py-2">
+            <strong>C</strong> = Catéter (<span data-vascular-count="catheter">{{ $vascularAccessCounts['catheter'] }}</span>)
+        </span>
+    </div>
 
     <x-table title="PRIMER TURNO 6:00 - 9:30" :shiftData="$agenda[1]" :machines="$machines" :dates="$dates" :scheduleId="1" :canEdit="$canEdit" />
     <x-table title="SEGUNDO TURNO 10:00 - 13:30" :shiftData="$agenda[2]" :machines="$machines" :dates="$dates" :scheduleId="2" :canEdit="$canEdit" />
@@ -83,6 +102,35 @@
     <x-table title="CUARTO TURNO 17:30 - 21:00" :shiftData="$agenda[4]" :machines="$machines" :dates="$dates" :scheduleId="4" :canEdit="$canEdit" />
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const trigger = document.getElementById('weekly-vascular-access');
+        const dailyCounts = @json($vascularAccessCountsByDate);
+
+        function popoverContent() {
+            return Object.values(dailyCounts).map(function (day) {
+                return '<div class="text-nowrap"><strong>' + day.label + ':</strong> '
+                    + 'F ' + day.fistula + ' · C ' + day.catheter + '</div>';
+            }).join('');
+        }
+
+        window.adjustScheduleVascularDayCount = function (date, vascularAccess, amount) {
+            if (! dailyCounts[date] || ! Object.prototype.hasOwnProperty.call(dailyCounts[date], vascularAccess)) {
+                return;
+            }
+
+            dailyCounts[date][vascularAccess] = Math.max(0, dailyCounts[date][vascularAccess] + amount);
+        };
+
+        if (trigger) {
+            new bootstrap.Popover(trigger, {
+                html: true,
+                content: popoverContent,
+            });
+        }
+    });
+</script>
 
 @include("schedule.partials.interactive")
 

@@ -60,6 +60,8 @@ class ScheduleController extends Controller
         $registros = SchedulePatients::with(['patient','machine'])
             ->whereBetween('date', [$inicioSemana, $finSemana])
             ->get();
+        $vascularAccessCounts = $this->attachVascularAccess($registros);
+        $vascularAccessCountsByDate = $this->vascularAccessCountsByDate($registros, $dates);
 
         $agenda = [
             1 => $this->emptyWeek(),
@@ -93,6 +95,8 @@ class ScheduleController extends Controller
             'nextWeek' => $nextWeek,
             'cloneBatch' => $cloneBatch,
             'cloneUndo' => $cloneUndo,
+            'vascularAccessCounts' => $vascularAccessCounts,
+            'vascularAccessCountsByDate' => $vascularAccessCountsByDate,
         ]);
     }
 
@@ -112,6 +116,7 @@ class ScheduleController extends Controller
         $registros = SchedulePatients::with(['patient', 'machine'])
             ->whereBetween('date', [$inicioSemana, $finSemana])
             ->get();
+        $vascularAccessCounts = $this->attachVascularAccess($registros);
 
         $patientIds = $registros->pluck('patient_id')->unique();
 
@@ -172,7 +177,8 @@ class ScheduleController extends Controller
         ];
 
         $pdf = Pdf::loadView('schedule.pdf', compact(
-            'agenda', 'machines', 'days', 'weekLabel', 'turnLabels', 'week', 'year', 'niproPatientIds'
+            'agenda', 'machines', 'days', 'weekLabel', 'turnLabels', 'week', 'year', 'niproPatientIds',
+            'vascularAccessCounts'
         ))->setPaper('legal', 'landscape');
 
         return $pdf->stream("Programacion-Semana-{$week}-{$year}.pdf");
@@ -265,9 +271,11 @@ class ScheduleController extends Controller
             });
 
             $record->load('patient');
+            $this->attachVascularAccess(collect([$record]));
 
             return response()->json([
                 'message' => 'Paciente agregado al horario correctamente.',
+                'vascular_access' => $record->vascular_access,
                 'html' => view('schedule.partials.patient-card', [
                     'record' => $record,
                     'canEdit' => true,
@@ -280,6 +288,64 @@ class ScheduleController extends Controller
 
             throw $exception;
         }
+    }
+
+    private function attachVascularAccess($records): array
+    {
+        $patientIds = $records->pluck('patient_id')->unique()->values();
+        $vascularAccessByPatient = DialysisMonitoring::whereIn('patient_id', $patientIds)
+            ->whereIn('id', function ($query) use ($patientIds) {
+                $query->selectRaw('MAX(id)')
+                    ->from('dialysis_monitoring')
+                    ->whereIn('patient_id', $patientIds)
+                    ->groupBy('patient_id');
+            })
+            ->pluck('vascular_access', 'patient_id');
+
+        $counts = ['fistula' => 0, 'catheter' => 0];
+
+        $records->each(function ($record) use ($vascularAccessByPatient, &$counts) {
+            $vascularAccess = $vascularAccessByPatient->get($record->patient_id);
+            $record->setAttribute('vascular_access', $vascularAccess);
+
+            if (isset($counts[$vascularAccess])) {
+                $counts[$vascularAccess]++;
+            }
+        });
+
+        return $counts;
+    }
+
+    private function vascularAccessCountsByDate($records, array $dates): array
+    {
+        $dayNames = [
+            'Monday' => 'Lunes',
+            'Tuesday' => 'Martes',
+            'Wednesday' => 'Miércoles',
+            'Thursday' => 'Jueves',
+            'Friday' => 'Viernes',
+            'Saturday' => 'Sábado',
+        ];
+        $counts = [];
+
+        foreach ($dates as $day => $date) {
+            $counts[$date] = [
+                'label' => $dayNames[$day],
+                'fistula' => 0,
+                'catheter' => 0,
+            ];
+        }
+
+        $records->each(function ($record) use (&$counts) {
+            $date = $record->date->toDateString();
+            $vascularAccess = $record->vascular_access;
+
+            if (isset($counts[$date][$vascularAccess])) {
+                $counts[$date][$vascularAccess]++;
+            }
+        });
+
+        return $counts;
     }
 
     public function movePatient(Request $request, $id)
