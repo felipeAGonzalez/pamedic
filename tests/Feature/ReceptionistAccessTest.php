@@ -18,6 +18,7 @@ class ReceptionistAccessTest extends TestCase
             'schedule.index', 'schedule.create', 'schedule.search', 'schedule.store',
             'schedule.show', 'schedule.edit', 'schedule.update', 'schedule.destroy',
             'schedule.cloneWeek', 'schedule.pdf',
+            'schedule.sealHabitual', 'schedule.makeHabitual',
         ];
 
         foreach ($allowedRoutes as $routeName) {

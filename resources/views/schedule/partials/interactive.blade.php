@@ -117,6 +117,15 @@
                 }
             }
 
+            function updateCardScheduleState(card, machineId) {
+                const habitualMachineId = card.dataset.habitualMachineId;
+                const isTemporary = card.dataset.temporary === '1';
+                const hasDailyChange = habitualMachineId !== '' && habitualMachineId !== String(machineId);
+                card.querySelector('.schedule-temporary-badge')?.classList.toggle('d-none', ! isTemporary);
+                card.querySelector('.schedule-daily-change-badge')?.classList.toggle('d-none', ! hasDailyChange);
+                card.querySelector('.schedule-habitual-form')?.classList.toggle('d-none', ! isTemporary && ! hasDailyChange);
+            }
+
             function openPatientModal(cell) {
                 if (cell.dataset.recordCount !== '0') {
                     return;
@@ -183,15 +192,33 @@
                     }
 
                     data.patients.forEach(function (patient) {
-                        const button = document.createElement('button');
-                        button.type = 'button';
-                        button.className = 'list-group-item list-group-item-action';
-                        button.textContent = patient.expedient_number + ' · '
+                        const row = document.createElement('div');
+                        row.className = 'list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2';
+
+                        const name = document.createElement('span');
+                        name.textContent = patient.expedient_number + ' · '
                             + [patient.name, patient.last_name, patient.last_name_two].filter(Boolean).join(' ');
-                        button.addEventListener('click', function () {
-                            assignPatient(patient.id, button);
+
+                        const actions = document.createElement('span');
+                        actions.className = 'd-flex gap-2';
+                        const habitualButton = document.createElement('button');
+                        habitualButton.type = 'button';
+                        habitualButton.className = 'btn btn-primary btn-sm';
+                        habitualButton.textContent = 'Agregar habitual';
+                        habitualButton.addEventListener('click', function () {
+                            assignPatient(patient.id, habitualButton, 'habitual');
                         });
-                        results.appendChild(button);
+                        const temporaryButton = document.createElement('button');
+                        temporaryButton.type = 'button';
+                        temporaryButton.className = 'btn btn-outline-secondary btn-sm';
+                        temporaryButton.textContent = 'Solo esta semana';
+                        temporaryButton.addEventListener('click', function () {
+                            assignPatient(patient.id, temporaryButton, 'temporary');
+                        });
+
+                        actions.append(habitualButton, temporaryButton);
+                        row.append(name, actions);
+                        results.appendChild(row);
                     });
                 } catch (error) {
                     searchError.textContent = error.message;
@@ -200,7 +227,7 @@
                 }
             });
 
-            async function assignPatient(patientId, button) {
+            async function assignPatient(patientId, button, assignmentType) {
                 if (! targetCell) {
                     return;
                 }
@@ -221,7 +248,8 @@
                             patient_id: patientId,
                             schedules_id: targetCell.dataset.scheduleId,
                             date: targetCell.dataset.date,
-                            machine_id: targetCell.dataset.machineId
+                            machine_id: targetCell.dataset.machineId,
+                            assignment_type: assignmentType
                         })
                     });
                     const data = await responseData(response);
@@ -241,6 +269,48 @@
                     button.disabled = false;
                 }
             }
+
+            document.addEventListener('submit', async function (event) {
+                const form = event.target.closest('.schedule-habitual-form');
+                if (! form) {
+                    return;
+                }
+
+                event.preventDefault();
+                if (! confirm(form.dataset.confirm)) {
+                    return;
+                }
+
+                const button = form.querySelector('button[type="submit"]');
+                button.disabled = true;
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'PATCH',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        }
+                    });
+                    const data = await responseData(response);
+                    if (! response.ok) {
+                        throw new Error(data.message || 'No fue posible actualizar el horario habitual.');
+                    }
+
+                    data.records.forEach(function (record) {
+                        const card = document.querySelector('[data-record-id="' + record.id + '"]');
+                        if (! card) return;
+                        card.dataset.habitualMachineId = String(record.habitual_machine_id);
+                        card.dataset.temporary = '0';
+                        updateCardScheduleState(card, card.closest('.schedule-cell').dataset.machineId);
+                    });
+                    showFeedback(data.message);
+                } catch (error) {
+                    button.disabled = false;
+                    showFeedback(error.message, 'danger');
+                }
+            });
 
             document.addEventListener('submit', async function (event) {
                 const form = event.target.closest('.schedule-delete-form');
@@ -399,8 +469,10 @@
 
                     if (destinationCard) {
                         sourceCell.appendChild(destinationCard);
+                        updateCardScheduleState(destinationCard, sourceCell.dataset.machineId);
                     }
                     destinationCell.appendChild(sourceCard);
+                    updateCardScheduleState(sourceCard, destinationCell.dataset.machineId);
                     refreshCell(sourceCell);
                     refreshCell(destinationCell);
                     showFeedback(data.message);

@@ -29,9 +29,23 @@
         <input type="hidden" name="week" value="{{ $week }}">
         <input type="hidden" name="year" value="{{ $year }}">
         <button class="btn btn-success">
-            Clonar esta semana → siguiente
+            Preparar siguiente semana
         </button>
     </form>
+
+    @if($canSealHabitualSchedule && ! $habitualScheduleEstablished)
+        <form method="POST"
+              action="{{ route('schedule.sealHabitual', [$year, $week]) }}"
+              class="d-inline-block ml-2"
+              onsubmit="return confirm('¿Establecer esta semana como horario habitual? Los movimientos posteriores serán temporales.');">
+            @csrf
+            <button class="btn btn-outline-primary">
+                Establecer esta semana como horario habitual
+            </button>
+        </form>
+    @elseif($habitualScheduleEstablished)
+        <span class="badge bg-primary ml-2">Horario habitual establecido</span>
+    @endif
 
     @if($cloneBatch)
         <form method="POST"

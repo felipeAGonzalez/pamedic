@@ -73,7 +73,9 @@ Route::group(['middleware'=>['auth', 'receptionist.scope']],function () {
             Route::get('/schedule/search', [AttendanceController::class, 'search'])->name('schedule.search');
             Route::get('/schedule/patient-search', [ScheduleController::class, 'searchPatients'])->name('schedule.patientSearch');
             Route::post('/schedule/assign', [ScheduleController::class, 'assignPatient'])->name('schedule.assign');
+            Route::post('/schedule/{year}/{week}/seal', [ScheduleController::class, 'sealHabitualSchedule'])->name('schedule.sealHabitual');
             Route::patch('/schedule/{id}/move', [ScheduleController::class, 'movePatient'])->name('schedule.move');
+            Route::patch('/schedule/{id}/habitual', [ScheduleController::class, 'makeHabitual'])->name('schedule.makeHabitual');
             Route::delete('/schedule/{id}/permanent', [ScheduleController::class, 'permanentDestroy'])->name('schedule.permanentDestroy');
             Route::delete('/schedule/clone-week/{batch}/undo', [ScheduleController::class, 'undoCloneWeek'])->name('schedule.undoCloneWeek');
             Route::post('/schedule', [ScheduleController::class, 'store'])->name('schedule.store');

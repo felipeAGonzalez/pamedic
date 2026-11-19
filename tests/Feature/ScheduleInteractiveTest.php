@@ -7,6 +7,7 @@ use App\Models\DialysisMonitoring;
 use App\Models\DialysisPrescription;
 use App\Models\Machine;
 use App\Models\Patient;
+use App\Models\PatientScheduleSlot;
 use App\Models\Schedule;
 use App\Models\ScheduleCloneBatch;
 use App\Models\SchedulePatients;
@@ -416,6 +417,155 @@ class ScheduleInteractiveTest extends TestCase
         $this->assertSame(1, SchedulePatients::where('clone_batch_id', $batch->id)->count());
     }
 
+    public function test_habitual_schedule_restores_daily_machine_after_move_and_cancellation(): void
+    {
+        $receptionist = $this->user('RECEPCIONIST');
+        $schedule = $this->schedule();
+        $machineOne = $this->machine('1');
+        $machineTwo = $this->machine('2');
+        $patient = $this->patient('EXP-HAB');
+        $monday = $this->scheduled($patient, $schedule, $machineOne, '2026-08-17');
+        $wednesday = $this->scheduled($patient, $schedule, $machineOne, '2026-08-19');
+
+        $this->actingAs($receptionist)
+            ->post(route('schedule.sealHabitual', [2026, 34]))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Horario habitual establecido con 2 lugares.');
+
+        $this->assertDatabaseCount('patient_schedule_slots', 2);
+
+        $this->actingAs($receptionist)
+            ->patchJson(route('schedule.move', $wednesday->id), ['machine_id' => $machineTwo->id])
+            ->assertOk()
+            ->assertJsonPath('message', 'Paciente cambiado de máquina solo para este día.');
+
+        $this->actingAs($receptionist)
+            ->deleteJson(route('schedule.destroy', $monday->id))
+            ->assertOk();
+
+        $this->actingAs($receptionist)->post(route('schedule.cloneWeek'), [
+            'week' => 34,
+            'year' => 2026,
+        ])->assertRedirect()->assertSessionHas('success');
+
+        foreach (['2026-08-24', '2026-08-26'] as $date) {
+            $this->assertTrue(SchedulePatients::where('patient_id', $patient->id)
+                ->whereDate('date', $date)
+                ->where('machine_id', $machineOne->id)
+                ->where('is_temporary', false)
+                ->exists());
+        }
+    }
+
+    public function test_receptionist_can_make_a_machine_swap_habitual(): void
+    {
+        $receptionist = $this->user('RECEPCIONIST');
+        $schedule = $this->schedule();
+        $machineOne = $this->machine('1');
+        $machineTwo = $this->machine('2');
+        $firstPatient = $this->patient('EXP-SWAP-1');
+        $secondPatient = $this->patient('EXP-SWAP-2');
+        $first = $this->scheduled($firstPatient, $schedule, $machineOne, '2026-08-17');
+        $this->scheduled($secondPatient, $schedule, $machineTwo, '2026-08-17');
+
+        $this->actingAs($receptionist)->post(route('schedule.sealHabitual', [2026, 34]));
+        $this->actingAs($receptionist)
+            ->patchJson(route('schedule.move', $first->id), ['machine_id' => $machineTwo->id])
+            ->assertOk();
+        $this->actingAs($receptionist)
+            ->patchJson(route('schedule.makeHabitual', $first->id))
+            ->assertOk()
+            ->assertJsonCount(2, 'records');
+
+        $this->actingAs($receptionist)->post(route('schedule.cloneWeek'), [
+            'week' => 34,
+            'year' => 2026,
+        ])->assertSessionHas('success');
+
+        $this->assertTrue(SchedulePatients::where('patient_id', $firstPatient->id)
+            ->whereDate('date', '2026-08-24')
+            ->where('machine_id', $machineTwo->id)
+            ->exists());
+        $this->assertTrue(SchedulePatients::where('patient_id', $secondPatient->id)
+            ->whereDate('date', '2026-08-24')
+            ->where('machine_id', $machineOne->id)
+            ->exists());
+    }
+
+    public function test_only_receptionist_or_root_can_seal_the_habitual_schedule(): void
+    {
+        $this->actingAs($this->user('QUALITY'))
+            ->post(route('schedule.sealHabitual', [2026, 34]))
+            ->assertForbidden();
+
+        $this->actingAs($this->user('ROOT'))
+            ->post(route('schedule.sealHabitual', [2026, 34]))
+            ->assertRedirect()
+            ->assertSessionHas('success');
+    }
+
+    public function test_temporary_patient_is_not_carried_to_next_week(): void
+    {
+        $receptionist = $this->user('RECEPCIONIST');
+        $schedule = $this->schedule();
+        $machineOne = $this->machine('1');
+        $machineTwo = $this->machine('2');
+        $habitualPatient = $this->patient('EXP-HAB');
+        $temporaryPatient = $this->patient('EXP-TEMP');
+        $this->scheduled($habitualPatient, $schedule, $machineOne, '2026-08-17');
+
+        $this->actingAs($receptionist)->post(route('schedule.sealHabitual', [2026, 34]));
+        $this->actingAs($receptionist)->postJson(route('schedule.assign'), [
+            'patient_id' => $temporaryPatient->id,
+            'schedules_id' => $schedule->id,
+            'date' => '2026-08-18',
+            'machine_id' => $machineTwo->id,
+            'assignment_type' => 'temporary',
+        ])->assertCreated()->assertJsonPath('is_temporary', true);
+
+        $this->actingAs($receptionist)->post(route('schedule.cloneWeek'), [
+            'week' => 34,
+            'year' => 2026,
+        ])->assertSessionHas('success');
+
+        $this->assertTrue(SchedulePatients::where('patient_id', $habitualPatient->id)
+            ->whereDate('date', '2026-08-24')
+            ->exists());
+        $this->assertFalse(SchedulePatients::where('patient_id', $temporaryPatient->id)
+            ->whereDate('date', '2026-08-25')
+            ->exists());
+    }
+
+    public function test_readding_a_removed_patient_reactivates_their_habitual_day(): void
+    {
+        $receptionist = $this->user('RECEPCIONIST');
+        $schedule = $this->schedule();
+        $machineOne = $this->machine('1');
+        $machineTwo = $this->machine('2');
+        $patient = $this->patient('EXP-RETURN');
+        $record = $this->scheduled($patient, $schedule, $machineOne, '2026-08-17');
+
+        $this->actingAs($receptionist)->post(route('schedule.sealHabitual', [2026, 34]));
+        $slot = PatientScheduleSlot::firstOrFail();
+
+        $this->actingAs($receptionist)
+            ->deleteJson(route('schedule.permanentDestroy', $record->id))
+            ->assertOk();
+        $this->assertFalse($slot->fresh()->active);
+
+        $this->actingAs($receptionist)->postJson(route('schedule.assign'), [
+            'patient_id' => $patient->id,
+            'schedules_id' => $schedule->id,
+            'date' => '2026-08-24',
+            'machine_id' => $machineTwo->id,
+            'assignment_type' => 'habitual',
+        ])->assertCreated();
+
+        $this->assertDatabaseCount('patient_schedule_slots', 1);
+        $this->assertTrue($slot->fresh()->active);
+        $this->assertSame((string) $machineTwo->id, (string) $slot->fresh()->machine_id);
+    }
+
     public function test_permanent_removal_cancels_every_current_and_future_date_but_preserves_history(): void
     {
         $user = $this->user('QUALITY');
@@ -551,8 +701,24 @@ class ScheduleInteractiveTest extends TestCase
             $table->string('machine_id');
             $table->boolean('continue_schedule')->default(true);
             $table->unsignedBigInteger('clone_batch_id')->nullable();
+            $table->unsignedBigInteger('patient_schedule_slot_id')->nullable();
+            $table->boolean('is_temporary')->default(false);
             $table->timestamps();
             $table->softDeletes();
+        });
+
+        Schema::create('patient_schedule_slots', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('patient_id');
+            $table->unsignedTinyInteger('weekday');
+            $table->unsignedBigInteger('schedules_id');
+            $table->unsignedBigInteger('machine_id');
+            $table->boolean('active')->default(true);
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+            $table->unique(['patient_id', 'weekday']);
+            $table->unique(['weekday', 'schedules_id', 'machine_id']);
         });
 
         Schema::create('active_patient', function (Blueprint $table) {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Schedule;
 use App\Models\Patient;
 use App\Models\SchedulePatients;
+use App\Models\PatientScheduleSlot;
 use App\Models\ScheduleCloneBatch;
 use App\Models\ActivePatient;
 use App\Models\NursePatient;
@@ -57,7 +58,7 @@ class ScheduleController extends Controller
 
         $machines = Machine::orderBy('id')->get();
 
-        $registros = SchedulePatients::with(['patient','machine'])
+        $registros = SchedulePatients::with(['patient','machine', 'habitualSchedule'])
             ->whereBetween('date', [$inicioSemana, $finSemana])
             ->get();
         $vascularAccessCounts = $this->attachVascularAccess($registros);
@@ -82,6 +83,8 @@ class ScheduleController extends Controller
             ->latest('id')
             ->first();
         $cloneUndo = $cloneBatch ? $this->cloneUndoState($cloneBatch) : null;
+        $habitualScheduleEstablished = PatientScheduleSlot::exists();
+        $canSealHabitualSchedule = in_array(auth()->user()->position, ['RECEPCIONIST', 'ROOT'], true);
 
 
         return view('schedule.index', [
@@ -97,6 +100,8 @@ class ScheduleController extends Controller
             'cloneUndo' => $cloneUndo,
             'vascularAccessCounts' => $vascularAccessCounts,
             'vascularAccessCountsByDate' => $vascularAccessCountsByDate,
+            'habitualScheduleEstablished' => $habitualScheduleEstablished,
+            'canSealHabitualSchedule' => $canSealHabitualSchedule,
         ]);
     }
 
@@ -214,7 +219,9 @@ class ScheduleController extends Controller
             'schedules_id' => ['required', 'integer', 'exists:schedules,id'],
             'date' => ['required', 'date_format:Y-m-d'],
             'machine_id' => ['required', 'integer', 'exists:machines,id'],
+            'assignment_type' => ['nullable', 'in:habitual,temporary'],
         ]);
+        $data['assignment_type'] ??= 'habitual';
 
         $schedule = Schedule::findOrFail($data['schedules_id']);
         if ($schedule->schedule_type === 'emergency') {
@@ -253,12 +260,56 @@ class ScheduleController extends Controller
                     throw new ConflictHttpException('El paciente ya tiene asistencia registrada para este día.');
                 }
 
+                $habitualSchedule = null;
+                if ($data['assignment_type'] === 'habitual' && PatientScheduleSlot::exists()) {
+                    $weekday = Carbon::parse($data['date'])->isoWeekday();
+                    $patientSlot = PatientScheduleSlot::where('patient_id', $data['patient_id'])
+                        ->where('weekday', $weekday)
+                        ->lockForUpdate()
+                        ->first();
+                    if ($patientSlot?->active) {
+                        throw new ConflictHttpException('El paciente ya tiene un horario habitual para este día.');
+                    }
+
+                    $occupiedHabitualSlot = PatientScheduleSlot::where([
+                        'weekday' => $weekday,
+                        'schedules_id' => $data['schedules_id'],
+                        'machine_id' => $data['machine_id'],
+                        'active' => true,
+                    ])->lockForUpdate()->exists();
+                    if ($occupiedHabitualSlot) {
+                        throw new ConflictHttpException('Este lugar pertenece al horario habitual de otro paciente. Agréguelo solo para esta semana.');
+                    }
+
+                    if ($patientSlot) {
+                        $patientSlot->update([
+                            'schedules_id' => $data['schedules_id'],
+                            'machine_id' => $data['machine_id'],
+                            'active' => true,
+                            'updated_by' => auth()->id(),
+                        ]);
+                        $habitualSchedule = $patientSlot;
+                    } else {
+                        $habitualSchedule = PatientScheduleSlot::create([
+                            'patient_id' => $data['patient_id'],
+                            'weekday' => $weekday,
+                            'schedules_id' => $data['schedules_id'],
+                            'machine_id' => $data['machine_id'],
+                            'active' => true,
+                            'created_by' => auth()->id(),
+                            'updated_by' => auth()->id(),
+                        ]);
+                    }
+                }
+
                 $record = SchedulePatients::create([
                     'schedules_id' => $data['schedules_id'],
                     'patient_id' => $data['patient_id'],
                     'date' => $data['date'],
                     'machine_id' => $data['machine_id'],
                     'continue_schedule' => true,
+                    'patient_schedule_slot_id' => $habitualSchedule?->id,
+                    'is_temporary' => $data['assignment_type'] === 'temporary',
                 ]);
 
                 ActivePatient::create([
@@ -270,12 +321,13 @@ class ScheduleController extends Controller
                 return $record;
             });
 
-            $record->load('patient');
+            $record->load(['patient', 'habitualSchedule']);
             $this->attachVascularAccess(collect([$record]));
 
             return response()->json([
                 'message' => 'Paciente agregado al horario correctamente.',
                 'vascular_access' => $record->vascular_access,
+                'is_temporary' => $record->is_temporary,
                 'html' => view('schedule.partials.patient-card', [
                     'record' => $record,
                     'canEdit' => true,
@@ -288,6 +340,74 @@ class ScheduleController extends Controller
 
             throw $exception;
         }
+    }
+
+    public function sealHabitualSchedule(Request $request, int $year, int $week)
+    {
+        abort_unless(in_array($request->user()->position, ['RECEPCIONIST', 'ROOT'], true), 403);
+
+        if (PatientScheduleSlot::exists()) {
+            return back()->with('error', 'El horario habitual ya fue establecido.');
+        }
+
+        $start = Carbon::now()->setISODate($year, $week)->startOfWeek(Carbon::MONDAY);
+        $end = $start->copy()->endOfWeek(Carbon::SATURDAY);
+
+        try {
+            $created = DB::transaction(function () use ($start, $end, $request) {
+            $weekRecords = SchedulePatients::withTrashed()
+                ->whereBetween('date', [$start, $end])
+                ->where('schedules_id', '!=', 5)
+                ->where('continue_schedule', true)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
+            $selected = $weekRecords
+                ->groupBy(fn ($record) => $record->date->toDateString().'|'.$record->schedules_id.'|'.$record->machine_id)
+                ->map(fn ($records) => $records->first(fn ($record) => $record->trashed()) ?? $records->first())
+                ->values();
+
+            $duplicatePatientDay = $selected->groupBy(fn ($record) => $record->patient_id.'|'.$record->date->isoWeekday())
+                ->first(fn ($records) => $records->count() > 1);
+            if ($duplicatePatientDay) {
+                throw new ConflictHttpException('No se puede establecer el horario habitual porque un paciente aparece más de una vez el mismo día.');
+            }
+
+            $selectedIds = $selected->pluck('id');
+            SchedulePatients::withTrashed()
+                ->whereBetween('date', [$start, $end])
+                ->whereNotIn('id', $selectedIds)
+                ->update(['is_temporary' => true]);
+
+            foreach ($selected as $record) {
+                $slot = PatientScheduleSlot::create([
+                    'patient_id' => $record->patient_id,
+                    'weekday' => $record->date->isoWeekday(),
+                    'schedules_id' => $record->schedules_id,
+                    'machine_id' => $record->machine_id,
+                    'active' => true,
+                    'created_by' => $request->user()->id,
+                    'updated_by' => $request->user()->id,
+                ]);
+                $record->patient_schedule_slot_id = $slot->id;
+                $record->is_temporary = false;
+                $record->save();
+            }
+
+            return $selected->count();
+            }, 3);
+        } catch (ConflictHttpException $exception) {
+            return back()->with('error', $exception->getMessage());
+        } catch (QueryException $exception) {
+            if ($exception->getCode() === '23000') {
+                return back()->with('error', 'No se puede establecer el horario habitual porque existen lugares repetidos.');
+            }
+
+            throw $exception;
+        }
+
+        return back()->with('success', "Horario habitual establecido con {$created} lugares.");
     }
 
     private function attachVascularAccess($records): array
@@ -402,8 +522,8 @@ class ScheduleController extends Controller
 
             return response()->json([
                 'message' => $result['swapped_record_id']
-                    ? 'Pacientes intercambiados correctamente.'
-                    : 'Paciente cambiado de máquina correctamente.',
+                    ? 'Pacientes intercambiados solo para este día.'
+                    : 'Paciente cambiado de máquina solo para este día.',
                 'swapped_record_id' => $result['swapped_record_id'],
             ]);
         } catch (QueryException $exception) {
@@ -415,6 +535,88 @@ class ScheduleController extends Controller
         }
     }
 
+    public function makeHabitual(Request $request, $id)
+    {
+        $result = DB::transaction(function () use ($request, $id) {
+            $record = SchedulePatients::whereKey($id)->lockForUpdate()->firstOrFail();
+            $weekday = $record->date->isoWeekday();
+            $sourceSlot = PatientScheduleSlot::where('patient_id', $record->patient_id)
+                ->where('weekday', $weekday)
+                ->lockForUpdate()
+                ->first();
+            $targetSlot = PatientScheduleSlot::where([
+                'weekday' => $weekday,
+                'schedules_id' => $record->schedules_id,
+                'machine_id' => $record->machine_id,
+                'active' => true,
+            ])->lockForUpdate()->first();
+
+            if ($targetSlot && (int) $targetSlot->patient_id !== (int) $record->patient_id) {
+                $otherRecord = SchedulePatients::where('patient_id', $targetSlot->patient_id)
+                    ->whereDate('date', $record->date)
+                    ->where('schedules_id', $record->schedules_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $sourceSlot || ! $otherRecord || (int) $otherRecord->machine_id !== (int) $sourceSlot->machine_id) {
+                    throw new ConflictHttpException('Ese lugar habitual pertenece a otro paciente.');
+                }
+
+                $sourceSlot->update([
+                    'weekday' => 0,
+                    'updated_by' => $request->user()->id,
+                ]);
+                $targetSlot->update([
+                    'machine_id' => $otherRecord->machine_id,
+                    'updated_by' => $request->user()->id,
+                ]);
+                $sourceSlot->update([
+                    'weekday' => $weekday,
+                    'machine_id' => $record->machine_id,
+                    'updated_by' => $request->user()->id,
+                ]);
+                $record->update(['patient_schedule_slot_id' => $sourceSlot->id, 'is_temporary' => false]);
+                $otherRecord->update(['patient_schedule_slot_id' => $targetSlot->id, 'is_temporary' => false]);
+
+                return [
+                    ['id' => $record->id, 'habitual_machine_id' => (int) $record->machine_id],
+                    ['id' => $otherRecord->id, 'habitual_machine_id' => (int) $otherRecord->machine_id],
+                ];
+            }
+
+            if ($sourceSlot) {
+                $sourceSlot->update([
+                    'schedules_id' => $record->schedules_id,
+                    'machine_id' => $record->machine_id,
+                    'active' => true,
+                    'updated_by' => $request->user()->id,
+                ]);
+            } else {
+                $sourceSlot = PatientScheduleSlot::create([
+                    'patient_id' => $record->patient_id,
+                    'weekday' => $weekday,
+                    'schedules_id' => $record->schedules_id,
+                    'machine_id' => $record->machine_id,
+                    'active' => true,
+                    'created_by' => $request->user()->id,
+                    'updated_by' => $request->user()->id,
+                ]);
+            }
+
+            $record->update([
+                'patient_schedule_slot_id' => $sourceSlot->id,
+                'is_temporary' => false,
+            ]);
+
+            return [['id' => $record->id, 'habitual_machine_id' => (int) $record->machine_id]];
+        }, 3);
+
+        return response()->json([
+            'message' => 'La ubicación quedó establecida como habitual para este día de la semana.',
+            'records' => $result,
+        ]);
+    }
+
     public function permanentDestroy(Request $request, $id)
     {
         $schedulePatient = SchedulePatients::findOrFail($id);
@@ -422,6 +624,10 @@ class ScheduleController extends Controller
 
         try {
             DB::transaction(function () use ($patientId) {
+                PatientScheduleSlot::where('patient_id', $patientId)->update([
+                    'active' => false,
+                    'updated_by' => auth()->id(),
+                ]);
                 SchedulePatients::withTrashed()
                     ->where('patient_id', $patientId)
                     ->update(['continue_schedule' => false]);
@@ -701,6 +907,8 @@ class ScheduleController extends Controller
                 'deleted_at',
                 'continue_schedule',
                 'clone_batch_id',
+                'patient_schedule_slot_id',
+                'is_temporary',
             ])
             ->map(function ($record) {
                 return [
@@ -712,6 +920,8 @@ class ScheduleController extends Controller
                     'deleted_at' => $record->deleted_at?->format('Y-m-d H:i:s'),
                     'continue_schedule' => (bool) $record->continue_schedule,
                     'clone_batch_id' => $record->clone_batch_id ? (int) $record->clone_batch_id : null,
+                    'patient_schedule_slot_id' => $record->patient_schedule_slot_id ? (int) $record->patient_schedule_slot_id : null,
+                    'is_temporary' => (bool) $record->is_temporary,
                 ];
             })
             ->values()
@@ -763,28 +973,34 @@ class ScheduleController extends Controller
                     'cloned_by' => auth()->id(),
                 ]);
 
-                $records = SchedulePatients::withTrashed()
-                    ->whereBetween('date', [$startWeek, $endWeek])
-                    ->where('schedules_id', '!=', 5)
-                    ->where('continue_schedule', true)
-                    ->orderBy('id')
-                    ->get()
-                    ->groupBy(function ($record) {
-                        return Carbon::parse($record->date)->toDateString()
-                            .'|'.$record->schedules_id
-                            .'|'.$record->machine_id;
-                    })
-                    ->map(function ($slotRecords) {
-                        return $slotRecords->first(function ($record) {
-                            return $record->trashed();
-                        }) ?? $slotRecords->first();
-                    })
-                    ->values();
+                $habitualSlots = PatientScheduleSlot::where('active', true)->orderBy('weekday')->orderBy('machine_id')->get();
+                $records = $habitualSlots->isNotEmpty()
+                    ? $habitualSlots
+                    : SchedulePatients::withTrashed()
+                        ->whereBetween('date', [$startWeek, $endWeek])
+                        ->where('schedules_id', '!=', 5)
+                        ->where('continue_schedule', true)
+                        ->orderBy('id')
+                        ->get()
+                        ->groupBy(function ($record) {
+                            return Carbon::parse($record->date)->toDateString()
+                                .'|'.$record->schedules_id
+                                .'|'.$record->machine_id;
+                        })
+                        ->map(function ($slotRecords) {
+                            return $slotRecords->first(function ($record) {
+                                return $record->trashed();
+                            }) ?? $slotRecords->first();
+                        })
+                        ->values();
 
                 $createdCount = 0;
 
                 foreach ($records as $record) {
-                    $newDate = Carbon::parse($record->date)->addWeek();
+                    $fromHabitualSchedule = $record instanceof PatientScheduleSlot;
+                    $newDate = $fromHabitualSchedule
+                        ? $nextWeekStart->copy()->addDays($record->weekday - 1)
+                        : Carbon::parse($record->date)->addWeek();
 
                     $occupiedSlot = SchedulePatients::whereDate('date', $newDate)
                         ->where('schedules_id', $record->schedules_id)
@@ -803,6 +1019,8 @@ class ScheduleController extends Controller
                         'machine_id' => $record->machine_id,
                         'continue_schedule' => true,
                         'clone_batch_id' => $batch->id,
+                        'patient_schedule_slot_id' => $fromHabitualSchedule ? $record->id : null,
+                        'is_temporary' => false,
                     ]);
 
                     if ($clonedRecord->wasRecentlyCreated) {
