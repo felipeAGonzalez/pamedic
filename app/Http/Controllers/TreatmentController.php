@@ -622,7 +622,14 @@ class TreatmentController extends Controller
         if (!$dialysisMonitoring) {
             return redirect()->route('treatment.index')->with('Error', 'Primero debe llenar el monitoreo de diálisis');
         }
-        $transHemodialysis = app(TransHemodialysisScheduleService::class)->syncForPatient($id);
+        $transHemodialysis = TransHemodialysis::where([
+            'patient_id' => $id,
+            'history' => 0,
+        ])->orderBy('time')->orderBy('id')->get();
+
+        if ($transHemodialysis->isEmpty()) {
+            $transHemodialysis = app(TransHemodialysisScheduleService::class)->syncForPatient($id);
+        }
 
         return view('treatment.formTransH', compact('transHemodialysis','patient'));
         }

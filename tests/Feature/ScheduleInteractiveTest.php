@@ -611,6 +611,36 @@ class ScheduleInteractiveTest extends TestCase
         $this->assertSame(0, SchedulePatients::whereBetween('date', ['2026-08-24', '2026-08-30'])->count());
     }
 
+    public function test_permanent_removal_from_next_week_does_not_conflict_with_current_treatment(): void
+    {
+        $user = $this->user('RECEPCIONIST');
+        $schedule = $this->schedule();
+        $machine = $this->machine('1');
+        $patient = $this->patient();
+        $current = $this->scheduled($patient, $schedule, $machine, '2026-08-20');
+        $nextMonday = $this->scheduled($patient, $schedule, $machine, '2026-08-24');
+        $nextWednesday = $this->scheduled($patient, $schedule, $machine, '2026-08-26');
+        $activePatient = ActivePatient::where('patient_id', $patient->id)
+            ->whereDate('date', '2026-08-20')
+            ->firstOrFail();
+
+        DB::table('nurse_patient')->insert([
+            'active_patient_id' => $activePatient->id,
+            'date' => '2026-08-20',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->deleteJson(route('schedule.permanentDestroy', $nextWednesday->id))
+            ->assertOk();
+
+        $this->assertNull($current->fresh()->deleted_at);
+        $this->assertNotNull(SchedulePatients::withTrashed()->findOrFail($nextMonday->id)->deleted_at);
+        $this->assertNotNull(SchedulePatients::withTrashed()->findOrFail($nextWednesday->id)->deleted_at);
+        $this->assertNotNull($activePatient->fresh());
+    }
+
     public function test_nurse_and_manager_remain_read_only(): void
     {
         $schedule = $this->schedule();

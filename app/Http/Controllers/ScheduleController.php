@@ -621,9 +621,13 @@ class ScheduleController extends Controller
     {
         $schedulePatient = SchedulePatients::findOrFail($id);
         $patientId = $schedulePatient->patient_id;
+        $removalFromDate = $schedulePatient->date->copy()
+            ->startOfWeek(Carbon::MONDAY)
+            ->max(today())
+            ->toDateString();
 
         try {
-            DB::transaction(function () use ($patientId) {
+            DB::transaction(function () use ($patientId, $removalFromDate) {
                 PatientScheduleSlot::where('patient_id', $patientId)->update([
                     'active' => false,
                     'updated_by' => auth()->id(),
@@ -633,7 +637,7 @@ class ScheduleController extends Controller
                     ->update(['continue_schedule' => false]);
 
                 $futureRecords = SchedulePatients::where('patient_id', $patientId)
-                    ->whereDate('date', '>=', today()->toDateString())
+                    ->whereDate('date', '>=', $removalFromDate)
                     ->lockForUpdate()
                     ->get();
 

@@ -487,6 +487,39 @@ class TreatmentFinalizationTest extends TestCase
         ]);
     }
 
+    public function test_reopening_trans_hemodialysis_does_not_recalculate_existing_ultrafiltration(): void
+    {
+        $nurse = $this->user('NURSE');
+        $patient = $this->patient();
+
+        DialysisPrescription::create([
+            'patient_id' => $patient->id,
+            'time' => 180,
+            'schedule_ultrafilter' => 2400,
+            'history' => 0,
+        ]);
+        DialysisMonitoring::create([
+            'patient_id' => $patient->id,
+            'date_hour' => '2026-08-18 06:00:00',
+            'history' => 0,
+        ]);
+        $record = TransHemodialysis::create([
+            'patient_id' => $patient->id,
+            'time' => '06:15:00',
+            'arterial_pressure' => '120/80',
+            'ultrafiltration' => 175,
+            'history' => 0,
+        ]);
+
+        $this->actingAs($nurse)
+            ->get(route('treatment.createTransHemo', $patient->id))
+            ->assertOk();
+
+        $this->assertSame(1, TransHemodialysis::where('patient_id', $patient->id)->count());
+        $this->assertSame('06:15:00', $record->fresh()->time);
+        $this->assertSame(175, (int) $record->fresh()->ultrafiltration);
+    }
+
     private function treatment(User $assignedUser, string $date, int $scheduleId): array
     {
         $patient = $this->patient();
