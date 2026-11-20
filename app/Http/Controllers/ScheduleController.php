@@ -363,16 +363,26 @@ class ScheduleController extends Controller
                 ->lockForUpdate()
                 ->get();
 
-            $selected = $weekRecords
+            $selectedBySlot = $weekRecords
                 ->groupBy(fn ($record) => $record->date->toDateString().'|'.$record->schedules_id.'|'.$record->machine_id)
                 ->map(fn ($records) => $records->first(fn ($record) => $record->trashed()) ?? $records->first())
                 ->values();
 
-            $duplicatePatientDay = $selected->groupBy(fn ($record) => $record->patient_id.'|'.$record->date->isoWeekday())
-                ->first(fn ($records) => $records->count() > 1);
-            if ($duplicatePatientDay) {
+            $patientDays = $selectedBySlot
+                ->groupBy(fn ($record) => $record->patient_id.'|'.$record->date->toDateString());
+            $ambiguousPatientDay = $patientDays->first(function ($records) {
+                $activeRecords = $records->filter(fn ($record) => ! $record->trashed());
+
+                return $activeRecords->count() > 1
+                    || ($activeRecords->isEmpty() && $records->count() > 1);
+            });
+            if ($ambiguousPatientDay) {
                 throw new ConflictHttpException('No se puede establecer el horario habitual porque un paciente aparece más de una vez el mismo día.');
             }
+
+            $selected = $patientDays
+                ->map(fn ($records) => $records->first(fn ($record) => ! $record->trashed()) ?? $records->first())
+                ->values();
 
             $selectedIds = $selected->pluck('id');
             SchedulePatients::withTrashed()

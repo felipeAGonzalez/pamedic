@@ -504,6 +504,29 @@ class ScheduleInteractiveTest extends TestCase
             ->assertSessionHas('success');
     }
 
+    public function test_sealing_prefers_the_active_position_when_the_same_patient_was_moved(): void
+    {
+        $receptionist = $this->user('RECEPCIONIST');
+        $patient = $this->patient('EXP-MOVED');
+        $originalSchedule = $this->schedule();
+        $newSchedule = Schedule::create(['schedule' => '10:00:00', 'schedule_type' => 'morning']);
+        $machine = $this->machine('13');
+        $original = $this->scheduled($patient, $originalSchedule, $machine, '2026-08-19');
+        $original->delete();
+        $current = $this->scheduled($patient, $newSchedule, $machine, '2026-08-19');
+
+        $this->actingAs($receptionist)
+            ->post(route('schedule.sealHabitual', [2026, 34]))
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $slot = PatientScheduleSlot::where('patient_id', $patient->id)->firstOrFail();
+        $this->assertSame((string) $newSchedule->id, (string) $slot->schedules_id);
+        $this->assertSame((string) $machine->id, (string) $slot->machine_id);
+        $this->assertTrue((bool) $original->fresh()->is_temporary);
+        $this->assertSame($slot->id, $current->fresh()->patient_schedule_slot_id);
+    }
+
     public function test_temporary_patient_is_not_carried_to_next_week(): void
     {
         $receptionist = $this->user('RECEPCIONIST');
